@@ -1,35 +1,23 @@
-name: Build APK
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+    <application
+        android:allowBackup="true"
+        android:label="مدیریت اقساط"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+        </activity>
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
+    </application>
 
-      - name: Build APK
-        run: gradle assembleDebug --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: MohammadInstallments-APK
-          path: app/build/outputs/apk/debug/*.apk
+</manifest>
