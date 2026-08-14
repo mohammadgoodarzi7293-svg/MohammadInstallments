@@ -1,210 +1,408 @@
 package com.mohammadgoudarzi.installments;
 
 import android.app.Activity;
-import android.os.Bundle;
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Bundle;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.*;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class MainActivity extends Activity {
 
-    LinearLayout mainLayout;
-    ArrayList<Installment> installments = new ArrayList<>();
+    LinearLayout listLayout;
+    TextView summaryText;
+    ArrayList<Installment> items = new ArrayList<>();
+
+    SharedPreferences prefs;
+
+    int blue = Color.rgb(33, 150, 243);
+    int green = Color.rgb(46, 125, 50);
+    int red = Color.rgb(198, 40, 40);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        buildMainScreen();
+        prefs = getSharedPreferences("installments_data", MODE_PRIVATE);
+
+        loadData();
+        buildScreen();
+        refreshList();
     }
 
-    void buildMainScreen() {
+    void buildScreen() {
 
-        mainLayout = new LinearLayout(this);
-        mainLayout.setOrientation(LinearLayout.VERTICAL);
-        mainLayout.setPadding(30, 40, 30, 30);
-        mainLayout.setBackgroundColor(Color.rgb(245, 247, 250));
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(25, 30, 25, 20);
+        root.setBackgroundColor(Color.rgb(245, 247, 250));
 
         TextView title = new TextView(this);
         title.setText("مدیریت اقساط");
-        title.setTextSize(28);
+        title.setTextSize(27);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setTextColor(Color.rgb(25, 25, 25));
         title.setGravity(Gravity.CENTER);
-        title.setTextColor(Color.rgb(30, 30, 30));
 
-        mainLayout.addView(title,
-                new LinearLayout.LayoutParams(-1, 100));
+        root.addView(title,
+                new LinearLayout.LayoutParams(-1, 75));
+
+        summaryText = new TextView(this);
+        summaryText.setTextSize(16);
+        summaryText.setGravity(Gravity.CENTER);
+        summaryText.setPadding(10, 15, 10, 15);
+
+        root.addView(summaryText);
 
         Button addButton = new Button(this);
         addButton.setText("＋ افزودن قسط جدید");
-        addButton.setTextSize(18);
+        addButton.setTextSize(17);
+        addButton.setTextColor(Color.WHITE);
+        addButton.setBackgroundColor(blue);
 
-        mainLayout.addView(addButton,
-                new LinearLayout.LayoutParams(-1, 70));
+        root.addView(addButton,
+                new LinearLayout.LayoutParams(-1, 65));
 
-        TextView summary = new TextView(this);
-        summary.setText("\nهنوز قسطی ثبت نشده است.");
-        summary.setTextSize(17);
-        summary.setGravity(Gravity.CENTER);
-        summary.setPadding(10, 30, 10, 30);
+        ScrollView scroll = new ScrollView(this);
 
-        mainLayout.addView(summary,
-                new LinearLayout.LayoutParams(-1, -2));
+        listLayout = new LinearLayout(this);
+        listLayout.setOrientation(LinearLayout.VERTICAL);
+        listLayout.setPadding(0, 15, 0, 30);
 
-        LinearLayout list = new LinearLayout(this);
-        list.setOrientation(LinearLayout.VERTICAL);
+        scroll.addView(listLayout);
 
-        mainLayout.addView(list,
+        root.addView(scroll,
                 new LinearLayout.LayoutParams(-1, 0, 1));
 
-        addButton.setOnClickListener(v -> showAddInstallmentDialog(list, summary));
+        addButton.setOnClickListener(v -> showAddDialog());
 
-        setContentView(mainLayout);
+        setContentView(root);
     }
 
-    void showAddInstallmentDialog(LinearLayout list, TextView summary) {
+    void showAddDialog() {
 
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(20, 10, 20, 10);
+        box.setPadding(20, 5, 20, 5);
 
         EditText name = new EditText(this);
-        name.setHint("نام شخص / خرید");
+        name.setHint("نام شخص یا خرید");
 
-        EditText amount = new EditText(this);
-        amount.setHint("مبلغ هر قسط");
-        amount.setInputType(2);
+        EditText total = new EditText(this);
+        total.setHint("مبلغ کل");
+        total.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         EditText count = new EditText(this);
         count.setHint("تعداد اقساط");
-        count.setInputType(2);
+        count.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         box.addView(name);
-        box.addView(amount);
+        box.addView(total);
         box.addView(count);
 
-        new android.app.AlertDialog.Builder(this)
-                .setTitle("افزودن قسط")
+        new AlertDialog.Builder(this)
+                .setTitle("افزودن قرارداد")
                 .setView(box)
                 .setNegativeButton("انصراف", null)
                 .setPositiveButton("ثبت", (dialog, which) -> {
 
-                    String n = name.getText().toString();
-                    String a = amount.getText().toString();
-                    String c = count.getText().toString();
+                    if (name.getText().toString().trim().isEmpty()
+                            || total.getText().toString().trim().isEmpty()
+                            || count.getText().toString().trim().isEmpty()) {
 
-                    if (n.isEmpty() || a.isEmpty() || c.isEmpty()) {
                         Toast.makeText(this,
-                                "لطفاً همه موارد را وارد کنید",
+                                "لطفاً همه اطلاعات را وارد کنید",
                                 Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    int amountValue = Integer.parseInt(a);
-                    int countValue = Integer.parseInt(c);
+                    long totalAmount =
+                            Long.parseLong(total.getText().toString());
 
-                    Installment item =
-                            new Installment(n, amountValue, countValue);
+                    int countValue =
+                            Integer.parseInt(count.getText().toString());
 
-                    installments.add(item);
+                    if (countValue <= 0 || totalAmount <= 0) {
+                        Toast.makeText(this,
+                                "مبلغ و تعداد اقساط باید بیشتر از صفر باشد",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
-                    addInstallmentView(list, summary, item);
+                    Installment item = new Installment();
 
-                    updateSummary(summary);
+                    item.name = name.getText().toString();
+                    item.total = totalAmount;
+                    item.count = countValue;
+                    item.paid = 0;
+
+                    items.add(item);
+
+                    saveData();
+                    refreshList();
                 })
                 .show();
     }
 
-    void addInstallmentView(LinearLayout list,
-                            TextView summary,
-                            Installment item) {
+    void refreshList() {
+
+        listLayout.removeAllViews();
+
+        long totalDebt = 0;
+        long totalPaid = 0;
+        int totalInstallments = 0;
+        int paidInstallments = 0;
+
+        for (Installment item : items) {
+
+            totalDebt += item.total;
+
+            long installmentAmount =
+                    item.total / item.count;
+
+            totalPaid += installmentAmount * item.paid;
+
+            totalInstallments += item.count;
+            paidInstallments += item.paid;
+
+            addCard(item, installmentAmount);
+        }
+
+        long remaining = totalDebt - totalPaid;
+
+        summaryText.setText(
+                "کل بدهی: " + money(totalDebt) +
+                "\nپرداخت شده: " + money(totalPaid) +
+                "\nمانده: " + money(remaining) +
+                "\nاقساط: " + paidInstallments +
+                " از " + totalInstallments
+        );
+    }
+
+    void addCard(Installment item, long installmentAmount) {
 
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
         card.setPadding(25, 20, 25, 20);
         card.setBackgroundColor(Color.WHITE);
 
+        TextView name = new TextView(this);
+        name.setText(item.name);
+        name.setTextSize(20);
+        name.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+
         TextView info = new TextView(this);
-        info.setText(
-                item.name +
-                "\nمبلغ هر قسط: " + item.amount +
-                "\nتعداد اقساط: " + item.count +
-                "\nپرداخت شده: 0"
-        );
+        info.setTextSize(15);
+        info.setPadding(0, 10, 0, 10);
 
-        info.setTextSize(17);
-        info.setTextColor(Color.DKGRAY);
+        updateInfo(info, item, installmentAmount);
 
+        card.addView(name);
         card.addView(info);
+
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
 
         Button pay = new Button(this);
         pay.setText("✓ پرداخت قسط");
 
-        card.addView(pay);
+        Button edit = new Button(this);
+        edit.setText("✏ ویرایش");
+
+        Button delete = new Button(this);
+        delete.setText("🗑 حذف");
+
+        buttons.addView(pay,
+                new LinearLayout.LayoutParams(0, 60, 1));
+
+        buttons.addView(edit,
+                new LinearLayout.LayoutParams(0, 60, 1));
+
+        buttons.addView(delete,
+                new LinearLayout.LayoutParams(0, 60, 1));
+
+        card.addView(buttons);
 
         pay.setOnClickListener(v -> {
 
             if (item.paid < item.count) {
+
                 item.paid++;
 
-                info.setText(
-                        item.name +
-                        "\nمبلغ هر قسط: " + item.amount +
-                        "\nتعداد اقساط: " + item.count +
-                        "\nپرداخت شده: " + item.paid
-                );
+                saveData();
+                updateInfo(info, item, installmentAmount);
+                refreshList();
 
-                updateSummary(summary);
+                Toast.makeText(this,
+                        "قسط ثبت شد ✓",
+                        Toast.LENGTH_SHORT).show();
+            } else {
 
-                if (item.paid == item.count) {
-                    Toast.makeText(this,
-                            "تمام اقساط این مورد پرداخت شد ✓",
-                            Toast.LENGTH_LONG).show();
-                }
+                Toast.makeText(this,
+                        "تمام اقساط این مورد پرداخت شده",
+                        Toast.LENGTH_SHORT).show();
             }
+        });
+
+        edit.setOnClickListener(v ->
+                showEditDialog(item));
+
+        delete.setOnClickListener(v -> {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("حذف قرارداد")
+                    .setMessage("آیا مطمئن هستید؟")
+                    .setNegativeButton("خیر", null)
+                    .setPositiveButton("بله", (d, w) -> {
+
+                        items.remove(item);
+                        saveData();
+                        refreshList();
+                    })
+                    .show();
         });
 
         LinearLayout.LayoutParams params =
                 new LinearLayout.LayoutParams(-1, -2);
 
-        params.setMargins(0, 15, 0, 15);
+        params.setMargins(0, 0, 0, 18);
 
-        list.addView(card, params);
+        listLayout.addView(card, params);
     }
 
-    void updateSummary(TextView summary) {
+    void updateInfo(TextView info,
+                    Installment item,
+                    long installmentAmount) {
 
-        int total = 0;
-        int paid = 0;
+        long paidAmount =
+                installmentAmount * item.paid;
 
-        for (Installment i : installments) {
-            total += i.count;
-            paid += i.paid;
-        }
+        long remaining =
+                item.total - paidAmount;
 
-        summary.setText(
-                "\nتعداد کل اقساط: " + total +
-                "\nاقساط پرداخت شده: " + paid +
-                "\nاقساط باقی‌مانده: " + (total - paid)
+        info.setText(
+                "مبلغ کل: " + money(item.total) +
+                "\nمبلغ هر قسط: " + money(installmentAmount) +
+                "\nتعداد اقساط: " + item.count +
+                "\nپرداخت شده: " + item.paid +
+                "\nباقی‌مانده: " + (item.count - item.paid) +
+                "\nمانده بدهی: " + money(remaining)
         );
+    }
+
+    void showEditDialog(Installment item) {
+
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(20, 5, 20, 5);
+
+        EditText name = new EditText(this);
+        name.setText(item.name);
+        name.setHint("نام");
+
+        EditText total = new EditText(this);
+        total.setText(String.valueOf(item.total));
+        total.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        box.addView(name);
+        box.addView(total);
+
+        new AlertDialog.Builder(this)
+                .setTitle("ویرایش")
+                .setView(box)
+                .setNegativeButton("انصراف", null)
+                .setPositiveButton("ذخیره", (dialog, which) -> {
+
+                    item.name = name.getText().toString();
+                    item.total =
+                            Long.parseLong(total.getText().toString());
+
+                    saveData();
+                    refreshList();
+                })
+                .show();
+    }
+
+    String money(long value) {
+
+        return NumberFormat
+                .getNumberInstance(Locale.US)
+                .format(value) + " تومان";
+    }
+
+    void saveData() {
+
+        try {
+
+            JSONArray array = new JSONArray();
+
+            for (Installment item : items) {
+
+                JSONObject obj = new JSONObject();
+
+                obj.put("name", item.name);
+                obj.put("total", item.total);
+                obj.put("count", item.count);
+                obj.put("paid", item.paid);
+
+                array.put(obj);
+            }
+
+            prefs.edit()
+                    .putString("data", array.toString())
+                    .apply();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void loadData() {
+
+        try {
+
+            String data = prefs.getString("data", "");
+
+            if (data.isEmpty())
+                return;
+
+            JSONArray array = new JSONArray(data);
+
+            for (int i = 0; i < array.length(); i++) {
+
+                JSONObject obj = array.getJSONObject(i);
+
+                Installment item = new Installment();
+
+                item.name = obj.getString("name");
+                item.total = obj.getLong("total");
+                item.count = obj.getInt("count");
+                item.paid = obj.getInt("paid");
+
+                items.add(item);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     static class Installment {
 
         String name;
-        int amount;
+        long total;
         int count;
         int paid;
-
-        Installment(String name, int amount, int count) {
-            this.name = name;
-            this.amount = amount;
-            this.count = count;
-            this.paid = 0;
-        }
     }
 }
