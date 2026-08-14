@@ -1,2098 +1,593 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-
-<title>مدیریت اقساط</title>
-
-<style>
-*{
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
-}
-
-html,body{
-    margin:0;
-    padding:0;
-    width:100%;
-    min-height:100%;
-}
-
-body{
-    font-family:Tahoma,Arial,sans-serif;
-    background:#f3f6fa;
-    color:#17202a;
-    font-size:14px;
-    overflow-x:hidden;
-}
-
-button,input{
-    font-family:inherit;
-}
-
-button{
-    border:0;
-    cursor:pointer;
-}
-
-.header{
-    background:linear-gradient(135deg,#1268c4,#2499e8);
-    color:#fff;
-    padding:22px 14px 20px;
-    border-radius:0 0 26px 26px;
-    box-shadow:0 5px 18px rgba(0,0,0,.13);
-}
-
-.header h1{
-    margin:0;
-    text-align:center;
-    font-size:24px;
-}
-
-.header p{
-    margin:8px 0 16px;
-    text-align:center;
-    opacity:.92;
-    font-size:13px;
-}
-
-.summary{
-    width:100%;
-    max-width:700px;
-    margin:auto;
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:7px;
-}
-
-.stat{
-    min-width:0;
-    background:#fff;
-    color:#17202a;
-    border-radius:15px;
-    padding:11px 4px;
-    text-align:center;
-    box-shadow:0 3px 12px rgba(0,0,0,.08);
-}
-
-.stat small{
-    display:block;
-    color:#64748b;
-    font-size:10px;
-    margin-bottom:6px;
-}
-
-.stat strong{
-    display:block;
-    font-size:13px;
-    word-break:break-word;
-}
-
-.container{
-    width:100%;
-    max-width:700px;
-    margin:auto;
-    padding:13px 11px 105px;
-}
-
-.searchBox{
-    background:#fff;
-    padding:5px;
-    border-radius:15px;
-    box-shadow:0 3px 13px rgba(0,0,0,.06);
-    margin-bottom:9px;
-}
-
-.search{
-    width:100%;
-    border:0;
-    outline:0;
-    background:#f4f6f8;
-    border-radius:11px;
-    padding:13px;
-    font-size:13px;
-}
-
-.addButton{
-    width:100%;
-    padding:15px;
-    border-radius:16px;
-    background:#1976d2;
-    color:#fff;
-    font-size:16px;
-    font-weight:bold;
-    box-shadow:0 5px 15px rgba(25,118,210,.25);
-    margin-bottom:12px;
-}
-
-.card{
-    background:#fff;
-    border-radius:18px;
-    padding:14px;
-    margin-bottom:11px;
-    box-shadow:0 3px 15px rgba(0,0,0,.07);
-}
-
-.cardTop{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:8px;
-}
-
-.cardName{
-    font-size:16px;
-    font-weight:bold;
-}
-
-.balanceBox{
-    margin-top:10px;
-    padding:11px;
-    background:#eff6ff;
-    border-radius:12px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:8px;
-}
-
-.balanceBox small{
-    color:#64748b;
-    font-size:10px;
-}
-
-.balanceBox strong{
-    color:#1268c4;
-    font-size:13px;
-}
-
-.balanceBox .negative{
-    color:#16a34a;
-}
-
-.cardInfo{
-    color:#64748b;
-    font-size:11px;
-    margin-top:6px;
-    line-height:2;
-}
-
-.actions{
-    display:flex;
-    gap:5px;
-    flex-shrink:0;
-}
-
-.smallButton{
-    width:35px;
-    height:35px;
-    border-radius:10px;
-    background:#f1f5f9;
-    font-size:16px;
-}
-
-.smallButton.delete{
-    background:#fff0f0;
-}
-
-.smallButton.restore{
-    background:#ecfdf3;
-}
-
-.progressBox{
-    margin-top:11px;
-}
-
-.progressText{
-    display:flex;
-    justify-content:space-between;
-    color:#64748b;
-    font-size:10px;
-    margin-bottom:5px;
-}
-
-.progress{
-    width:100%;
-    height:8px;
-    background:#e5e7eb;
-    border-radius:20px;
-    overflow:hidden;
-}
-
-.progress i{
-    display:block;
-    height:100%;
-    background:#22a447;
-    border-radius:20px;
-}
-
-.months{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:6px;
-    margin-top:12px;
-}
-
-.month{
-    min-height:67px;
-    background:#f7f9fb;
-    border:1px solid #e1e6eb;
-    border-radius:11px;
-    padding:5px 2px;
-    color:#334155;
-}
-
-.month.paid{
-    background:#22a447;
-    border-color:#22a447;
-    color:#fff;
-}
-
-.month.overdue{
-    border:2px solid #ef4444;
-    background:#fff5f5;
-}
-
-.month.paid.overdue{
-    background:#22a447;
-    border-color:#22a447;
-}
-
-.monthDate{
-    display:block;
-    font-size:9px;
-    direction:ltr;
-}
-
-.monthAmount{
-    display:block;
-    font-size:9px;
-    margin-top:4px;
-}
-
-.monthMark{
-    display:block;
-    font-size:17px;
-    margin-top:4px;
-}
-
-.empty{
-    background:#fff;
-    border-radius:18px;
-    padding:38px 15px;
-    text-align:center;
-    color:#64748b;
-}
-
-.trashTitle{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin:18px 2px 10px;
-}
-
-.trashTitle strong{
-    font-size:14px;
-}
-
-.trashTitle span{
-    font-size:10px;
-    color:#64748b;
-}
-
-.bottomBar{
-    position:fixed;
-    left:0;
-    right:0;
-    bottom:0;
-    z-index:50;
-    background:#fff;
-    border-top:1px solid #e2e8f0;
-    padding:7px 7px calc(7px + env(safe-area-inset-bottom));
-    display:flex;
-    gap:5px;
-}
-
-.bottomButton{
-    flex:1;
-    padding:10px 3px;
-    border-radius:10px;
-    background:#f1f5f9;
-    color:#334155;
-    font-size:10px;
-    font-weight:bold;
-}
-
-.bottomButton.danger{
-    background:#fee2e2;
-    color:#991b1b;
-}
-
-.modal{
-    position:fixed;
-    inset:0;
-    z-index:100;
-    display:none;
-    align-items:flex-end;
-    justify-content:center;
-    background:rgba(0,0,0,.55);
-}
-
-.modal.visible{
-    display:flex;
-}
-
-.sheet{
-    width:100%;
-    max-width:620px;
-    max-height:94vh;
-    overflow-y:auto;
-    background:#fff;
-    border-radius:24px 24px 0 0;
-    padding:18px 15px calc(23px + env(safe-area-inset-bottom));
-}
-
-.sheetTitle{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:9px;
-}
-
-.sheetTitle h2{
-    margin:0;
-    font-size:18px;
-}
-
-.closeButton{
-    width:37px;
-    height:37px;
-    border-radius:50%;
-    background:#f1f5f9;
-    font-size:21px;
-}
-
-label{
-    display:block;
-    margin:10px 0 5px;
-    color:#475569;
-    font-size:11px;
-}
-
-.input{
-    width:100%;
-    border:1px solid #cbd5e1;
-    border-radius:11px;
-    padding:12px;
-    font-size:14px;
-    outline:none;
-    background:#fff;
-}
-
-.input:focus{
-    border-color:#1976d2;
-    box-shadow:0 0 0 3px rgba(25,118,210,.1);
-}
-
-.input.error{
-    border-color:#ef4444;
-    background:#fff7f7;
-}
-
-.formRow{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-}
-
-.dateRow{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-}
-
-.autoInfo{
-    margin-top:8px;
-    padding:9px;
-    background:#eff6ff;
-    border-radius:10px;
-    color:#334155;
-    font-size:10px;
-    line-height:1.9;
-}
-
-.errorBox{
-    display:none;
-    margin-top:10px;
-    padding:10px;
-    background:#fff1f2;
-    border:1px solid #fecdd3;
-    color:#dc2626;
-    border-radius:10px;
-    font-size:11px;
-    line-height:1.9;
-}
-
-.errorBox.visible{
-    display:block;
-}
-
-.notice{
-    margin-top:8px;
-    padding:9px;
-    border-radius:10px;
-    background:#fff7ed;
-    color:#9a3412;
-    font-size:10px;
-    line-height:1.8;
-}
-
-.modalButtons{
-    display:flex;
-    gap:8px;
-    margin-top:14px;
-}
-
-.modalButton{
-    flex:1;
-    padding:13px;
-    border-radius:12px;
-    font-size:13px;
-    font-weight:bold;
-}
-
-.cancel{
-    background:#f1f5f9;
-    color:#334155;
-}
-
-.save{
-    background:#1976d2;
-    color:#fff;
-}
-
-.toast{
-    position:fixed;
-    left:12px;
-    right:12px;
-    bottom:80px;
-    z-index:200;
-    background:#17202a;
-    color:#fff;
-    padding:12px;
-    border-radius:12px;
-    text-align:center;
-    font-size:12px;
-    display:none;
-}
-
-.toast.show{
-    display:block;
-}
-
-@media(max-width:380px){
-
-    .header h1{
-        font-size:22px;
+/* ================================
+   اصلاح نهایی مانده وام + سطل زباله
+   ================================ */
+
+function getRealMonths(item) {
+
+    let months = Number(item.months || 0);
+
+    if (months >= 1)
+        return months;
+
+    const start = String(item.startDate || "")
+        .split("/")
+        .map(Number);
+
+    const end = String(item.endDate || "")
+        .split("/")
+        .map(Number);
+
+    if (
+        start.length === 3 &&
+        end.length === 3 &&
+        start.every(Boolean) &&
+        end.every(Boolean)
+    ) {
+
+        const result =
+            (end[0] - start[0]) * 12 +
+            (end[1] - start[1]) +
+            1;
+
+        if (result > 0)
+            return result;
     }
 
-    .stat strong{
-        font-size:11px;
-    }
-
-    .months{
-        grid-template-columns:repeat(3,1fr);
-    }
-
-    .formRow,
-    .dateRow{
-        grid-template-columns:1fr;
-    }
-
-    .bottomButton{
-        font-size:9px;
-    }
-}
-</style>
-</head>
-
-<body>
-
-<header class="header">
-
-<h1>مدیریت اقساط</h1>
-
-<p>مدیریت ساده و دقیق اقساط و بدهی‌ها</p>
-
-<div class="summary">
-
-<div class="stat">
-<small>کل موارد</small>
-<strong id="count">۰</strong>
-</div>
-
-<div class="stat">
-<small>مانده کل</small>
-<strong id="total">۰ تومان</strong>
-</div>
-
-<div class="stat">
-<small>اقساط باقی‌مانده</small>
-<strong id="remaining">۰</strong>
-</div>
-
-</div>
-
-</header>
-
-<main class="container">
-
-<div class="searchBox">
-<input id="search"
-class="search"
-type="text"
-placeholder="جستجوی بانک یا قسط...">
-</div>
-
-<button id="addButton" class="addButton">
-＋ افزودن قسط جدید
-</button>
-
-<div id="list"></div>
-
-<div id="trashArea"></div>
-
-</main>
-
-<div class="bottomBar">
-
-<button id="exportButton" class="bottomButton">
-💾 پشتیبان‌گیری
-</button>
-
-<button id="importButton" class="bottomButton">
-📥 بازیابی
-</button>
-
-<button id="trashButton" class="bottomButton">
-🗑️ سطل زباله
-</button>
-
-<button id="resetButton" class="bottomButton danger">
-حذف همه
-</button>
-
-</div>
-
-<input id="fileInput"
-type="file"
-accept=".json,application/json"
-style="display:none">
-
-<div id="modal" class="modal">
-
-<div class="sheet">
-
-<div class="sheetTitle">
-
-<h2 id="modalTitle">
-افزودن قسط جدید
-</h2>
-
-<button id="closeButton" class="closeButton">
-×
-</button>
-
-</div>
-
-<label>نام بانک / مورد *</label>
-
-<input id="nameInput"
-class="input"
-type="text"
-placeholder="مثلاً بانک رسالت">
-
-<div class="formRow">
-
-<div>
-
-<label>مانده اولیه وام / بدهی *</label>
-
-<input id="balanceInput"
-class="input"
-type="number"
-inputmode="numeric"
-min="0"
-placeholder="مثلاً ۱۲۰۰۰۰۰۰۰">
-
-</div>
-
-<div>
-
-<label>مبلغ پایه هر قسط *</label>
-
-<input id="amountInput"
-class="input"
-type="number"
-inputmode="numeric"
-min="0"
-placeholder="مثلاً ۵۰۰۰۰۰۰">
-
-</div>
-
-</div>
-
-<div class="formRow">
-
-<div>
-
-<label>تعداد اقساط</label>
-
-<input id="monthsInput"
-class="input"
-type="number"
-inputmode="numeric"
-min="1"
-placeholder="مثلاً ۱۲">
-
-</div>
-
-<div>
-
-<label>کارمزد ثابت سالانه</label>
-
-<input id="annualFeeInput"
-class="input"
-type="number"
-inputmode="numeric"
-min="0"
-placeholder="مثلاً ۷۰۰۰۰۰۰">
-
-</div>
-
-</div>
-
-<div class="notice">
-کارمزد سالانه مبلغ ثابت است، نه درصد.
-مثلاً اگر کارمزد سال اول ۷ میلیون باشد،
-در سالگرد شروع اقساط ۷ میلیون به مبلغ همان قسط اضافه می‌شود.
-</div>
-
-<div class="dateRow">
-
-<div>
-
-<label>تاریخ اولین قسط *</label>
-
-<input id="startDateInput"
-class="input"
-type="text"
-inputmode="numeric"
-dir="ltr"
-maxlength="10"
-placeholder="1405/05/22">
-
-</div>
-
-<div>
-
-<label>تاریخ آخرین قسط</label>
-
-<input id="endDateInput"
-class="input"
-type="text"
-inputmode="numeric"
-dir="ltr"
-maxlength="10"
-placeholder="خودکار">
-
-</div>
-
-</div>
-
-<div class="autoInfo">
-اگر تعداد اقساط + تاریخ اولین قسط را وارد کنی،
-تاریخ آخرین قسط خودکار محاسبه می‌شود.
-اگر تاریخ اولین و آخرین قسط را وارد کنی،
-تعداد اقساط خودکار محاسبه می‌شود.
-</div>
-
-<label>توضیحات</label>
-
-<input id="noteInput"
-class="input"
-type="text"
-placeholder="توضیحات اختیاری">
-
-<div id="errorBox" class="errorBox"></div>
-
-<div class="modalButtons">
-
-<button id="cancelButton"
-class="modalButton cancel">
-انصراف
-</button>
-
-<button id="saveButton"
-class="modalButton save">
-ذخیره قسط
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<div id="toast" class="toast"></div>
-
-<script>
-
-const STORAGE_KEY = "mohammad_installments_v8";
-const TRASH_KEY = "mohammad_installments_trash_v8";
-
-let installments = load(STORAGE_KEY);
-let trash = load(TRASH_KEY);
-let editingId = null;
-
-const $ = id => document.getElementById(id);
-
-function load(key){
-    try{
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : [];
-    }catch(e){
-        return [];
-    }
+    return 0;
 }
 
-function saveData(){
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(installments));
-    localStorage.setItem(TRASH_KEY,JSON.stringify(trash));
+
+/*
+   تعداد کارمزدهای سالانه
+
+   مثال:
+   12 قسط  → 0 کارمزد
+   13 قسط  → 1 کارمزد
+   24 قسط  → 1 کارمزد
+   25 قسط  → 2 کارمزد
+*/
+function getAnnualFeeCount(item) {
+
+    const months = getRealMonths(item);
+
+    if (months <= 1)
+        return 0;
+
+    return Math.floor((months - 1) / 12);
 }
 
-function faNumber(value){
-    return String(value)
-    .replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
-}
 
-function enNumber(value){
-    return String(value || "")
-    .replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d))
-    .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
-}
-
-function money(value){
-    return faNumber(
-        Number(value || 0).toLocaleString("en-US")
-    ) + " تومان";
-}
-
-function showToast(text){
-    $("toast").textContent=text;
-    $("toast").classList.add("show");
-    setTimeout(()=>{
-        $("toast").classList.remove("show");
-    },2200);
-}
-
-function normalizeDateInput(input){
-
-    let value=enNumber(input.value)
-    .replace(/[^\d]/g,"");
-
-    if(value.length>8)
-        value=value.substring(0,8);
-
-    let result="";
-
-    if(value.length>0)
-        result+=value.substring(0,4);
-
-    if(value.length>=5)
-        result+="/"+value.substring(4,6);
-
-    if(value.length>=7)
-        result+="/"+value.substring(6,8);
-
-    input.value=result;
-}
-
-function validJalali(date){
-
-    if(!/^\d{4}\/\d{2}\/\d{2}$/.test(date))
-        return false;
-
-    const p=date.split("/").map(Number);
-    const y=p[0],m=p[1],d=p[2];
-
-    if(y<1300 || y>1500)
-        return false;
-
-    if(m<1 || m>12)
-        return false;
-
-    let max;
-
-    if(m<=6)
-        max=31;
-    else if(m<=11)
-        max=30;
-    else
-        max=30;
-
-    return d>=1 && d<=max;
-}
-
-function jalaliToGregorian(jy,jm,jd){
-
-    jy=Number(jy);
-    jm=Number(jm);
-    jd=Number(jd);
-
-    let gy;
-
-    if(jy>979){
-        gy=1600;
-        jy-=979;
-    }else{
-        gy=621;
-    }
-
-    let days=
-        365*jy+
-        Math.floor(jy/33)*8+
-        Math.floor(((jy%33)+3)/4)+
-        78+
-        jd+
-        (jm<7
-            ?(jm-1)*31
-            :(jm-7)*30+186);
-
-    gy+=400*Math.floor(days/146097);
-    days%=146097;
-
-    if(days>36524){
-        gy+=100*Math.floor(--days/36524);
-        days%=36524;
-
-        if(days>=365)
-            days++;
-    }
-
-    gy+=4*Math.floor(days/1461);
-    days%=1461;
-
-    if(days>365){
-        gy+=Math.floor((days-1)/365);
-        days=(days-1)%365;
-    }
-
-    let gd=days+1;
-
-    const leap=
-        (gy%4===0 && gy%100!==0) ||
-        gy%400===0;
-
-    const md=[
-        0,31,leap?29:28,31,30,31,
-        30,31,31,30,31,30,31
-    ];
-
-    let gm=1;
-
-    while(gd>md[gm]){
-        gd-=md[gm];
-        gm++;
-    }
-
-    return [gy,gm,gd];
-}
-
-function gregorianToJalali(gy,gm,gd){
-
-    gy=Number(gy);
-    gm=Number(gm);
-    gd=Number(gd);
-
-    let jy;
-
-    if(gy>1600){
-        jy=979;
-        gy-=1600;
-    }else{
-        jy=0;
-        gy-=621;
-    }
-
-    let gy2=gm>2?gy+1:gy;
-
-    let days=
-        365*gy+
-        Math.floor((gy2+3)/4)-
-        Math.floor((gy2+99)/100)+
-        Math.floor((gy2+399)/400)-
-        80+
-        gd;
-
-    const md=[
-        0,31,28,31,30,31,30,
-        31,31,30,31,30,31
-    ];
-
-    for(let i=1;i<gm;i++)
-        days+=md[i];
-
-    jy+=33*Math.floor(days/12053);
-    days%=12053;
-
-    jy+=4*Math.floor(days/1461);
-    days%=1461;
-
-    if(days>365){
-        jy+=Math.floor((days-1)/365);
-        days=(days-1)%365;
-    }
-
-    const jm=
-        days<186
-        ?1+Math.floor(days/31)
-        :7+Math.floor((days-186)/30);
-
-    const jd=
-        1+
-        (
-            days<186
-            ?days%31
-            :(days-186)%30
-        );
-
-    return [jy,jm,jd];
-}
-
-function jalaliToDate(text){
-
-    const p=text.split("/");
-
-    if(p.length!==3)
-        return null;
-
-    const jy=Number(p[0]);
-    const jm=Number(p[1]);
-    const jd=Number(p[2]);
-
-    if(!validJalali(text))
-        return null;
-
-    const g=jalaliToGregorian(jy,jm,jd);
-
-    return new Date(
-        g[0],
-        g[1]-1,
-        g[2]
-    );
-}
-
-function dateToJalali(date){
-
-    const j=gregorianToJalali(
-        date.getFullYear(),
-        date.getMonth()+1,
-        date.getDate()
-    );
-
-    return String(j[0]).padStart(4,"0")+
-        "/"+
-        String(j[1]).padStart(2,"0")+
-        "/"+
-        String(j[2]).padStart(2,"0");
-}
-
-function daysInJalaliMonth(year,month){
-
-    if(month<=6)
-        return 31;
-
-    if(month<=11)
-        return 30;
-
-    for(let d=30;d>=29;d--){
-        if(validJalali(
-            `${year}/12/${String(d).padStart(2,"0")}`
-        ))
-            return d;
-    }
-
-    return 29;
-}
-
-function addJalaliMonths(text,count){
-
-    const p=text.split("/").map(Number);
-
-    let y=p[0];
-    let m=p[1];
-    let d=p[2];
-
-    const total=(y*12+(m-1))+count;
-
-    y=Math.floor(total/12);
-    m=total%12+1;
-
-    const max=daysInJalaliMonth(y,m);
-
-    if(d>max)
-        d=max;
-
-    return String(y).padStart(4,"0")+
-        "/"+
-        String(m).padStart(2,"0")+
-        "/"+
-        String(d).padStart(2,"0");
-}
-
-function calculateEndDate(){
-
-    const start=$("startDateInput").value.trim();
-    const months=Number(enNumber($("monthsInput").value));
-
-    if(
-        start.length===10 &&
-        validJalali(start) &&
-        months>=1
-    ){
-        $("endDateInput").value=
-            addJalaliMonths(start,months-1);
-    }
-}
-
-function calculateMonths(){
-
-    const start=$("startDateInput").value.trim();
-    const end=$("endDateInput").value.trim();
-
-    if(
-        start.length!==10 ||
-        end.length!==10 ||
-        !validJalali(start) ||
-        !validJalali(end)
-    )
-        return;
-
-    const a=start.split("/").map(Number);
-    const b=end.split("/").map(Number);
-
-    let months=
-        (b[0]-a[0])*12+
-        (b[1]-a[1])+
-        1;
-
-    if(months<1)
-        return;
-
-    const calculated=
-        addJalaliMonths(start,months-1);
-
-    if(calculated===end)
-        $("monthsInput").value=months;
-}
-
-function clearErrors(){
-
-    document
-    .querySelectorAll(".input.error")
-    .forEach(el=>el.classList.remove("error"));
-
-    $("errorBox").classList.remove("visible");
-    $("errorBox").innerHTML="";
-}
-
-function showErrors(errors,fields){
-
-    clearErrors();
-
-    fields.forEach(id=>{
-        if($(id))
-            $(id).classList.add("error");
-    });
-
-    $("errorBox").innerHTML=
-        errors.map(x=>"• "+x).join("<br>");
-
-    $("errorBox").classList.add("visible");
-}
-
-function validateForm(){
-
-    const errors=[];
-    const fields=[];
-
-    const name=$("nameInput").value.trim();
-
-    const balance=
-        Number(enNumber($("balanceInput").value));
-
-    const amount=
-        Number(enNumber($("amountInput").value));
-
-    const months=
-        Number(enNumber($("monthsInput").value));
-
-    const start=$("startDateInput").value.trim();
-    const end=$("endDateInput").value.trim();
-
-    if(!name){
-        errors.push("نام بانک یا مورد را وارد نکردی.");
-        fields.push("nameInput");
-    }
-
-    if(!balance || balance<=0){
-        errors.push("مانده اولیه وام یا بدهی را وارد نکردی.");
-        fields.push("balanceInput");
-    }
-
-    if(!amount || amount<=0){
-        errors.push("مبلغ پایه هر قسط را وارد نکردی.");
-        fields.push("amountInput");
-    }
-
-    if(!start){
-        errors.push("تاریخ اولین قسط را وارد نکردی.");
-        fields.push("startDateInput");
-    }
-    else if(
-        start.length!==10 ||
-        !validJalali(start)
-    ){
-        errors.push(
-            "تاریخ اولین قسط صحیح نیست؛ مثلاً 1405/05/22."
-        );
-        fields.push("startDateInput");
-    }
-
-    if(end){
-
-        if(
-            end.length!==10 ||
-            !validJalali(end)
-        ){
-            errors.push("تاریخ آخرین قسط صحیح نیست.");
-            fields.push("endDateInput");
-        }
-    }
-
-    if(!months && !end){
-        errors.push(
-            "تعداد اقساط یا تاریخ آخرین قسط را وارد کن."
-        );
-        fields.push("monthsInput","endDateInput");
-    }
-
-    if(months && months<1){
-        errors.push(
-            "تعداد اقساط باید حداقل ۱ باشد."
-        );
-        fields.push("monthsInput");
-    }
-
-    if(
-        start &&
-        validJalali(start) &&
-        months>=1 &&
-        end &&
-        validJalali(end)
-    ){
-
-        const calculated=
-            addJalaliMonths(start,months-1);
-
-        if(calculated!==end){
-
-            errors.push(
-                "تعداد اقساط و تاریخ آخرین قسط با هم مطابقت ندارند."
-            );
-
-            fields.push(
-                "monthsInput",
-                "endDateInput"
-            );
-        }
-    }
-
-    if(errors.length){
-        showErrors(errors,fields);
-        return false;
-    }
-
-    return true;
-}
-
-function openModal(item=null){
-
-    editingId=item?item.id:null;
-
-    clearErrors();
-
-    $("modalTitle").textContent=
-        item?"ویرایش قسط":"افزودن قسط جدید";
-
-    $("nameInput").value=
-        item?item.name:"";
-
-    $("balanceInput").value=
-        item
-        ?(item.initialBalance||item.balance||"")
-        :"";
-
-    $("amountInput").value=
-        item?item.amount:"";
-
-    $("monthsInput").value=
-        item?item.months:"";
-
-    $("annualFeeInput").value=
-        item?(item.annualFee||0):0;
-
-    $("startDateInput").value=
-        item?item.startDate:"";
-
-    $("endDateInput").value=
-        item?item.endDate:"";
-
-    $("noteInput").value=
-        item?item.note:"";
-
-    $("modal").classList.add("visible");
-}
-
-function closeModal(){
-
-    $("modal").classList.remove("visible");
-    editingId=null;
-    clearErrors();
-}
-
-function getInstallmentAmount(item,index){
-
-    const base=Number(item.amount||0);
-    const fee=Number(item.annualFee||0);
+/*
+   مبلغ واقعی هر قسط
+
+   قسط عادی:
+   مبلغ پایه
+
+   قسط سالگرد:
+   مبلغ پایه + کارمزد سالانه
+*/
+function getRealInstallmentAmount(item, index) {
+
+    const base =
+        Number(item.amount || 0);
+
+    const annualFee =
+        Number(
+            item.annualFee ??
+            item.fee ??
+            0
+        ) || 0;
 
     /*
-      کارمزد در اولین قسط هر سال اضافه می‌شود:
-      سال اول = بدون کارمزد
-      سال دوم = کارمزد یک‌باره
-      سال سوم = کارمزد یک‌باره
-      و ...
+       قسط 13، 25، 37 و...
+       شامل کارمزد سالانه است.
     */
 
-    const year=Math.floor(index/12);
+    if (
+        index > 0 &&
+        index % 12 === 0
+    ) {
 
-    return base+(year*fee);
+        return base + annualFee;
+
+    }
+
+    return base;
 }
 
-function calculateRemainingBalance(item){
 
-    const initial=Number(
-        item.initialBalance||
-        item.balance||
-        0
-    );
+/*
+   مانده واقعی این بانک
+*/
+function calculateLoanBalance(item) {
 
-    let paidAmount=0;
+    const months =
+        getRealMonths(item);
 
-    if(Array.isArray(item.paid)){
+    let balance = 0;
 
-        item.paid.forEach(index=>{
-            paidAmount+=
-                getInstallmentAmount(item,index);
-        });
+    for (
+        let i = 0;
+        i < months;
+        i++
+    ) {
+
+        if (!isPaid(item, i)) {
+
+            balance +=
+                getRealInstallmentAmount(
+                    item,
+                    i
+                );
+
+        }
 
     }
 
     return Math.max(
         0,
-        initial-paidAmount
+        balance
     );
 }
 
-function saveInstallment(){
 
-    const start=$("startDateInput").value.trim();
-    const end=$("endDateInput").value.trim();
-    const months=Number(
-        enNumber($("monthsInput").value)
-    );
+/*
+   کل مبلغ برنامه پرداخت
+*/
+function calculateOriginalLoan(item) {
 
-    if(
-        start.length===10 &&
-        validJalali(start) &&
-        months>=1
-    ){
-        $("endDateInput").value=
-            addJalaliMonths(start,months-1);
-    }
-    else if(
-        start.length===10 &&
-        end.length===10 &&
-        validJalali(start) &&
-        validJalali(end)
-    ){
-        calculateMonths();
-    }
+    const months =
+        getRealMonths(item);
 
-    if(!validateForm())
-        return;
+    let total = 0;
 
-    const old=
-        editingId
-        ?installments.find(x=>x.id===editingId)
-        :null;
+    for (
+        let i = 0;
+        i < months;
+        i++
+    ) {
 
-    const item={
-
-        id:
-            editingId||
-            Date.now().toString(),
-
-        name:
-            $("nameInput").value.trim(),
-
-        initialBalance:
-            Number(
-                enNumber(
-                    $("balanceInput").value
-                )
-            ),
-
-        amount:
-            Number(
-                enNumber(
-                    $("amountInput").value
-                )
-            ),
-
-        months:
-            Number(
-                enNumber(
-                    $("monthsInput").value
-                )
-            ),
-
-        annualFee:
-            Number(
-                enNumber(
-                    $("annualFeeInput").value
-                )
-            )||0,
-
-        startDate:
-            $("startDateInput").value.trim(),
-
-        endDate:
-            $("endDateInput").value.trim(),
-
-        note:
-            $("noteInput").value.trim(),
-
-        paid:
-            old&&Array.isArray(old.paid)
-            ?old.paid
-            :[],
-
-        createdAt:
-            old?.createdAt||Date.now()
-    };
-
-    item.balance=
-        calculateRemainingBalance(item);
-
-    if(editingId){
-
-        const index=
-            installments.findIndex(
-                x=>x.id===editingId
-            );
-
-        if(index>=0)
-            installments[index]=item;
-
-    }else{
-
-        installments.unshift(item);
-    }
-
-    saveData();
-    render();
-    closeModal();
-
-    showToast("قسط با موفقیت ذخیره شد.");
-}
-
-function isPaid(item,index){
-
-    return Array.isArray(item.paid)&&
-        item.paid.includes(index);
-}
-
-function togglePaid(item,index){
-
-    if(!Array.isArray(item.paid))
-        item.paid=[];
-
-    const pos=item.paid.indexOf(index);
-
-    if(pos>=0)
-        item.paid.splice(pos,1);
-    else
-        item.paid.push(index);
-
-    item.balance=
-        calculateRemainingBalance(item);
-
-    saveData();
-    render();
-
-    /*
-      در مرحله بعدی MainActivity،
-      برای هر سررسید اعلان ۲۴ ساعت قبل
-      از همین اطلاعات ساخته خواهد شد.
-    */
-}
-
-function moveToTrash(id){
-
-    const index=
-        installments.findIndex(
-            x=>x.id===id
-        );
-
-    if(index<0)
-        return;
-
-    const item=
-        installments.splice(index,1)[0];
-
-    item.deletedAt=Date.now();
-
-    trash.unshift(item);
-
-    saveData();
-    render();
-
-    showToast("قسط به سطل زباله منتقل شد.");
-}
-
-function restoreItem(id){
-
-    const index=
-        trash.findIndex(
-            x=>x.id===id
-        );
-
-    if(index<0)
-        return;
-
-    const item=
-        trash.splice(index,1)[0];
-
-    delete item.deletedAt;
-
-    item.balance=
-        calculateRemainingBalance(item);
-
-    installments.unshift(item);
-
-    saveData();
-    render();
-
-    showToast("قسط بازیابی شد.");
-}
-
-function permanentlyDelete(id){
-
-    if(!confirm(
-        "این مورد برای همیشه حذف شود؟"
-    ))
-        return;
-
-    trash=
-        trash.filter(
-            x=>x.id!==id
-        );
-
-    saveData();
-    render();
-
-    showToast("مورد برای همیشه حذف شد.");
-}
-
-function deleteAll(){
-
-    if(!installments.length){
-        showToast("موردی برای حذف وجود ندارد.");
-        return;
-    }
-
-    if(!confirm(
-        "همه اقساط به سطل زباله منتقل شوند؟"
-    ))
-        return;
-
-    installments.forEach(item=>{
-        item.deletedAt=Date.now();
-        trash.unshift(item);
-    });
-
-    installments=[];
-
-    saveData();
-    render();
-
-    showToast("همه اقساط به سطل زباله منتقل شدند.");
-}
-
-function clearTrash(){
-
-    if(!trash.length){
-        showToast("سطل زباله خالی است.");
-        return;
-    }
-
-    if(!confirm(
-        "تمام موارد سطل زباله برای همیشه حذف شوند؟"
-    ))
-        return;
-
-    trash=[];
-    saveData();
-    render();
-
-    showToast("سطل زباله خالی شد.");
-}
-
-function render(){
-
-    const search=
-        $("search").value.trim().toLowerCase();
-
-    const filtered=
-        installments.filter(item=>
-            item.name.toLowerCase().includes(search)||
-            (item.note||"")
-            .toLowerCase()
-            .includes(search)
-        );
-
-    $("count").textContent=
-        faNumber(installments.length);
-
-    let totalBalance=0;
-    let remaining=0;
-
-    installments.forEach(item=>{
-
-        item.balance=
-            calculateRemainingBalance(item);
-
-        totalBalance+=item.balance;
-
-        const paidCount=
-            Array.isArray(item.paid)
-            ?item.paid.length
-            :0;
-
-        remaining+=Math.max(
-            0,
-            item.months-paidCount
-        );
-    });
-
-    $("total").textContent=
-        money(totalBalance);
-
-    $("remaining").textContent=
-        faNumber(remaining);
-
-    if(!filtered.length){
-
-        $("list").innerHTML=
-            `<div class="empty">
-                هنوز قسطی ثبت نشده است.
-                <br><br>
-                از دکمه «افزودن قسط جدید» شروع کن.
-            </div>`;
-
-    }else{
-
-        $("list").innerHTML=
-            filtered.map(renderCard).join("");
-    }
-
-    renderTrash();
-}
-
-function renderCard(item){
-
-    const paidCount=
-        Array.isArray(item.paid)
-        ?item.paid.length
-        :0;
-
-    const percent=
-        item.months
-        ?Math.round(
-            paidCount/item.months*100
-        )
-        :0;
-
-    const balance=
-        calculateRemainingBalance(item);
-
-    let monthsHtml="";
-
-    for(let i=0;i<item.months;i++){
-
-        const date=
-            addJalaliMonths(
-                item.startDate,
+        total +=
+            getRealInstallmentAmount(
+                item,
                 i
             );
 
-        const paid=isPaid(item,i);
-
-        const amount=
-            getInstallmentAmount(item,i);
-
-        const overdue=
-            isOverdue(date)&&!paid;
-
-        monthsHtml+=`
-            <button
-                class="month ${paid?"paid":""} ${overdue?"overdue":""}"
-                onclick="togglePaidById('${item.id}',${i})"
-            >
-                <span class="monthDate">
-                    ${date}
-                </span>
-
-                <span class="monthAmount">
-                    ${money(amount)}
-                </span>
-
-                <span class="monthMark">
-                    ${paid?"✓":(i+1)}
-                </span>
-            </button>
-        `;
     }
 
-    return`
-    <div class="card">
-
-        <div class="cardTop">
-
-            <div>
-
-                <div class="cardName">
-                    ${escapeHtml(item.name)}
-                </div>
-
-                <div class="cardInfo">
-
-                    مبلغ پایه هر قسط:
-                    ${money(item.amount)}
-
-                    <br>
-
-                    تعداد:
-                    ${faNumber(item.months)}
-                    قسط
-
-                    <br>
-
-                    اولین:
-                    ${item.startDate}
-
-                    <br>
-
-                    آخرین:
-                    ${item.endDate}
-
-                    <br>
-
-                    کارمزد ثابت سالانه:
-                    ${money(item.annualFee||0)}
-
-                    ${
-                        item.note
-                        ?"<br>"+escapeHtml(item.note)
-                        :""
-                    }
-
-                </div>
-
-            </div>
-
-            <div class="actions">
-
-                <button
-                    class="smallButton"
-                    onclick="editById('${item.id}')"
-                >
-                    ✏️
-                </button>
-
-                <button
-                    class="smallButton delete"
-                    onclick="moveById('${item.id}')"
-                >
-                    🗑️
-                </button>
-
-            </div>
-
-        </div>
-
-        <div class="balanceBox">
-
-            <small>
-                مانده این وام
-            </small>
-
-            <strong class="${balance===0?"negative":""}">
-                ${money(balance)}
-            </strong>
-
-        </div>
-
-        <div class="progressBox">
-
-            <div class="progressText">
-
-                <span>
-                    پرداخت شده:
-                    ${faNumber(paidCount)}
-                    از
-                    ${faNumber(item.months)}
-                </span>
-
-                <span>
-                    ${faNumber(percent)}٪
-                </span>
-
-            </div>
-
-            <div class="progress">
-                <i style="width:${percent}%"></i>
-            </div>
-
-        </div>
-
-        <div class="months">
-            ${monthsHtml}
-        </div>
-
-    </div>
-    `;
+    return total;
 }
 
-function isOverdue(jalaliDate){
 
-    const date=jalaliToDate(jalaliDate);
+/*
+   بروزرسانی مانده تمام بانک‌ها
+*/
+function refreshLoanBalances() {
 
-    if(!date)
-        return false;
+    const search =
+        ($("search")?.value || "")
+        .trim()
+        .toLowerCase();
 
-    const now=new Date();
+    const filtered =
+        installments.filter(item =>
 
-    date.setHours(23,59,59,999);
+            String(item.name || "")
+                .toLowerCase()
+                .includes(search)
 
-    return date<now;
-}
+            ||
 
-function renderTrash(){
+            String(item.note || "")
+                .toLowerCase()
+                .includes(search)
 
-    if(!trash.length){
-
-        $("trashArea").innerHTML="";
-        return;
-    }
-
-    $("trashArea").innerHTML=`
-
-        <div class="trashTitle">
-
-            <strong>
-                🗑️ سطل زباله
-            </strong>
-
-            <span>
-                ${faNumber(trash.length)} مورد
-            </span>
-
-        </div>
-
-        ${trash.map(item=>`
-
-            <div class="card">
-
-                <div class="cardTop">
-
-                    <div>
-
-                        <div class="cardName">
-                            ${escapeHtml(item.name)}
-                        </div>
-
-                        <div class="cardInfo">
-                            ${money(item.amount)}
-                        </div>
-
-                    </div>
-
-                    <div class="actions">
-
-                        <button
-                            class="smallButton restore"
-                            onclick="restoreById('${item.id}')"
-                        >
-                            ↩️
-                        </button>
-
-                        <button
-                            class="smallButton delete"
-                            onclick="deleteForeverById('${item.id}')"
-                        >
-                            ❌
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        `).join("")}
-
-        <button
-            class="addButton"
-            style="background:#dc2626;margin-top:4px"
-            onclick="clearTrash()"
-        >
-            حذف دائمی سطل زباله
-        </button>
-    `;
-}
-
-function escapeHtml(text){
-
-    return String(text||"")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-}
-
-function editById(id){
-
-    const item=
-        installments.find(
-            x=>x.id===id
         );
 
-    if(item)
-        openModal(item);
-}
 
-function moveById(id){
-    moveToTrash(id);
-}
-
-function togglePaidById(id,index){
-
-    const item=
-        installments.find(
-            x=>x.id===id
+    const cards =
+        document.querySelectorAll(
+            "#list .card"
         );
 
-    if(item)
-        togglePaid(item,index);
-}
 
-function restoreById(id){
-    restoreItem(id);
-}
+    cards.forEach(
+        (card, index) => {
 
-function deleteForeverById(id){
-    permanentlyDelete(id);
-}
+            const item =
+                filtered[index];
 
-function exportData(){
+            if (!item)
+                return;
 
-    const data={
-        version:8,
-        installments,
-        trash,
-        exportedAt:
-            new Date().toISOString()
-    };
 
-    const blob=new Blob(
-        [JSON.stringify(data,null,2)],
-        {type:"application/json"}
+            let balanceBox =
+                card.querySelector(
+                    ".balanceBox"
+                );
+
+
+            /*
+               اگر باکس مانده وجود نداشت،
+               خودمان ایجادش می‌کنیم.
+            */
+
+            if (!balanceBox) {
+
+                balanceBox =
+                    document.createElement(
+                        "div"
+                    );
+
+                balanceBox.className =
+                    "balanceBox";
+
+
+                const top =
+                    card.querySelector(
+                        ".cardTop"
+                    );
+
+
+                if (top) {
+
+                    top.insertAdjacentElement(
+                        "afterend",
+                        balanceBox
+                    );
+
+                }
+
+            }
+
+
+            const balance =
+                calculateLoanBalance(
+                    item
+                );
+
+
+            const original =
+                calculateOriginalLoan(
+                    item
+                );
+
+
+            balanceBox.innerHTML = `
+
+                <small>
+                    مانده وام / بدهی
+                </small>
+
+                <strong
+                    class="${
+                        balance === 0
+                        ? "negative"
+                        : ""
+                    }"
+                >
+                    ${money(balance)}
+                </strong>
+
+            `;
+
+
+            balanceBox.title =
+                "کل مبلغ برنامه پرداخت: " +
+                money(original);
+
+        }
     );
 
-    const url=
-        URL.createObjectURL(blob);
 
-    const a=
-        document.createElement("a");
+    /*
+       محاسبه مانده کل تمام بانک‌ها
+    */
 
-    a.href=url;
+    let totalBalance = 0;
 
-    a.download=
-        "MohammadInstallments-backup.json";
 
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    installments.forEach(
+        item => {
 
-    URL.revokeObjectURL(url);
+            totalBalance +=
+                calculateLoanBalance(
+                    item
+                );
 
-    showToast("فایل پشتیبان آماده شد.");
-}
-
-function importData(file){
-
-    const reader=new FileReader();
-
-    reader.onload=function(){
-
-        try{
-
-            const data=
-                JSON.parse(reader.result);
-
-            if(
-                !data||
-                !Array.isArray(data.installments)
-            )
-                throw new Error();
-
-            installments=data.installments;
-            trash=
-                Array.isArray(data.trash)
-                ?data.trash
-                :[];
-
-            installments.forEach(item=>{
-                item.balance=
-                    calculateRemainingBalance(item);
-            });
-
-            saveData();
-            render();
-
-            showToast(
-                "پشتیبان با موفقیت بازیابی شد."
-            );
-
-        }catch(e){
-
-            alert(
-                "فایل پشتیبان معتبر نیست."
-            );
         }
-    };
+    );
 
-    reader.readAsText(file);
+
+    if ($("total")) {
+
+        $("total").textContent =
+            money(totalBalance);
+
+    }
+
 }
 
-$("addButton").onclick=
-    ()=>openModal();
 
-$("closeButton").onclick=
-    closeModal;
+/*
+   مانده اولیه داخل فرم هم خودکار محاسبه شود.
+   کاربر دیگر لازم نیست مانده وام را دستی وارد کند.
+*/
+function updateAutomaticBalance() {
 
-$("cancelButton").onclick=
-    closeModal;
+    const amount =
+        Number(
+            enNumber(
+                $("amountInput")?.value || 0
+            )
+        );
 
-$("saveButton").onclick=
+
+    const months =
+        Number(
+            enNumber(
+                $("monthsInput")?.value || 0
+            )
+        );
+
+
+    const annualFee =
+        Number(
+            enNumber(
+                $("annualFeeInput")?.value || 0
+            )
+        );
+
+
+    if (
+        amount > 0 &&
+        months > 0
+    ) {
+
+        const temporaryItem = {
+
+            amount:
+                amount,
+
+            months:
+                months,
+
+            annualFee:
+                annualFee,
+
+            paid: []
+
+        };
+
+
+        const total =
+            calculateOriginalLoan(
+                temporaryItem
+            );
+
+
+        if ($("balanceInput")) {
+
+            $("balanceInput").value =
+                total;
+
+            $("balanceInput").readOnly =
+                true;
+
+        }
+
+    }
+
+}
+
+
+/*
+   هر بار مقدار قسط، تعداد قسط یا
+   کارمزد تغییر کرد، مانده دوباره محاسبه شود.
+*/
+
+if ($("amountInput")) {
+
+    $("amountInput")
+        .addEventListener(
+            "input",
+            updateAutomaticBalance
+        );
+
+}
+
+
+if ($("monthsInput")) {
+
+    $("monthsInput")
+        .addEventListener(
+            "input",
+            updateAutomaticBalance
+        );
+
+}
+
+
+if ($("annualFeeInput")) {
+
+    $("annualFeeInput")
+        .addEventListener(
+            "input",
+            updateAutomaticBalance
+        );
+
+}
+
+
+/*
+   ذخیره قسط:
+   قبل از ذخیره، مانده خودکار محاسبه می‌شود.
+*/
+
+const originalSaveInstallment =
     saveInstallment;
 
-$("search").addEventListener(
-    "input",
-    render
+
+saveInstallment =
+    function () {
+
+        updateAutomaticBalance();
+
+        originalSaveInstallment();
+
+        setTimeout(
+            refreshLoanBalances,
+            50
+        );
+
+    };
+
+
+/*
+   هر بار تیک قسط زده شد،
+   مانده همان لحظه کم شود.
+*/
+
+const originalTogglePaid =
+    togglePaid;
+
+
+togglePaid =
+    function (
+        item,
+        index
+    ) {
+
+        originalTogglePaid(
+            item,
+            index
+        );
+
+        setTimeout(
+            refreshLoanBalances,
+            20
+        );
+
+    };
+
+
+/*
+   اصلاح حذف دائمی
+*/
+permanentlyDelete =
+    function (id) {
+
+        const index =
+            trash.findIndex(
+                item =>
+                    String(item.id) ===
+                    String(id)
+            );
+
+
+        if (index === -1) {
+
+            showToast(
+                "این مورد در سطل زباله پیدا نشد."
+            );
+
+            return;
+
+        }
+
+
+        const item =
+            trash[index];
+
+
+        const confirmed =
+            window.confirm(
+                "«" +
+                item.name +
+                "» برای همیشه حذف شود؟"
+            );
+
+
+        if (!confirmed)
+            return;
+
+
+        /*
+           حذف واقعی از آرایه
+        */
+
+        trash.splice(
+            index,
+            1
+        );
+
+
+        /*
+           ذخیره مجدد در حافظه گوشی
+        */
+
+        localStorage.setItem(
+            TRASH_KEY,
+            JSON.stringify(trash)
+        );
+
+
+        /*
+           نمایش دوباره صفحه
+        */
+
+        render();
+
+
+        showToast(
+            "مورد برای همیشه حذف شد."
+        );
+
+    };
+
+
+/*
+   این تابع هم مستقیماً به حذف دائمی وصل می‌شود.
+*/
+deleteForeverById =
+    function (id) {
+
+        permanentlyDelete(id);
+
+    };
+
+
+/*
+   بعد از هر Render مانده‌ها دوباره محاسبه شوند.
+*/
+
+const originalRender =
+    render;
+
+
+render =
+    function () {
+
+        originalRender();
+
+        setTimeout(
+            refreshLoanBalances,
+            0
+        );
+
+    };
+
+
+/*
+   محاسبه اولیه هنگام باز شدن برنامه
+*/
+setTimeout(
+    function () {
+
+        updateAutomaticBalance();
+
+        refreshLoanBalances();
+
+    },
+    100
 );
-
-$("exportButton").onclick=
-    exportData;
-
-$("importButton").onclick=
-    ()=>$("fileInput").click();
-
-$("fileInput").addEventListener(
-    "change",
-    function(){
-
-        if(this.files[0])
-            importData(this.files[0]);
-
-        this.value="";
-    }
-);
-
-$("trashButton").onclick=()=>{
-
-    const area=$("trashArea");
-
-    if(area.innerHTML.trim())
-        area.scrollIntoView({
-            behavior:"smooth"
-        });
-    else
-        showToast("سطل زباله خالی است.");
-};
-
-$("resetButton").onclick=
-    deleteAll;
-
-$("startDateInput").addEventListener(
-    "input",
-    function(){
-        normalizeDateInput(this);
-        calculateEndDate();
-    }
-);
-
-$("endDateInput").addEventListener(
-    "input",
-    function(){
-        normalizeDateInput(this);
-        calculateMonths();
-    }
-);
-
-$("monthsInput").addEventListener(
-    "input",
-    function(){
-        calculateEndDate();
-    }
-);
-
-$("modal").addEventListener(
-    "click",
-    function(e){
-        if(e.target===$("modal"))
-            closeModal();
-    }
-);
-
-render();
-
-</script>
-
-</body>
-</html>
