@@ -146,6 +146,31 @@ button{
     font-weight:bold;
 }
 
+.balanceBox{
+    margin-top:10px;
+    padding:11px;
+    background:#eff6ff;
+    border-radius:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+}
+
+.balanceBox small{
+    color:#64748b;
+    font-size:10px;
+}
+
+.balanceBox strong{
+    color:#1268c4;
+    font-size:13px;
+}
+
+.balanceBox .negative{
+    color:#16a34a;
+}
+
 .cardInfo{
     color:#64748b;
     font-size:11px;
@@ -210,7 +235,7 @@ button{
 }
 
 .month{
-    min-height:59px;
+    min-height:67px;
     background:#f7f9fb;
     border:1px solid #e1e6eb;
     border-radius:11px;
@@ -240,10 +265,16 @@ button{
     direction:ltr;
 }
 
+.monthAmount{
+    display:block;
+    font-size:9px;
+    margin-top:4px;
+}
+
 .monthMark{
     display:block;
     font-size:17px;
-    margin-top:5px;
+    margin-top:4px;
 }
 
 .empty{
@@ -586,7 +617,20 @@ placeholder="مثلاً بانک رسالت">
 
 <div>
 
-<label>مبلغ هر قسط *</label>
+<label>مانده اولیه وام / بدهی *</label>
+
+<input id="balanceInput"
+class="input"
+type="number"
+inputmode="numeric"
+min="0"
+placeholder="مثلاً ۱۲۰۰۰۰۰۰۰">
+
+</div>
+
+<div>
+
+<label>مبلغ پایه هر قسط *</label>
 
 <input id="amountInput"
 class="input"
@@ -596,6 +640,10 @@ min="0"
 placeholder="مثلاً ۵۰۰۰۰۰۰">
 
 </div>
+
+</div>
+
+<div class="formRow">
 
 <div>
 
@@ -610,21 +658,25 @@ placeholder="مثلاً ۱۲">
 
 </div>
 
-</div>
+<div>
 
-<label>کارمزد سالانه (%)</label>
+<label>کارمزد ثابت سالانه</label>
 
-<input id="feeInput"
+<input id="annualFeeInput"
 class="input"
 type="number"
-inputmode="decimal"
+inputmode="numeric"
 min="0"
-step="0.01"
-value="0"
-placeholder="مثلاً ۴">
+placeholder="مثلاً ۷۰۰۰۰۰۰">
+
+</div>
+
+</div>
 
 <div class="notice">
-اگر این قسط کارمزد سالانه ندارد، مقدار ۰ را وارد کن.
+کارمزد سالانه مبلغ ثابت است، نه درصد.
+مثلاً اگر کارمزد سال اول ۷ میلیون باشد،
+در سالگرد شروع اقساط ۷ میلیون به مبلغ همان قسط اضافه می‌شود.
 </div>
 
 <div class="dateRow">
@@ -659,8 +711,8 @@ placeholder="خودکار">
 
 </div>
 
-<div id="autoInfo" class="autoInfo">
-اگر تعداد اقساط و تاریخ اولین قسط را وارد کنی،
+<div class="autoInfo">
+اگر تعداد اقساط + تاریخ اولین قسط را وارد کنی،
 تاریخ آخرین قسط خودکار محاسبه می‌شود.
 اگر تاریخ اولین و آخرین قسط را وارد کنی،
 تعداد اقساط خودکار محاسبه می‌شود.
@@ -697,8 +749,8 @@ class="modalButton save">
 
 <script>
 
-const STORAGE_KEY = "mohammad_installments_v7";
-const TRASH_KEY = "mohammad_installments_trash_v7";
+const STORAGE_KEY = "mohammad_installments_v8";
+const TRASH_KEY = "mohammad_installments_trash_v8";
 
 let installments = load(STORAGE_KEY);
 let trash = load(TRASH_KEY);
@@ -707,408 +759,343 @@ let editingId = null;
 const $ = id => document.getElementById(id);
 
 function load(key){
-
     try{
-
         const data = localStorage.getItem(key);
-
         return data ? JSON.parse(data) : [];
-
     }catch(e){
-
         return [];
-
     }
-
 }
 
 function saveData(){
-
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(installments)
-    );
-
-    localStorage.setItem(
-        TRASH_KEY,
-        JSON.stringify(trash)
-    );
-
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(installments));
+    localStorage.setItem(TRASH_KEY,JSON.stringify(trash));
 }
 
 function faNumber(value){
-
     return String(value)
     .replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
-
 }
 
 function enNumber(value){
-
     return String(value || "")
     .replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d))
     .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
-
 }
 
 function money(value){
-
     return faNumber(
         Number(value || 0).toLocaleString("en-US")
     ) + " تومان";
-
 }
 
 function showToast(text){
-
-    $("toast").textContent = text;
+    $("toast").textContent=text;
     $("toast").classList.add("show");
-
     setTimeout(()=>{
         $("toast").classList.remove("show");
     },2200);
-
 }
 
 function normalizeDateInput(input){
 
-    let value = enNumber(input.value)
+    let value=enNumber(input.value)
     .replace(/[^\d]/g,"");
 
-    if(value.length > 8)
-        value = value.substring(0,8);
+    if(value.length>8)
+        value=value.substring(0,8);
 
-    let result = "";
+    let result="";
 
-    if(value.length > 0)
-        result += value.substring(0,4);
+    if(value.length>0)
+        result+=value.substring(0,4);
 
-    if(value.length >= 5)
-        result += "/" + value.substring(4,6);
+    if(value.length>=5)
+        result+="/"+value.substring(4,6);
 
-    if(value.length >= 7)
-        result += "/" + value.substring(6,8);
+    if(value.length>=7)
+        result+="/"+value.substring(6,8);
 
-    input.value = result;
-
+    input.value=result;
 }
 
 function validJalali(date){
 
-    const m = Number(date.substring(5,7));
-    const d = Number(date.substring(8,10));
-
-    if(m < 1 || m > 12)
+    if(!/^\d{4}\/\d{2}\/\d{2}$/.test(date))
         return false;
 
-    const max =
-        m <= 6 ? 31 :
-        m <= 11 ? 30 :
-        30;
+    const p=date.split("/").map(Number);
+    const y=p[0],m=p[1],d=p[2];
 
-    return d >= 1 && d <= max;
+    if(y<1300 || y>1500)
+        return false;
 
+    if(m<1 || m>12)
+        return false;
+
+    let max;
+
+    if(m<=6)
+        max=31;
+    else if(m<=11)
+        max=30;
+    else
+        max=30;
+
+    return d>=1 && d<=max;
 }
-
-/*
-  تبدیل تاریخ شمسی به میلادی
-*/
 
 function jalaliToGregorian(jy,jm,jd){
 
-    jy = Number(jy);
-    jm = Number(jm);
-    jd = Number(jd);
+    jy=Number(jy);
+    jm=Number(jm);
+    jd=Number(jd);
 
     let gy;
 
-    if(jy > 979){
-        gy = 1600;
-        jy -= 979;
+    if(jy>979){
+        gy=1600;
+        jy-=979;
     }else{
-        gy = 621;
+        gy=621;
     }
 
-    let days =
-        365 * jy +
-        Math.floor(jy / 33) * 8 +
-        Math.floor(((jy % 33) + 3) / 4) +
-        78 +
-        jd +
-        (jm < 7 ? (jm - 1) * 31 : (jm - 7) * 30 + 186);
+    let days=
+        365*jy+
+        Math.floor(jy/33)*8+
+        Math.floor(((jy%33)+3)/4)+
+        78+
+        jd+
+        (jm<7
+            ?(jm-1)*31
+            :(jm-7)*30+186);
 
-    gy += 400 * Math.floor(days / 146097);
+    gy+=400*Math.floor(days/146097);
+    days%=146097;
 
-    days %= 146097;
+    if(days>36524){
+        gy+=100*Math.floor(--days/36524);
+        days%=36524;
 
-    if(days > 36524){
-
-        gy += 100 * Math.floor(--days / 36524);
-
-        days %= 36524;
-
-        if(days >= 365)
+        if(days>=365)
             days++;
-
     }
 
-    gy += 4 * Math.floor(days / 1461);
+    gy+=4*Math.floor(days/1461);
+    days%=1461;
 
-    days %= 1461;
-
-    if(days > 365){
-
-        gy += Math.floor((days - 1) / 365);
-
-        days = (days - 1) % 365;
-
+    if(days>365){
+        gy+=Math.floor((days-1)/365);
+        days=(days-1)%365;
     }
 
-    let gd = days + 1;
+    let gd=days+1;
 
-    const leap =
-        (gy % 4 === 0 && gy % 100 !== 0) ||
-        gy % 400 === 0;
+    const leap=
+        (gy%4===0 && gy%100!==0) ||
+        gy%400===0;
 
-    const monthDays =
-        [0,31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+    const md=[
+        0,31,leap?29:28,31,30,31,
+        30,31,31,30,31,30,31
+    ];
 
-    let gm = 1;
+    let gm=1;
 
-    while(gd > monthDays[gm]){
-
-        gd -= monthDays[gm];
+    while(gd>md[gm]){
+        gd-=md[gm];
         gm++;
-
     }
 
     return [gy,gm,gd];
-
 }
-
-/*
-  تبدیل میلادی به شمسی
-*/
 
 function gregorianToJalali(gy,gm,gd){
 
-    gy = Number(gy);
-    gm = Number(gm);
-    gd = Number(gd);
+    gy=Number(gy);
+    gm=Number(gm);
+    gd=Number(gd);
 
     let jy;
 
-    if(gy > 1600){
-
-        jy = 979;
-        gy -= 1600;
-
+    if(gy>1600){
+        jy=979;
+        gy-=1600;
     }else{
-
-        jy = 0;
-        gy -= 621;
-
+        jy=0;
+        gy-=621;
     }
 
-    let gy2 = gm > 2 ? gy + 1 : gy;
+    let gy2=gm>2?gy+1:gy;
 
-    let days =
-        365 * gy +
-        Math.floor((gy2 + 3) / 4) -
-        Math.floor((gy2 + 99) / 100) +
-        Math.floor((gy2 + 399) / 400) -
-        80 +
+    let days=
+        365*gy+
+        Math.floor((gy2+3)/4)-
+        Math.floor((gy2+99)/100)+
+        Math.floor((gy2+399)/400)-
+        80+
         gd;
 
-    const monthDays =
-        [0,31,28,31,30,31,30,31,31,30,31,30,31];
+    const md=[
+        0,31,28,31,30,31,30,
+        31,31,30,31,30,31
+    ];
 
     for(let i=1;i<gm;i++)
-        days += monthDays[i];
+        days+=md[i];
 
-    jy += 33 * Math.floor(days / 12053);
+    jy+=33*Math.floor(days/12053);
+    days%=12053;
 
-    days %= 12053;
+    jy+=4*Math.floor(days/1461);
+    days%=1461;
 
-    jy += 4 * Math.floor(days / 1461);
-
-    days %= 1461;
-
-    if(days > 365){
-
-        jy += Math.floor((days - 1) / 365);
-
-        days = (days - 1) % 365;
-
+    if(days>365){
+        jy+=Math.floor((days-1)/365);
+        days=(days-1)%365;
     }
 
-    let jm =
-        days < 186
-        ? 1 + Math.floor(days / 31)
-        : 7 + Math.floor((days - 186) / 30);
+    const jm=
+        days<186
+        ?1+Math.floor(days/31)
+        :7+Math.floor((days-186)/30);
 
-    let jd =
-        1 +
+    const jd=
+        1+
         (
-            days < 186
-            ? days % 31
-            : (days - 186) % 30
+            days<186
+            ?days%31
+            :(days-186)%30
         );
 
     return [jy,jm,jd];
-
 }
 
 function jalaliToDate(text){
 
-    const parts = text.split("/");
+    const p=text.split("/");
 
-    if(parts.length !== 3)
+    if(p.length!==3)
         return null;
 
-    const jy = Number(parts[0]);
-    const jm = Number(parts[1]);
-    const jd = Number(parts[2]);
+    const jy=Number(p[0]);
+    const jm=Number(p[1]);
+    const jd=Number(p[2]);
 
-    if(!jy || !validJalali(text))
+    if(!validJalali(text))
         return null;
 
-    const g = jalaliToGregorian(jy,jm,jd);
+    const g=jalaliToGregorian(jy,jm,jd);
 
     return new Date(
         g[0],
         g[1]-1,
         g[2]
     );
-
 }
 
 function dateToJalali(date){
 
-    const j =
-        gregorianToJalali(
-            date.getFullYear(),
-            date.getMonth()+1,
-            date.getDate()
-        );
+    const j=gregorianToJalali(
+        date.getFullYear(),
+        date.getMonth()+1,
+        date.getDate()
+    );
 
-    return String(j[0]).padStart(4,"0") +
-        "/" +
-        String(j[1]).padStart(2,"0") +
-        "/" +
+    return String(j[0]).padStart(4,"0")+
+        "/"+
+        String(j[1]).padStart(2,"0")+
+        "/"+
         String(j[2]).padStart(2,"0");
-
 }
 
 function daysInJalaliMonth(year,month){
 
-    if(month <= 6)
+    if(month<=6)
         return 31;
 
-    if(month <= 11)
+    if(month<=11)
         return 30;
 
-    /*
-      برای ماه ۱۲، بررسی سال کبیسه با
-      تبدیل آخرین روز ماه به میلادی انجام می‌شود.
-    */
-
-    for(let day=30;day>=29;day--){
-
-        const text =
-            `${year}/12/${day}`;
-
-        if(jalaliToDate(text))
-            return day;
-
+    for(let d=30;d>=29;d--){
+        if(validJalali(
+            `${year}/12/${String(d).padStart(2,"0")}`
+        ))
+            return d;
     }
 
     return 29;
-
 }
 
 function addJalaliMonths(text,count){
 
-    const p = text.split("/").map(Number);
+    const p=text.split("/").map(Number);
 
-    let y = p[0];
-    let m = p[1];
-    let d = p[2];
+    let y=p[0];
+    let m=p[1];
+    let d=p[2];
 
-    const total = (y * 12 + (m-1)) + count;
+    const total=(y*12+(m-1))+count;
 
-    y = Math.floor(total / 12);
-    m = total % 12 + 1;
+    y=Math.floor(total/12);
+    m=total%12+1;
 
-    const max = daysInJalaliMonth(y,m);
+    const max=daysInJalaliMonth(y,m);
 
-    if(d > max)
-        d = max;
+    if(d>max)
+        d=max;
 
-    return String(y).padStart(4,"0") +
-        "/" +
-        String(m).padStart(2,"0") +
-        "/" +
+    return String(y).padStart(4,"0")+
+        "/"+
+        String(m).padStart(2,"0")+
+        "/"+
         String(d).padStart(2,"0");
-
 }
 
 function calculateEndDate(){
 
-    const start = $("startDateInput").value.trim();
-    const months = Number(enNumber($("monthsInput").value));
+    const start=$("startDateInput").value.trim();
+    const months=Number(enNumber($("monthsInput").value));
 
     if(
-        start.length === 10 &&
+        start.length===10 &&
         validJalali(start) &&
-        months >= 1
+        months>=1
     ){
-
-        $("endDateInput").value =
+        $("endDateInput").value=
             addJalaliMonths(start,months-1);
-
     }
-
 }
 
 function calculateMonths(){
 
-    const start = $("startDateInput").value.trim();
-    const end = $("endDateInput").value.trim();
+    const start=$("startDateInput").value.trim();
+    const end=$("endDateInput").value.trim();
 
     if(
-        start.length !== 10 ||
-        end.length !== 10 ||
+        start.length!==10 ||
+        end.length!==10 ||
         !validJalali(start) ||
         !validJalali(end)
     )
         return;
 
-    const a = start.split("/").map(Number);
-    const b = end.split("/").map(Number);
+    const a=start.split("/").map(Number);
+    const b=end.split("/").map(Number);
 
-    let months =
-        (b[0]-a[0])*12 +
-        (b[1]-a[1]) +
+    let months=
+        (b[0]-a[0])*12+
+        (b[1]-a[1])+
         1;
 
-    if(months < 1)
+    if(months<1)
         return;
 
-    /*
-      بررسی می‌کنیم تاریخ آخر واقعاً
-      با فاصله ماهانه از تاریخ اول به دست آمده باشد.
-    */
-
-    const calculated =
+    const calculated=
         addJalaliMonths(start,months-1);
 
-    if(calculated === end){
-
-        $("monthsInput").value = months;
-
-    }
-
+    if(calculated===end)
+        $("monthsInput").value=months;
 }
 
 function clearErrors(){
@@ -1118,8 +1105,7 @@ function clearErrors(){
     .forEach(el=>el.classList.remove("error"));
 
     $("errorBox").classList.remove("visible");
-    $("errorBox").innerHTML = "";
-
+    $("errorBox").innerHTML="";
 }
 
 function showErrors(errors,fields){
@@ -1131,119 +1117,97 @@ function showErrors(errors,fields){
             $(id).classList.add("error");
     });
 
-    $("errorBox").innerHTML =
+    $("errorBox").innerHTML=
         errors.map(x=>"• "+x).join("<br>");
 
     $("errorBox").classList.add("visible");
-
 }
 
 function validateForm(){
 
-    const errors = [];
-    const fields = [];
+    const errors=[];
+    const fields=[];
 
-    const name =
-        $("nameInput").value.trim();
+    const name=$("nameInput").value.trim();
 
-    const amount =
+    const balance=
+        Number(enNumber($("balanceInput").value));
+
+    const amount=
         Number(enNumber($("amountInput").value));
 
-    const months =
+    const months=
         Number(enNumber($("monthsInput").value));
 
-    const start =
-        $("startDateInput").value.trim();
-
-    const end =
-        $("endDateInput").value.trim();
+    const start=$("startDateInput").value.trim();
+    const end=$("endDateInput").value.trim();
 
     if(!name){
-
         errors.push("نام بانک یا مورد را وارد نکردی.");
         fields.push("nameInput");
-
     }
 
-    if(!amount || amount <= 0){
+    if(!balance || balance<=0){
+        errors.push("مانده اولیه وام یا بدهی را وارد نکردی.");
+        fields.push("balanceInput");
+    }
 
-        errors.push("مبلغ هر قسط را وارد نکردی.");
+    if(!amount || amount<=0){
+        errors.push("مبلغ پایه هر قسط را وارد نکردی.");
         fields.push("amountInput");
-
     }
 
     if(!start){
-
         errors.push("تاریخ اولین قسط را وارد نکردی.");
         fields.push("startDateInput");
-
-    }else if(
-        start.length !== 10 ||
+    }
+    else if(
+        start.length!==10 ||
         !validJalali(start)
     ){
-
         errors.push(
             "تاریخ اولین قسط صحیح نیست؛ مثلاً 1405/05/22."
         );
-
         fields.push("startDateInput");
-
     }
 
     if(end){
 
         if(
-            end.length !== 10 ||
+            end.length!==10 ||
             !validJalali(end)
         ){
-
-            errors.push(
-                "تاریخ آخرین قسط صحیح نیست."
-            );
-
+            errors.push("تاریخ آخرین قسط صحیح نیست.");
             fields.push("endDateInput");
-
         }
-
     }
 
     if(!months && !end){
-
         errors.push(
-            "تعداد اقساط را وارد کن یا تاریخ آخرین قسط را وارد کن."
+            "تعداد اقساط یا تاریخ آخرین قسط را وارد کن."
         );
-
-        fields.push("monthsInput");
-
+        fields.push("monthsInput","endDateInput");
     }
 
-    if(months && months < 1){
-
+    if(months && months<1){
         errors.push(
             "تعداد اقساط باید حداقل ۱ باشد."
         );
-
         fields.push("monthsInput");
-
     }
-
-    /*
-      اگر هر سه مقدار موجود باشند،
-      بررسی می‌کنیم با هم سازگار باشند.
-    */
 
     if(
         start &&
         validJalali(start) &&
-        months >= 1 &&
+        months>=1 &&
         end &&
         validJalali(end)
     ){
 
-        const calculated =
+        const calculated=
             addJalaliMonths(start,months-1);
 
-        if(calculated !== end){
+        if(calculated!==end){
 
             errors.push(
                 "تعداد اقساط و تاریخ آخرین قسط با هم مطابقت ندارند."
@@ -1253,125 +1217,174 @@ function validateForm(){
                 "monthsInput",
                 "endDateInput"
             );
-
         }
-
     }
 
     if(errors.length){
-
         showErrors(errors,fields);
-
         return false;
-
     }
 
     return true;
-
 }
 
 function openModal(item=null){
 
-    editingId =
-        item ? item.id : null;
+    editingId=item?item.id:null;
 
     clearErrors();
 
-    $("modalTitle").textContent =
+    $("modalTitle").textContent=
+        item?"ویرایش قسط":"افزودن قسط جدید";
+
+    $("nameInput").value=
+        item?item.name:"";
+
+    $("balanceInput").value=
         item
-        ? "ویرایش قسط"
-        : "افزودن قسط جدید";
+        ?(item.initialBalance||item.balance||"")
+        :"";
 
-    $("nameInput").value =
-        item ? item.name : "";
+    $("amountInput").value=
+        item?item.amount:"";
 
-    $("amountInput").value =
-        item ? item.amount : "";
+    $("monthsInput").value=
+        item?item.months:"";
 
-    $("monthsInput").value =
-        item ? item.months : "";
+    $("annualFeeInput").value=
+        item?(item.annualFee||0):0;
 
-    $("feeInput").value =
-        item ? item.fee : 0;
+    $("startDateInput").value=
+        item?item.startDate:"";
 
-    $("startDateInput").value =
-        item ? item.startDate : "";
+    $("endDateInput").value=
+        item?item.endDate:"";
 
-    $("endDateInput").value =
-        item ? item.endDate : "";
-
-    $("noteInput").value =
-        item ? item.note : "";
+    $("noteInput").value=
+        item?item.note:"";
 
     $("modal").classList.add("visible");
-
 }
 
 function closeModal(){
 
     $("modal").classList.remove("visible");
-
-    editingId = null;
-
+    editingId=null;
     clearErrors();
+}
 
+function getInstallmentAmount(item,index){
+
+    const base=Number(item.amount||0);
+    const fee=Number(item.annualFee||0);
+
+    /*
+      کارمزد در اولین قسط هر سال اضافه می‌شود:
+      سال اول = بدون کارمزد
+      سال دوم = کارمزد یک‌باره
+      سال سوم = کارمزد یک‌باره
+      و ...
+    */
+
+    const year=Math.floor(index/12);
+
+    return base+(year*fee);
+}
+
+function calculateRemainingBalance(item){
+
+    const initial=Number(
+        item.initialBalance||
+        item.balance||
+        0
+    );
+
+    let paidAmount=0;
+
+    if(Array.isArray(item.paid)){
+
+        item.paid.forEach(index=>{
+            paidAmount+=
+                getInstallmentAmount(item,index);
+        });
+
+    }
+
+    return Math.max(
+        0,
+        initial-paidAmount
+    );
 }
 
 function saveInstallment(){
 
-    /*
-      اول مقادیر خودکار را محاسبه می‌کنیم.
-    */
-
-    const start =
-        $("startDateInput").value.trim();
-
-    const end =
-        $("endDateInput").value.trim();
-
-    const months =
-        Number(enNumber($("monthsInput").value));
+    const start=$("startDateInput").value.trim();
+    const end=$("endDateInput").value.trim();
+    const months=Number(
+        enNumber($("monthsInput").value)
+    );
 
     if(
-        start.length === 10 &&
+        start.length===10 &&
         validJalali(start) &&
-        months >= 1
+        months>=1
     ){
-
-        $("endDateInput").value =
+        $("endDateInput").value=
             addJalaliMonths(start,months-1);
-
-    }else if(
-        start.length === 10 &&
-        end.length === 10 &&
+    }
+    else if(
+        start.length===10 &&
+        end.length===10 &&
         validJalali(start) &&
         validJalali(end)
     ){
-
         calculateMonths();
-
     }
 
     if(!validateForm())
         return;
 
-    const item = {
+    const old=
+        editingId
+        ?installments.find(x=>x.id===editingId)
+        :null;
+
+    const item={
 
         id:
-            editingId ||
+            editingId||
             Date.now().toString(),
 
         name:
             $("nameInput").value.trim(),
 
+        initialBalance:
+            Number(
+                enNumber(
+                    $("balanceInput").value
+                )
+            ),
+
         amount:
-            Number(enNumber($("amountInput").value)),
+            Number(
+                enNumber(
+                    $("amountInput").value
+                )
+            ),
 
         months:
-            Number(enNumber($("monthsInput").value)),
+            Number(
+                enNumber(
+                    $("monthsInput").value
+                )
+            ),
 
-        fee:
-            Number(enNumber($("feeInput").value)) || 0,
+        annualFee:
+            Number(
+                enNumber(
+                    $("annualFeeInput").value
+                )
+            )||0,
 
         startDate:
             $("startDateInput").value.trim(),
@@ -1383,32 +1396,30 @@ function saveInstallment(){
             $("noteInput").value.trim(),
 
         paid:
-            editingId
-            ? (
-                installments.find(x=>x.id===editingId)?.paid
-                || []
-              )
-            : [],
+            old&&Array.isArray(old.paid)
+            ?old.paid
+            :[],
 
         createdAt:
-            Date.now()
-
+            old?.createdAt||Date.now()
     };
+
+    item.balance=
+        calculateRemainingBalance(item);
 
     if(editingId){
 
-        const index =
+        const index=
             installments.findIndex(
                 x=>x.id===editingId
             );
 
-        if(index >= 0)
-            installments[index] = item;
+        if(index>=0)
+            installments[index]=item;
 
     }else{
 
         installments.unshift(item);
-
     }
 
     saveData();
@@ -1416,48 +1427,53 @@ function saveInstallment(){
     closeModal();
 
     showToast("قسط با موفقیت ذخیره شد.");
-
 }
 
 function isPaid(item,index){
 
-    return Array.isArray(item.paid) &&
+    return Array.isArray(item.paid)&&
         item.paid.includes(index);
-
 }
 
 function togglePaid(item,index){
 
     if(!Array.isArray(item.paid))
-        item.paid = [];
+        item.paid=[];
 
-    const pos =
-        item.paid.indexOf(index);
+    const pos=item.paid.indexOf(index);
 
-    if(pos >= 0)
+    if(pos>=0)
         item.paid.splice(pos,1);
     else
         item.paid.push(index);
 
+    item.balance=
+        calculateRemainingBalance(item);
+
     saveData();
     render();
 
+    /*
+      در مرحله بعدی MainActivity،
+      برای هر سررسید اعلان ۲۴ ساعت قبل
+      از همین اطلاعات ساخته خواهد شد.
+    */
 }
 
 function moveToTrash(id){
 
-    const index =
+    const index=
         installments.findIndex(
             x=>x.id===id
         );
 
-    if(index < 0)
+    if(index<0)
         return;
 
-    const item =
+    const item=
         installments.splice(index,1)[0];
 
-    item.deletedAt = Date.now();
+    item.deletedAt=Date.now();
 
     trash.unshift(item);
 
@@ -1465,23 +1481,25 @@ function moveToTrash(id){
     render();
 
     showToast("قسط به سطل زباله منتقل شد.");
-
 }
 
 function restoreItem(id){
 
-    const index =
+    const index=
         trash.findIndex(
             x=>x.id===id
         );
 
-    if(index < 0)
+    if(index<0)
         return;
 
-    const item =
+    const item=
         trash.splice(index,1)[0];
 
     delete item.deletedAt;
+
+    item.balance=
+        calculateRemainingBalance(item);
 
     installments.unshift(item);
 
@@ -1489,15 +1507,16 @@ function restoreItem(id){
     render();
 
     showToast("قسط بازیابی شد.");
-
 }
 
 function permanentlyDelete(id){
 
-    if(!confirm("این مورد برای همیشه حذف شود؟"))
+    if(!confirm(
+        "این مورد برای همیشه حذف شود؟"
+    ))
         return;
 
-    trash =
+    trash=
         trash.filter(
             x=>x.id!==id
         );
@@ -1505,15 +1524,14 @@ function permanentlyDelete(id){
     saveData();
     render();
 
+    showToast("مورد برای همیشه حذف شد.");
 }
 
 function deleteAll(){
 
     if(!installments.length){
-
         showToast("موردی برای حذف وجود ندارد.");
         return;
-
     }
 
     if(!confirm(
@@ -1522,24 +1540,23 @@ function deleteAll(){
         return;
 
     installments.forEach(item=>{
-        item.deletedAt = Date.now();
+        item.deletedAt=Date.now();
         trash.unshift(item);
     });
 
-    installments = [];
+    installments=[];
 
     saveData();
     render();
 
+    showToast("همه اقساط به سطل زباله منتقل شدند.");
 }
 
 function clearTrash(){
 
     if(!trash.length){
-
         showToast("سطل زباله خالی است.");
         return;
-
     }
 
     if(!confirm(
@@ -1547,62 +1564,59 @@ function clearTrash(){
     ))
         return;
 
-    trash = [];
-
+    trash=[];
     saveData();
     render();
 
+    showToast("سطل زباله خالی شد.");
 }
 
 function render(){
 
-    const search =
+    const search=
         $("search").value.trim().toLowerCase();
 
-    const filtered =
+    const filtered=
         installments.filter(item=>
-            item.name.toLowerCase().includes(search) ||
-            (item.note || "")
+            item.name.toLowerCase().includes(search)||
+            (item.note||"")
             .toLowerCase()
             .includes(search)
         );
 
-    $("count").textContent =
+    $("count").textContent=
         faNumber(installments.length);
 
-    let total = 0;
-    let remaining = 0;
+    let totalBalance=0;
+    let remaining=0;
 
     installments.forEach(item=>{
 
-        const paidCount =
+        item.balance=
+            calculateRemainingBalance(item);
+
+        totalBalance+=item.balance;
+
+        const paidCount=
             Array.isArray(item.paid)
-            ? item.paid.length
-            : 0;
+            ?item.paid.length
+            :0;
 
-        remaining +=
-            Math.max(
-                0,
-                item.months-paidCount
-            );
-
-        total +=
-            Math.max(
-                0,
-                item.months-paidCount
-            ) * Number(item.amount || 0);
-
+        remaining+=Math.max(
+            0,
+            item.months-paidCount
+        );
     });
 
-    $("total").textContent =
-        money(total);
+    $("total").textContent=
+        money(totalBalance);
 
-    $("remaining").textContent =
+    $("remaining").textContent=
         faNumber(remaining);
 
     if(!filtered.length){
 
-        $("list").innerHTML =
+        $("list").innerHTML=
             `<div class="empty">
                 هنوز قسطی ثبت نشده است.
                 <br><br>
@@ -1611,61 +1625,69 @@ function render(){
 
     }else{
 
-        $("list").innerHTML =
+        $("list").innerHTML=
             filtered.map(renderCard).join("");
-
     }
 
     renderTrash();
-
 }
 
 function renderCard(item){
 
-    const paidCount =
+    const paidCount=
         Array.isArray(item.paid)
-        ? item.paid.length
-        : 0;
+        ?item.paid.length
+        :0;
 
-    const percent =
+    const percent=
         item.months
-        ? Math.round(
-            paidCount /
-            item.months *
-            100
-          )
-        : 0;
+        ?Math.round(
+            paidCount/item.months*100
+        )
+        :0;
 
-    let monthsHtml = "";
+    const balance=
+        calculateRemainingBalance(item);
+
+    let monthsHtml="";
 
     for(let i=0;i<item.months;i++){
 
-        const date =
+        const date=
             addJalaliMonths(
                 item.startDate,
                 i
             );
 
-        const paid =
-            isPaid(item,i);
+        const paid=isPaid(item,i);
 
-        monthsHtml += `
+        const amount=
+            getInstallmentAmount(item,i);
+
+        const overdue=
+            isOverdue(date)&&!paid;
+
+        monthsHtml+=`
             <button
-                class="month ${paid ? "paid" : ""}"
+                class="month ${paid?"paid":""} ${overdue?"overdue":""}"
                 onclick="togglePaidById('${item.id}',${i})"
             >
                 <span class="monthDate">
                     ${date}
                 </span>
+
+                <span class="monthAmount">
+                    ${money(amount)}
+                </span>
+
                 <span class="monthMark">
-                    ${paid ? "✓" : (i+1)}
+                    ${paid?"✓":(i+1)}
                 </span>
             </button>
         `;
-
     }
 
-    return `
+    return`
     <div class="card">
 
         <div class="cardTop">
@@ -1678,7 +1700,7 @@ function renderCard(item){
 
                 <div class="cardInfo">
 
-                    مبلغ هر قسط:
+                    مبلغ پایه هر قسط:
                     ${money(item.amount)}
 
                     <br>
@@ -1699,13 +1721,13 @@ function renderCard(item){
 
                     <br>
 
-                    کارمزد سالانه:
-                    ${faNumber(item.fee || 0)}٪
+                    کارمزد ثابت سالانه:
+                    ${money(item.annualFee||0)}
 
                     ${
                         item.note
-                        ? `<br>${escapeHtml(item.note)}`
-                        : ""
+                        ?"<br>"+escapeHtml(item.note)
+                        :""
                     }
 
                 </div>
@@ -1729,6 +1751,18 @@ function renderCard(item){
                 </button>
 
             </div>
+
+        </div>
+
+        <div class="balanceBox">
+
+            <small>
+                مانده این وام
+            </small>
+
+            <strong class="${balance===0?"negative":""}">
+                ${money(balance)}
+            </strong>
 
         </div>
 
@@ -1761,20 +1795,31 @@ function renderCard(item){
 
     </div>
     `;
+}
 
+function isOverdue(jalaliDate){
+
+    const date=jalaliToDate(jalaliDate);
+
+    if(!date)
+        return false;
+
+    const now=new Date();
+
+    date.setHours(23,59,59,999);
+
+    return date<now;
 }
 
 function renderTrash(){
 
     if(!trash.length){
 
-        $("trashArea").innerHTML = "";
-
+        $("trashArea").innerHTML="";
         return;
-
     }
 
-    $("trashArea").innerHTML = `
+    $("trashArea").innerHTML=`
 
         <div class="trashTitle">
 
@@ -1838,30 +1883,27 @@ function renderTrash(){
             حذف دائمی سطل زباله
         </button>
     `;
-
 }
 
 function escapeHtml(text){
 
-    return String(text || "")
+    return String(text||"")
     .replace(/&/g,"&amp;")
     .replace(/</g,"&lt;")
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;")
     .replace(/'/g,"&#039;");
-
 }
 
 function editById(id){
 
-    const item =
+    const item=
         installments.find(
             x=>x.id===id
         );
 
     if(item)
         openModal(item);
-
 }
 
 function moveById(id){
@@ -1870,14 +1912,13 @@ function moveById(id){
 
 function togglePaidById(id,index){
 
-    const item =
+    const item=
         installments.find(
             x=>x.id===id
         );
 
     if(item)
         togglePaid(item,index);
-
 }
 
 function restoreById(id){
@@ -1890,74 +1931,66 @@ function deleteForeverById(id){
 
 function exportData(){
 
-    const data = {
-
-        version:7,
-
+    const data={
+        version:8,
         installments,
-
         trash,
-
         exportedAt:
             new Date().toISOString()
-
     };
 
-    const blob =
-        new Blob(
-            [JSON.stringify(data,null,2)],
-            {type:"application/json"}
-        );
+    const blob=new Blob(
+        [JSON.stringify(data,null,2)],
+        {type:"application/json"}
+    );
 
-    const url =
+    const url=
         URL.createObjectURL(blob);
 
-    const a =
+    const a=
         document.createElement("a");
 
-    a.href = url;
+    a.href=url;
 
-    a.download =
+    a.download=
         "MohammadInstallments-backup.json";
 
     document.body.appendChild(a);
-
     a.click();
-
     a.remove();
 
     URL.revokeObjectURL(url);
 
+    showToast("فایل پشتیبان آماده شد.");
 }
 
 function importData(file){
 
-    const reader =
-        new FileReader();
+    const reader=new FileReader();
 
-    reader.onload = function(){
+    reader.onload=function(){
 
         try{
 
-            const data =
+            const data=
                 JSON.parse(reader.result);
 
             if(
-                !data ||
+                !data||
                 !Array.isArray(data.installments)
-            ){
-
+            )
                 throw new Error();
 
-            }
-
-            installments =
-                data.installments;
-
-            trash =
+            installments=data.installments;
+            trash=
                 Array.isArray(data.trash)
-                ? data.trash
-                : [];
+                ?data.trash
+                :[];
+
+            installments.forEach(item=>{
+                item.balance=
+                    calculateRemainingBalance(item);
+            });
 
             saveData();
             render();
@@ -1971,27 +2004,22 @@ function importData(file){
             alert(
                 "فایل پشتیبان معتبر نیست."
             );
-
         }
-
     };
 
     reader.readAsText(file);
-
 }
 
-/* رویدادها */
-
-$("addButton").onclick =
+$("addButton").onclick=
     ()=>openModal();
 
-$("closeButton").onclick =
+$("closeButton").onclick=
     closeModal;
 
-$("cancelButton").onclick =
+$("cancelButton").onclick=
     closeModal;
 
-$("saveButton").onclick =
+$("saveButton").onclick=
     saveInstallment;
 
 $("search").addEventListener(
@@ -1999,10 +2027,10 @@ $("search").addEventListener(
     render
 );
 
-$("exportButton").onclick =
+$("exportButton").onclick=
     exportData;
 
-$("importButton").onclick =
+$("importButton").onclick=
     ()=>$("fileInput").click();
 
 $("fileInput").addEventListener(
@@ -2012,78 +2040,55 @@ $("fileInput").addEventListener(
         if(this.files[0])
             importData(this.files[0]);
 
-        this.value = "";
-
+        this.value="";
     }
 );
 
-$("trashButton").onclick =
-    ()=>{
+$("trashButton").onclick=()=>{
 
-        document
-        .getElementById("trashArea")
-        .scrollIntoView({
+    const area=$("trashArea");
+
+    if(area.innerHTML.trim())
+        area.scrollIntoView({
             behavior:"smooth"
         });
+    else
+        showToast("سطل زباله خالی است.");
+};
 
-    };
-
-$("resetButton").onclick =
+$("resetButton").onclick=
     deleteAll;
-
-/*
-  مدیریت ورود تاریخ:
-  اسلش خودکار اضافه می‌شود.
-*/
 
 $("startDateInput").addEventListener(
     "input",
     function(){
-
         normalizeDateInput(this);
-
         calculateEndDate();
-
     }
 );
 
 $("endDateInput").addEventListener(
     "input",
     function(){
-
         normalizeDateInput(this);
-
         calculateMonths();
-
     }
 );
 
 $("monthsInput").addEventListener(
     "input",
     function(){
-
         calculateEndDate();
-
     }
 );
-
-/*
-  بستن پنجره با کلیک بیرون
-*/
 
 $("modal").addEventListener(
     "click",
     function(e){
-
-        if(e.target === $("modal"))
+        if(e.target===$("modal"))
             closeModal();
-
     }
 );
-
-/*
-  نمایش اولیه
-*/
 
 render();
 
