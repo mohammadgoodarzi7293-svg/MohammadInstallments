@@ -1,1 +1,258 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>مدیریت اقساط</title>
 
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Tahoma,Arial,sans-serif;
+    background:#f4f6f9;
+    color:#222;
+}
+.container{
+    width:100%;
+    max-width:900px;
+    margin:auto;
+    padding:16px;
+}
+.header{
+    background:linear-gradient(135deg,#1976d2,#42a5f5);
+    color:white;
+    border-radius:18px;
+    padding:22px 18px;
+    margin-bottom:16px;
+    box-shadow:0 5px 18px rgba(0,0,0,.12);
+}
+.header h1{
+    margin:0 0 8px;
+    font-size:25px;
+}
+.header p{
+    margin:0;
+    opacity:.9;
+}
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:16px;
+}
+.stat{
+    background:white;
+    border-radius:15px;
+    padding:15px 8px;
+    text-align:center;
+    box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+.stat strong{
+    display:block;
+    font-size:18px;
+    margin-top:6px;
+}
+.search{
+    background:white;
+    border-radius:14px;
+    padding:10px;
+    margin-bottom:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.06);
+}
+.search input{
+    width:100%;
+    border:0;
+    outline:0;
+    font-size:16px;
+    padding:10px;
+    background:#f7f8fa;
+    border-radius:10px;
+}
+.add{
+    width:100%;
+    border:0;
+    border-radius:14px;
+    padding:15px;
+    background:#1976d2;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    margin-bottom:16px;
+}
+.card{
+    background:white;
+    border-radius:18px;
+    padding:17px;
+    margin-bottom:14px;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+.card-title{
+    font-size:19px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+.row{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+    color:#555;
+}
+.progress{
+    height:9px;
+    background:#e7e9ed;
+    border-radius:10px;
+    overflow:hidden;
+    margin:10px 0;
+}
+.progress div{
+    height:100%;
+    background:#43a047;
+}
+.buttons{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    margin-top:12px;
+}
+button{
+    cursor:pointer;
+}
+.buttons button{
+    border:0;
+    border-radius:10px;
+    padding:11px 5px;
+    font-size:13px;
+}
+.pay{background:#e8f5e9;color:#2e7d32}
+.edit{background:#e3f2fd;color:#1565c0}
+.delete{background:#ffebee;color:#c62828}
+
+.empty{
+    background:white;
+    border-radius:16px;
+    padding:35px 15px;
+    text-align:center;
+    color:#777;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    z-index:1000;
+}
+.modal-box{
+    width:100%;
+    max-width:500px;
+    background:white;
+    border-radius:20px;
+    padding:20px;
+}
+.modal-box h2{
+    margin-top:0;
+}
+.modal-box input{
+    width:100%;
+    padding:13px;
+    margin:6px 0;
+    border:1px solid #ddd;
+    border-radius:10px;
+    font-size:15px;
+}
+.modal-buttons{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+}
+.modal-buttons button{
+    flex:1;
+    border:0;
+    border-radius:10px;
+    padding:13px;
+}
+.save{background:#1976d2;color:white}
+.cancel{background:#eee}
+
+@media(max-width:600px){
+    .stats strong{font-size:14px}
+    .stats{gap:6px}
+    .container{padding:10px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>مدیریت اقساط</h1>
+<p>مدیریت ساده و سریع اقساط و بدهی‌ها</p>
+</div>
+
+<div class="stats">
+<div class="stat">
+کل بدهی
+<strong id="total">۰ تومان</strong>
+</div>
+<div class="stat">
+پرداخت شده
+<strong id="paid">۰ تومان</strong>
+</div>
+<div class="stat">
+مانده
+<strong id="remaining">۰ تومان</strong>
+</div>
+</div>
+
+<div class="search">
+<input id="search" placeholder="جستجوی نام یا قرارداد...">
+</div>
+
+<button class="add" onclick="openModal()">＋ افزودن قسط جدید</button>
+
+<div id="list"></div>
+
+</div>
+
+<div class="modal" id="modal">
+<div class="modal-box">
+
+<h2 id="modalTitle">افزودن قرارداد</h2>
+
+<input id="name" placeholder="نام شخص یا خرید">
+<input id="amount" type="number" placeholder="مبلغ کل">
+<input id="count" type="number" placeholder="تعداد اقساط">
+
+<div class="modal-buttons">
+<button class="cancel" onclick="closeModal()">انصراف</button>
+<button class="save" onclick="saveItem()">ذخیره</button>
+</div>
+
+</div>
+</div>
+
+<script>
+
+let items=JSON.parse(localStorage.getItem("installments")||"[]");
+let editIndex=-1;
+
+const fa=new Intl.NumberFormat("fa-IR");
+
+function money(n){
+return fa.format(Number(n)||0)+" تومان";
+}
+
+function saveData(){
+localStorage.setItem("installments",JSON.stringify(items));
+}
+
+function render(){
+
+const list=document.getElementById("list");
+const search=document.getElementById("search").value.trim().toLowerCase
