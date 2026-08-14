@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 
 <title>مدیریت اقساط</title>
 
@@ -23,8 +23,8 @@ body{
     font-family:Tahoma,Arial,sans-serif;
     background:#f4f6f9;
     color:#17202a;
-    overflow-x:hidden;
     font-size:15px;
+    overflow-x:hidden;
 }
 
 button,input{
@@ -32,17 +32,14 @@ button,input{
 }
 
 button{
-    cursor:pointer;
     border:0;
+    cursor:pointer;
 }
 
 .header{
-    background:linear-gradient(135deg,#1683df,#349ee9);
-    color:white;
-    padding:
-        calc(24px + env(safe-area-inset-top))
-        18px
-        24px;
+    background:linear-gradient(135deg,#1268c4,#2499e8);
+    color:#fff;
+    padding:24px 16px 22px;
     border-radius:0 0 28px 28px;
     box-shadow:0 5px 18px rgba(0,0,0,.12);
 }
@@ -50,45 +47,45 @@ button{
 .header h1{
     margin:0;
     text-align:center;
-    font-size:28px;
-    font-weight:700;
+    font-size:26px;
 }
 
 .header p{
-    margin:12px 0 0;
+    margin:9px 0 18px;
     text-align:center;
-    font-size:16px;
-    opacity:.95;
+    opacity:.92;
+    font-size:14px;
 }
 
 .summary{
+    width:100%;
+    max-width:720px;
+    margin:auto;
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:10px;
-    margin-top:22px;
+    gap:8px;
 }
 
 .stat{
-    background:white;
-    color:#222;
-    border-radius:18px;
-    padding:14px 7px;
-    text-align:center;
     min-width:0;
+    background:#fff;
+    color:#17202a;
+    border-radius:16px;
+    padding:12px 5px;
+    text-align:center;
     box-shadow:0 3px 12px rgba(0,0,0,.08);
 }
 
 .stat small{
     display:block;
-    color:#555;
-    font-size:12px;
-    margin-bottom:8px;
+    color:#64748b;
+    font-size:11px;
+    margin-bottom:7px;
 }
 
 .stat strong{
     display:block;
-    font-size:15px;
-    line-height:1.4;
+    font-size:14px;
     word-break:break-word;
 }
 
@@ -96,38 +93,37 @@ button{
     width:100%;
     max-width:720px;
     margin:auto;
-    padding:16px 14px 100px;
+    padding:15px 12px 105px;
 }
 
 .searchBox{
-    background:white;
-    padding:7px;
-    border-radius:17px;
-    box-shadow:0 3px 14px rgba(0,0,0,.07);
-    margin-bottom:12px;
+    background:#fff;
+    padding:6px;
+    border-radius:16px;
+    box-shadow:0 3px 13px rgba(0,0,0,.06);
+    margin-bottom:10px;
 }
 
 .search{
     width:100%;
     border:0;
-    outline:none;
-    background:#f5f6f8;
-    border-radius:13px;
-    padding:15px;
-    font-size:15px;
-    text-align:right;
+    outline:0;
+    background:#f4f6f8;
+    border-radius:12px;
+    padding:14px;
+    font-size:14px;
 }
 
 .addButton{
     width:100%;
+    padding:16px;
+    border-radius:17px;
     background:#1976d2;
-    color:white;
-    border-radius:18px;
-    padding:17px;
-    font-size:18px;
+    color:#fff;
+    font-size:17px;
     font-weight:bold;
     box-shadow:0 5px 15px rgba(25,118,210,.25);
-    margin-bottom:16px;
+    margin-bottom:13px;
 }
 
 .addButton:active{
@@ -135,10 +131,10 @@ button{
 }
 
 .card{
-    background:white;
-    border-radius:20px;
-    padding:15px;
-    margin-bottom:14px;
+    background:#fff;
+    border-radius:19px;
+    padding:14px;
+    margin-bottom:12px;
     box-shadow:0 3px 15px rgba(0,0,0,.07);
 }
 
@@ -146,42 +142,45 @@ button{
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
-    gap:10px;
+    gap:8px;
 }
 
 .cardName{
-    font-size:17px;
+    font-size:16px;
     font-weight:bold;
-    color:#17202a;
 }
 
 .cardInfo{
     color:#64748b;
     font-size:12px;
-    margin-top:7px;
-    line-height:1.8;
+    margin-top:6px;
+    line-height:1.9;
 }
 
 .actions{
     display:flex;
-    gap:6px;
+    gap:5px;
     flex-shrink:0;
 }
 
 .smallButton{
-    width:38px;
-    height:38px;
-    border-radius:11px;
+    width:36px;
+    height:36px;
+    border-radius:10px;
     background:#f1f5f9;
-    font-size:17px;
+    font-size:16px;
 }
 
 .smallButton.delete{
     background:#fff0f0;
 }
 
+.smallButton.restore{
+    background:#ecfdf3;
+}
+
 .progressBox{
-    margin-top:13px;
+    margin-top:12px;
 }
 
 .progressText{
@@ -211,31 +210,41 @@ button{
     display:grid;
     grid-template-columns:repeat(4,1fr);
     gap:7px;
-    margin-top:14px;
+    margin-top:13px;
 }
 
 .month{
-    min-height:58px;
+    min-height:60px;
     background:#f7f9fb;
     border:1px solid #e1e6eb;
     border-radius:12px;
-    padding:6px 2px;
+    padding:5px 2px;
     color:#334155;
 }
 
 .month:active{
-    transform:scale(.96);
+    transform:scale(.95);
 }
 
 .month.paid{
     background:#22a447;
     border-color:#22a447;
-    color:white;
+    color:#fff;
+}
+
+.month.overdue{
+    border:2px solid #ef4444;
+    background:#fff5f5;
+}
+
+.month.paid.overdue{
+    background:#22a447;
+    border-color:#22a447;
 }
 
 .monthDate{
     display:block;
-    font-size:10px;
+    font-size:9px;
     direction:ltr;
 }
 
@@ -246,10 +255,26 @@ button{
 }
 
 .empty{
-    background:white;
+    background:#fff;
     border-radius:18px;
-    padding:35px 15px;
+    padding:38px 15px;
     text-align:center;
+    color:#64748b;
+}
+
+.trashTitle{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:18px 2px 10px;
+}
+
+.trashTitle strong{
+    font-size:14px;
+}
+
+.trashTitle span{
+    font-size:11px;
     color:#64748b;
 }
 
@@ -258,34 +283,28 @@ button{
     left:0;
     right:0;
     bottom:0;
-    z-index:40;
-    background:white;
+    z-index:50;
+    background:#fff;
     border-top:1px solid #e2e8f0;
-    padding:
-        9px
-        10px
-        calc(9px + env(safe-area-inset-bottom));
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom));
     display:flex;
-    gap:7px;
-    justify-content:center;
+    gap:6px;
 }
 
 .bottomButton{
     flex:1;
-    max-width:180px;
-    padding:11px 6px;
-    border-radius:12px;
+    padding:11px 4px;
+    border-radius:11px;
     background:#f1f5f9;
     color:#334155;
-    font-size:12px;
+    font-size:11px;
+    font-weight:bold;
 }
 
 .bottomButton.danger{
     background:#fee2e2;
     color:#991b1b;
 }
-
-/* Modal */
 
 .modal{
     position:fixed;
@@ -295,7 +314,6 @@ button{
     align-items:flex-end;
     justify-content:center;
     background:rgba(0,0,0,.55);
-    padding:0;
 }
 
 .modal.visible{
@@ -305,27 +323,23 @@ button{
 .sheet{
     width:100%;
     max-width:620px;
-    max-height:92vh;
+    max-height:94vh;
     overflow-y:auto;
-    background:white;
+    background:#fff;
     border-radius:25px 25px 0 0;
-    padding:
-        20px
-        18px
-        calc(25px + env(safe-area-inset-bottom));
-    box-shadow:0 -5px 30px rgba(0,0,0,.2);
+    padding:19px 17px calc(25px + env(safe-area-inset-bottom));
 }
 
 .sheetTitle{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:16px;
+    margin-bottom:12px;
 }
 
 .sheetTitle h2{
     margin:0;
-    font-size:20px;
+    font-size:19px;
 }
 
 .closeButton{
@@ -333,14 +347,14 @@ button{
     height:38px;
     border-radius:50%;
     background:#f1f5f9;
-    font-size:20px;
+    font-size:21px;
 }
 
 label{
     display:block;
-    margin:12px 0 6px;
+    margin:11px 0 5px;
     color:#475569;
-    font-size:13px;
+    font-size:12px;
 }
 
 .input{
@@ -348,9 +362,9 @@ label{
     border:1px solid #cbd5e1;
     border-radius:12px;
     padding:13px;
-    font-size:15px;
+    font-size:14px;
     outline:none;
-    background:white;
+    background:#fff;
 }
 
 .input:focus{
@@ -361,30 +375,30 @@ label{
 .formRow{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:9px;
+    gap:8px;
 }
 
 .hint{
-    background:#f1f7ff;
+    background:#eff6ff;
     color:#475569;
     border-radius:12px;
-    padding:11px;
-    margin-top:13px;
+    padding:10px;
+    margin-top:12px;
     font-size:11px;
     line-height:1.9;
 }
 
 .modalButtons{
     display:flex;
-    gap:9px;
-    margin-top:17px;
+    gap:8px;
+    margin-top:16px;
 }
 
 .modalButton{
     flex:1;
     padding:14px;
     border-radius:13px;
-    font-size:15px;
+    font-size:14px;
     font-weight:bold;
 }
 
@@ -395,24 +409,31 @@ label{
 
 .save{
     background:#1976d2;
-    color:white;
+    color:#fff;
+}
+
+.notice{
+    margin-top:9px;
+    padding:10px;
+    border-radius:11px;
+    background:#fff7ed;
+    color:#9a3412;
+    font-size:11px;
+    line-height:1.8;
 }
 
 @media(max-width:380px){
-    .header h1{
-        font-size:24px;
-    }
 
-    .header p{
-        font-size:14px;
+    .header h1{
+        font-size:23px;
     }
 
     .stat{
-        padding:12px 4px;
+        padding:11px 3px;
     }
 
     .stat strong{
-        font-size:13px;
+        font-size:12px;
     }
 
     .months{
@@ -421,6 +442,10 @@ label{
 
     .formRow{
         grid-template-columns:1fr;
+    }
+
+    .bottomButton{
+        font-size:10px;
     }
 }
 </style>
@@ -432,7 +457,7 @@ label{
 
     <h1>مدیریت اقساط</h1>
 
-    <p>مدیریت ساده و سریع اقساط و بدهی‌ها</p>
+    <p>مدیریت ساده و دقیق اقساط و بدهی‌ها</p>
 
     <div class="summary">
 
@@ -462,7 +487,7 @@ label{
             id="search"
             class="search"
             type="text"
-            placeholder="جستجوی نام بانک یا قسط..."
+            placeholder="جستجوی بانک یا قسط..."
         >
     </div>
 
@@ -471,6 +496,8 @@ label{
     </button>
 
     <div id="list"></div>
+
+    <div id="trashArea"></div>
 
 </main>
 
@@ -484,6 +511,10 @@ label{
         📥 بازیابی
     </button>
 
+    <button id="trashButton" class="bottomButton">
+        🗑️ سطل زباله
+    </button>
+
     <button id="resetButton" class="bottomButton danger">
         حذف همه
     </button>
@@ -493,11 +524,9 @@ label{
 <input
     id="fileInput"
     type="file"
-    accept="application/json"
+    accept=".json,application/json"
     style="display:none"
 >
-
-<!-- MODAL -->
 
 <div id="modal" class="modal">
 
@@ -515,9 +544,7 @@ label{
 
         </div>
 
-        <label for="nameInput">
-            نام بانک / مورد
-        </label>
+        <label>نام بانک / مورد</label>
 
         <input
             id="nameInput"
@@ -530,9 +557,7 @@ label{
 
             <div>
 
-                <label for="amountInput">
-                    مبلغ هر قسط
-                </label>
+                <label>مبلغ هر قسط</label>
 
                 <input
                     id="amountInput"
@@ -546,9 +571,7 @@ label{
 
             <div>
 
-                <label for="monthsInput">
-                    تعداد اقساط
-                </label>
+                <label>تعداد اقساط</label>
 
                 <input
                     id="monthsInput"
@@ -556,14 +579,34 @@ label{
                     type="number"
                     inputmode="numeric"
                     min="1"
-                    value="50"
+                    value="12"
                 >
 
             </div>
 
         </div>
 
-        <label for="startDateInput">
+        <label>
+            کارمزد سالانه (%)
+        </label>
+
+        <input
+            id="feeInput"
+            class="input"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.01"
+            value="0"
+            placeholder="مثلاً ۴"
+        >
+
+        <div class="notice">
+            اگر این قسط کارمزد سالانه ندارد، مقدار را ۰ بگذار.
+            این درصد فعلاً برای ثبت اطلاعات قسط ذخیره می‌شود.
+        </div>
+
+        <label>
             تاریخ اولین قسط
         </label>
 
@@ -574,18 +617,26 @@ label{
             inputmode="numeric"
             dir="ltr"
             placeholder="1405/05/22"
-            value="1405/05/22"
+        >
+
+        <label>
+            توضیحات
+        </label>
+
+        <input
+            id="noteInput"
+            class="input"
+            type="text"
+            placeholder="توضیحات اختیاری"
         >
 
         <div class="hint">
 
-            تعداد اقساط آزاد است؛ مثلاً ۱۲، ۲۴، ۳۶، ۵۰ یا ۱۰۰ قسط.
-            <br>
-
             تاریخ را به شکل 1405/05/22 وارد کن.
             <br>
-
-            با زدن روی هر قسط، وضعیت پرداخت آن تغییر می‌کند.
+            برای پرداخت هر قسط، روی همان قسط بزن.
+            <br>
+            اقساط حذف‌شده ابتدا به سطل زباله منتقل می‌شوند.
 
         </div>
 
@@ -607,52 +658,41 @@ label{
 
 <script>
 
-/* =========================
-   تنظیمات اصلی
-========================= */
-
-const STORAGE_KEY = "mohammad_installments_v3";
+const STORAGE_KEY = "mohammad_installments_v6";
+const TRASH_KEY = "mohammad_installments_trash_v6";
 
 let data = [];
+let trash = [];
 let editId = null;
+let trashVisible = false;
 
-
-/* =========================
-   اعداد فارسی
-========================= */
+const $ = id => document.getElementById(id);
 
 function faNum(value){
 
     return String(value)
-        .replace(/\d/g,function(d){
-            return "۰۱۲۳۴۵۶۷۸۹"[d];
-        });
+        .replace(/[0-9]/g,d => "۰۱۲۳۴۵۶۷۸۹"[d]);
 
 }
 
+function enNum(value){
 
-/* =========================
-   تبدیل مبلغ
-========================= */
+    return String(value)
+        .replace(/[۰-۹]/g,d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+
+}
 
 function money(value){
 
-    const number = Number(value || 0);
+    const n = Number(value || 0);
 
-    return faNum(
-        number.toLocaleString("en-US")
-    ) + " تومان";
+    return faNum(n.toLocaleString("en-US")) + " تومان";
 
 }
 
-
-/* =========================
-   جلوگیری از HTML Injection
-========================= */
-
 function esc(value){
 
-    return String(value)
+    return String(value ?? "")
         .replace(/&/g,"&amp;")
         .replace(/</g,"&lt;")
         .replace(/>/g,"&gt;")
@@ -661,805 +701,769 @@ function esc(value){
 
 }
 
+function normalizeDate(value){
 
-/* =========================
-   تاریخ شمسی
-========================= */
+    let s = enNum(value)
+        .replace(/-/g,"/")
+        .replace(/\s/g,"");
 
-function parseDate(value){
+    const p = s.split("/");
 
-    let s = String(value || "")
-        .trim()
-        .replace(/[۰-۹]/g,function(d){
-            return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);
-        })
-        .replace(/[-.]/g,"/");
+    if(p.length !== 3) return null;
 
-    const a = s.split("/").map(Number);
+    const y = Number(p[0]);
+    const m = Number(p[1]);
+    const d = Number(p[2]);
 
-    if(
-        a.length !== 3 ||
-        !Number.isFinite(a[0]) ||
-        !Number.isFinite(a[1]) ||
-        !Number.isFinite(a[2])
-    ){
-        return null;
-    }
-
-    if(
-        a[0] < 1300 ||
-        a[1] < 1 ||
-        a[1] > 12 ||
-        a[2] < 1 ||
-        a[2] > 31
-    ){
-        return null;
-    }
+    if(!y || !m || !d) return null;
 
     return {
-        y:a[0],
-        m:a[1],
-        d:a[2]
+        y,
+        m,
+        d
     };
 
 }
 
+function daysInMonth(year,month){
+
+    if(month <= 6) return 31;
+
+    if(month <= 11) return 30;
+
+    return 30;
+
+}
 
 function addMonth(date,index){
 
-    let year = date.y;
-    let month = date.m + index;
+    let y = date.y;
+    let m = date.m + index;
+    let d = date.d;
 
-    year += Math.floor((month - 1) / 12);
+    while(m > 12){
 
-    month = ((month - 1) % 12) + 1;
+        m -= 12;
+        y++;
 
-    return (
-        year +
-        "/" +
-        String(month).padStart(2,"0") +
-        "/" +
+    }
+
+    const max = daysInMonth(y,m);
+
+    if(d > max) d = max;
+
+    return {
+        y,
+        m,
+        d
+    };
+
+}
+
+function dateText(date){
+
+    return faNum(
+        date.y + "/" +
+        String(date.m).padStart(2,"0") + "/" +
         String(date.d).padStart(2,"0")
     );
 
 }
 
+function dateNumber(date){
 
-function makeDates(start,count){
-
-    const date = parseDate(start);
-
-    if(!date){
-        return null;
-    }
-
-    const result = [];
-
-    for(let i=0;i<count;i++){
-
-        result.push({
-            date:addMonth(date,i),
-            paid:false
-        });
-
-    }
-
-    return result;
+    return date.y * 10000 +
+           date.m * 100 +
+           date.d;
 
 }
 
+function todayApprox(){
 
-/* =========================
-   ذخیره‌سازی
-========================= */
+    const now = new Date();
+
+    const gy = now.getFullYear();
+    const gm = now.getMonth() + 1;
+    const gd = now.getDate();
+
+    const jy = gy - 621;
+
+    return {
+        y:jy,
+        m:gm,
+        d:gd
+    };
+
+}
 
 function saveData(){
 
-    try{
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(data)
+    );
 
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(data)
-        );
-
-    }catch(error){
-
-        alert("امکان ذخیره اطلاعات وجود ندارد.");
-
-    }
+    localStorage.setItem(
+        TRASH_KEY,
+        JSON.stringify(trash)
+    );
 
 }
-
-
-/* =========================
-   بارگذاری اطلاعات
-========================= */
 
 function loadData(){
 
     try{
 
-        const saved = localStorage.getItem(STORAGE_KEY);
+        data = JSON.parse(
+            localStorage.getItem(STORAGE_KEY) || "[]"
+        );
 
-        if(saved){
+        trash = JSON.parse(
+            localStorage.getItem(TRASH_KEY) || "[]"
+        );
 
-            const parsed = JSON.parse(saved);
+        if(!Array.isArray(data)) data = [];
+        if(!Array.isArray(trash)) trash = [];
 
-            if(Array.isArray(parsed)){
-
-                data = parsed;
-
-                return;
-
-            }
-
-        }
-
-    }catch(error){
+    }catch(e){
 
         data = [];
+        trash = [];
 
     }
 
-    data = [];
+}
+
+function newId(){
+
+    return Date.now().toString(36) +
+        Math.random().toString(36).slice(2);
 
 }
 
-
-/* =========================
-   نمایش
-========================= */
-
-function render(){
-
-    const list = document.getElementById("list");
-
-    const searchElement =
-        document.getElementById("search");
-
-    const query =
-        searchElement.value
-        .trim()
-        .toLowerCase();
-
-    let filtered = data.filter(function(item){
-
-        return String(item.name)
-            .toLowerCase()
-            .includes(query);
-
-    });
-
-
-    let totalRemaining = 0;
-    let totalInstallments = 0;
-
-    data.forEach(function(item){
-
-        if(!Array.isArray(item.dates)){
-            item.dates = [];
-        }
-
-        item.dates.forEach(function(month){
-
-            if(!month.paid){
-
-                totalInstallments++;
-
-                totalRemaining +=
-                    Number(item.amount || 0);
-
-            }
-
-        });
-
-    });
-
-
-    document.getElementById("count")
-        .textContent = faNum(data.length);
-
-    document.getElementById("total")
-        .textContent = money(totalRemaining);
-
-    document.getElementById("remaining")
-        .textContent = faNum(totalInstallments);
-
-
-    if(filtered.length === 0){
-
-        list.innerHTML =
-            '<div class="empty">هنوز قسطی ثبت نشده است.</div>';
-
-        return;
-
-    }
-
-
-    let html = "";
-
-
-    filtered.forEach(function(item){
-
-        const dates =
-            Array.isArray(item.dates)
-            ? item.dates
-            : [];
-
-        const paid =
-            dates.filter(function(x){
-                return x.paid;
-            }).length;
-
-        const remaining =
-            dates.length - paid;
-
-        const remainingAmount =
-            Number(item.amount || 0) * remaining;
-
-        const percent =
-            dates.length
-            ? Math.round((paid / dates.length) * 100)
-            : 0;
-
-
-        html += '<section class="card">';
-
-
-        html += '<div class="cardTop">';
-
-
-        html += '<div>';
-
-        html +=
-            '<div class="cardName">' +
-            esc(item.name) +
-            '</div>';
-
-        html +=
-            '<div class="cardInfo">' +
-            money(item.amount) +
-            ' × ' +
-            faNum(dates.length) +
-            ' قسط' +
-            '<br>' +
-            'مانده: ' +
-            money(remainingAmount) +
-            '</div>';
-
-        html += '</div>';
-
-
-        html += '<div class="actions">';
-
-        html +=
-            '<button class="smallButton editBtn" data-id="' +
-            esc(item.id) +
-            '">✏️</button>';
-
-        html +=
-            '<button class="smallButton delete deleteBtn" data-id="' +
-            esc(item.id) +
-            '">🗑️</button>';
-
-        html += '</div>';
-
-
-        html += '</div>';
-
-
-        html += '<div class="progressBox">';
-
-        html +=
-            '<div class="progressText">' +
-            '<span>' +
-            faNum(paid) +
-            ' پرداخت شده' +
-            '</span>' +
-            '<span>' +
-            faNum(remaining) +
-            ' باقی‌مانده' +
-            '</span>' +
-            '</div>';
-
-        html +=
-            '<div class="progress">' +
-            '<i style="width:' +
-            percent +
-            '%"></i>' +
-            '</div>';
-
-        html += '</div>';
-
-
-        html += '<div class="months">';
-
-
-        dates.forEach(function(month,index){
-
-            html +=
-                '<button class="month ' +
-                (month.paid ? "paid" : "") +
-                ' monthBtn" ' +
-                'data-id="' +
-                esc(item.id) +
-                '" ' +
-                'data-index="' +
-                index +
-                '">';
-
-            html +=
-                '<span class="monthDate">' +
-                faNum(month.date) +
-                '</span>';
-
-            html +=
-                '<span class="monthMark">' +
-                (month.paid ? "✓" : "○") +
-                '</span>';
-
-            html += '</button>';
-
-        });
-
-
-        html += '</div>';
-
-        html += '</section>';
-
-    });
-
-
-    list.innerHTML = html;
-
-}
-
-
-/* =========================
-   باز کردن فرم افزودن
-========================= */
-
-function openAdd(){
-
-    editId = null;
-
-    document.getElementById("modalTitle")
-        .textContent = "افزودن قسط جدید";
-
-    document.getElementById("nameInput")
-        .value = "";
-
-    document.getElementById("amountInput")
-        .value = "";
-
-    document.getElementById("monthsInput")
-        .value = "50";
-
-    document.getElementById("startDateInput")
-        .value = "1405/05/22";
-
-
-    document.getElementById("modal")
-        .classList.add("visible");
-
-
-    setTimeout(function(){
-
-        document.getElementById("nameInput")
-            .focus();
-
-    },150);
-
-}
-
-
-/* =========================
-   بستن فرم
-========================= */
-
-function closeModal(){
-
-    document.getElementById("modal")
-        .classList.remove("visible");
-
-    editId = null;
-
-}
-
-
-/* =========================
-   ویرایش
-========================= */
-
-function editItem(id){
-
-    const item =
-        data.find(function(x){
-            return String(x.id) === String(id);
-        });
-
-    if(!item){
-        return;
-    }
-
+function openModal(id=null){
 
     editId = id;
 
+    $("modal").classList.add("visible");
 
-    document.getElementById("modalTitle")
-        .textContent = "ویرایش قسط";
+    if(id){
 
+        const item = data.find(x => x.id === id);
 
-    document.getElementById("nameInput")
-        .value = item.name || "";
+        if(!item) return;
 
+        $("modalTitle").textContent = "ویرایش قسط";
 
-    document.getElementById("amountInput")
-        .value = item.amount || "";
+        $("nameInput").value = item.name || "";
+        $("amountInput").value = item.amount || "";
+        $("monthsInput").value = item.months || 12;
+        $("feeInput").value = item.annualFee || 0;
+        $("startDateInput").value = item.startDate || "";
+        $("noteInput").value = item.note || "";
 
+    }else{
 
-    document.getElementById("monthsInput")
-        .value =
-        Array.isArray(item.dates)
-        ? item.dates.length
-        : 1;
+        $("modalTitle").textContent = "افزودن قسط جدید";
 
+        $("nameInput").value = "";
+        $("amountInput").value = "";
+        $("monthsInput").value = 12;
+        $("feeInput").value = 0;
+        $("startDateInput").value = "";
+        $("noteInput").value = "";
 
-    document.getElementById("startDateInput")
-        .value =
-        item.dates &&
-        item.dates.length
-        ? item.dates[0].date
-        : "1405/05/22";
-
-
-    document.getElementById("modal")
-        .classList.add("visible");
+    }
 
 }
 
+function closeModal(){
 
-/* =========================
-   ذخیره قسط
-========================= */
+    $("modal").classList.remove("visible");
+    editId = null;
+
+}
 
 function saveItem(){
 
-    const name =
-        document.getElementById("nameInput")
-        .value.trim();
+    const name = $("nameInput").value.trim();
+    const amount = Number(
+        enNum($("amountInput").value)
+    );
 
-    const amount =
-        Number(
-            document.getElementById("amountInput")
-            .value || 0
-        );
+    const months = Number(
+        enNum($("monthsInput").value)
+    );
 
-    const months =
-        Math.floor(
-            Number(
-                document.getElementById("monthsInput")
-                .value || 0
-            )
-        );
+    const annualFee = Number(
+        enNum($("feeInput").value)
+    );
 
-    const start =
-        document.getElementById("startDateInput")
-        .value.trim();
+    const startDateRaw = $("startDateInput").value.trim();
 
+    const note = $("noteInput").value.trim();
 
     if(!name){
 
-        alert("لطفاً نام بانک یا مورد را وارد کن.");
-
+        alert("نام بانک یا مورد را وارد کن.");
         return;
 
     }
 
+    if(!amount || amount <= 0){
 
-    if(amount < 0){
-
-        alert("مبلغ قسط صحیح نیست.");
-
+        alert("مبلغ قسط را وارد کن.");
         return;
 
     }
 
+    if(!months || months < 1){
 
-    if(months < 1){
-
-        alert("تعداد اقساط باید حداقل ۱ باشد.");
-
+        alert("تعداد اقساط صحیح نیست.");
         return;
 
     }
 
+    if(annualFee < 0){
 
-    const dates =
-        makeDates(start,months);
-
-
-    if(!dates){
-
-        alert(
-            "تاریخ را به شکل 1405/05/22 وارد کن."
-        );
-
+        alert("کارمزد نمی‌تواند منفی باشد.");
         return;
 
     }
 
+    if(!normalizeDate(startDateRaw)){
 
-    if(editId !== null){
+        alert("تاریخ را به شکل 1405/05/22 وارد کن.");
+        return;
 
-        const item =
-            data.find(function(x){
-                return String(x.id) === String(editId);
-            });
+    }
 
+    if(editId){
+
+        const item = data.find(x => x.id === editId);
 
         if(item){
 
-            const oldPaid = new Map();
+            item.name = name;
+            item.amount = amount;
+            item.months = months;
+            item.annualFee = annualFee;
+            item.startDate = startDateRaw;
+            item.note = note;
 
-            if(Array.isArray(item.dates)){
-
-                item.dates.forEach(function(month){
-
-                    oldPaid.set(
-                        month.date,
-                        !!month.paid
-                    );
-
-                });
-
+            if(!Array.isArray(item.paid)){
+                item.paid = [];
             }
 
+            while(item.paid.length < months){
+                item.paid.push(false);
+            }
 
-            item.name = name;
-
-            item.amount = amount;
-
-            item.dates = dates.map(function(month){
-
-                return {
-                    date:month.date,
-                    paid:oldPaid.get(month.date) || false
-                };
-
-            });
+            item.paid = item.paid.slice(0,months);
 
         }
 
     }else{
 
-        data.push({
+        data.unshift({
 
-            id:
-                Date.now().toString() +
-                Math.random().toString(16).slice(2),
-
-            name:name,
-
-            amount:amount,
-
-            dates:dates
+            id:newId(),
+            name,
+            amount,
+            months,
+            annualFee,
+            startDate:startDateRaw,
+            note,
+            paid:Array(months).fill(false),
+            createdAt:new Date().toISOString()
 
         });
 
     }
 
-
     saveData();
-
     closeModal();
-
     render();
 
 }
 
+function moveToTrash(id){
 
-/* =========================
-   تغییر وضعیت قسط
-========================= */
+    const index = data.findIndex(x => x.id === id);
 
-function toggleMonth(id,index){
+    if(index < 0) return;
 
-    const item =
-        data.find(function(x){
-            return String(x.id) === String(id);
-        });
+    const item = data[index];
 
-    if(!item || !item.dates[index]){
-        return;
-    }
+    if(!confirm(
+        "این مورد به سطل زباله منتقل شود؟"
+    )) return;
 
+    data.splice(index,1);
 
-    item.dates[index].paid =
-        !item.dates[index].paid;
-
+    trash.unshift({
+        ...item,
+        deletedAt:new Date().toISOString()
+    });
 
     saveData();
-
     render();
 
 }
 
+function restoreItem(id){
 
-/* =========================
-   حذف
-========================= */
+    const index = trash.findIndex(x => x.id === id);
 
-function deleteItem(id){
+    if(index < 0) return;
 
-    const item =
-        data.find(function(x){
-            return String(x.id) === String(id);
+    const item = trash[index];
+
+    trash.splice(index,1);
+
+    data.unshift(item);
+
+    saveData();
+    render();
+
+}
+
+function deleteForever(id){
+
+    if(!confirm(
+        "این مورد برای همیشه حذف شود؟"
+    )) return;
+
+    trash = trash.filter(x => x.id !== id);
+
+    saveData();
+    render();
+
+}
+
+function emptyTrash(){
+
+    if(!trash.length){
+
+        alert("سطل زباله خالی است.");
+        return;
+
+    }
+
+    if(!confirm(
+        "همه موارد سطل زباله برای همیشه حذف شوند؟"
+    )) return;
+
+    trash = [];
+
+    saveData();
+    render();
+
+}
+
+function togglePaid(id,index){
+
+    const item = data.find(x => x.id === id);
+
+    if(!item) return;
+
+    if(!Array.isArray(item.paid)){
+        item.paid = Array(item.months).fill(false);
+    }
+
+    item.paid[index] = !item.paid[index];
+
+    saveData();
+    render();
+
+}
+
+function render(){
+
+    const query = $("search").value
+        .trim()
+        .toLowerCase();
+
+    const filtered = data.filter(item => {
+
+        return !query ||
+            String(item.name || "")
+                .toLowerCase()
+                .includes(query);
+
+    });
+
+    let html = "";
+
+    if(!filtered.length){
+
+        html = `
+            <div class="empty">
+                هنوز قسطی ثبت نشده است.
+                <br><br>
+                روی «افزودن قسط جدید» بزن.
+            </div>
+        `;
+
+    }else{
+
+        filtered.forEach(item => {
+
+            const paidCount =
+                Array.isArray(item.paid)
+                ? item.paid.filter(Boolean).length
+                : 0;
+
+            const remaining =
+                Math.max(0,item.months - paidCount);
+
+            const percent =
+                item.months
+                ? Math.round(
+                    paidCount / item.months * 100
+                )
+                : 0;
+
+            const remainingAmount =
+                remaining * Number(item.amount || 0);
+
+            const feeText =
+                Number(item.annualFee || 0) > 0
+                ? `کارمزد سالانه: ${faNum(item.annualFee)}٪`
+                : "بدون کارمزد سالانه";
+
+            let monthsHtml = "";
+
+            for(let i=0;i<item.months;i++){
+
+                const date = addMonth(
+                    normalizeDate(item.startDate),
+                    i
+                );
+
+                const paid =
+                    Array.isArray(item.paid)
+                    && item.paid[i];
+
+                const today = todayApprox();
+
+                const overdue =
+                    dateNumber(date) <
+                    dateNumber(today)
+                    && !paid;
+
+                monthsHtml += `
+                    <button
+                        class="month ${paid ? "paid" : ""} ${overdue ? "overdue" : ""}"
+                        onclick="togglePaid('${item.id}',${i})"
+                    >
+                        <span class="monthDate">
+                            ${dateText(date)}
+                        </span>
+
+                        <span class="monthMark">
+                            ${paid ? "✓" : overdue ? "!" : "○"}
+                        </span>
+                    </button>
+                `;
+
+            }
+
+            html += `
+                <div class="card">
+
+                    <div class="cardTop">
+
+                        <div>
+
+                            <div class="cardName">
+                                ${esc(item.name)}
+                            </div>
+
+                            <div class="cardInfo">
+
+                                مبلغ هر قسط:
+                                <b>${money(item.amount)}</b>
+
+                                <br>
+
+                                تعداد:
+                                <b>${faNum(item.months)}</b>
+
+                                &nbsp; | &nbsp;
+
+                                ${feeText}
+
+                                ${
+                                    item.note
+                                    ? `<br>${esc(item.note)}`
+                                    : ""
+                                }
+
+                            </div>
+
+                        </div>
+
+                        <div class="actions">
+
+                            <button
+                                class="smallButton"
+                                onclick="openModal('${item.id}')"
+                                title="ویرایش"
+                            >
+                                ✏️
+                            </button>
+
+                            <button
+                                class="smallButton delete"
+                                onclick="moveToTrash('${item.id}')"
+                                title="حذف"
+                            >
+                                🗑️
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div class="progressBox">
+
+                        <div class="progressText">
+
+                            <span>
+                                پرداخت شده:
+                                ${faNum(paidCount)}
+                                از
+                                ${faNum(item.months)}
+                            </span>
+
+                            <span>
+                                ${faNum(percent)}٪
+                            </span>
+
+                        </div>
+
+                        <div class="progress">
+                            <i style="width:${percent}%"></i>
+                        </div>
+
+                    </div>
+
+                    <div class="cardInfo">
+
+                        مانده:
+                        <b>${money(remainingAmount)}</b>
+
+                    </div>
+
+                    <div class="months">
+                        ${monthsHtml}
+                    </div>
+
+                </div>
+            `;
+
         });
 
-    if(!item){
-        return;
     }
 
+    $("list").innerHTML = html;
 
-    if(
-        confirm(
-            "آیا «" +
-            item.name +
-            "» حذف شود؟"
-        )
-    ){
+    renderTrash();
 
-        data =
-            data.filter(function(x){
-                return String(x.id) !== String(id);
-            });
-
-        saveData();
-
-        render();
-
-    }
+    updateSummary();
 
 }
 
+function renderTrash(){
 
-/* =========================
-   حذف همه
-========================= */
+    if(!trashVisible){
 
-function resetAll(){
-
-    if(!data.length){
-
-        alert("اطلاعاتی برای حذف وجود ندارد.");
-
+        $("trashArea").innerHTML = "";
         return;
 
     }
 
+    let html = `
+        <div class="trashTitle">
 
-    if(
-        confirm(
-            "همه اقساط و اطلاعات ذخیره‌شده حذف شوند؟"
-        )
-    ){
+            <strong>🗑️ سطل زباله</strong>
 
-        data = [];
+            <span>
+                ${faNum(trash.length)} مورد
+            </span>
 
-        saveData();
+        </div>
+    `;
 
-        render();
+    if(!trash.length){
+
+        html += `
+            <div class="empty">
+                سطل زباله خالی است.
+            </div>
+        `;
+
+    }else{
+
+        trash.forEach(item => {
+
+            html += `
+                <div class="card">
+
+                    <div class="cardTop">
+
+                        <div>
+
+                            <div class="cardName">
+                                ${esc(item.name)}
+                            </div>
+
+                            <div class="cardInfo">
+                                ${money(item.amount)}
+                            </div>
+
+                        </div>
+
+                        <div class="actions">
+
+                            <button
+                                class="smallButton restore"
+                                onclick="restoreItem('${item.id}')"
+                            >
+                                ↩️
+                            </button>
+
+                            <button
+                                class="smallButton delete"
+                                onclick="deleteForever('${item.id}')"
+                            >
+                                🗑️
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+        });
+
+        html += `
+            <button
+                class="bottomButton danger"
+                style="width:100%;margin-bottom:15px"
+                onclick="emptyTrash()"
+            >
+                پاک کردن کامل سطل زباله
+            </button>
+        `;
 
     }
 
-}
-
-
-/* =========================
-   پشتیبان‌گیری
-========================= */
-
-function exportData(){
-
-    try{
-
-        const json =
-            JSON.stringify(data,null,2);
-
-        const blob =
-            new Blob(
-                [json],
-                {type:"application/json"}
-            );
-
-        const url =
-            URL.createObjectURL(blob);
-
-        const link =
-            document.createElement("a");
-
-        link.href = url;
-
-        link.download =
-            "پشتیبان-مدیریت-اقساط.json";
-
-        document.body.appendChild(link);
-
-        link.click();
-
-        document.body.removeChild(link);
-
-        setTimeout(function(){
-
-            URL.revokeObjectURL(url);
-
-        },1000);
-
-    }catch(error){
-
-        alert("پشتیبان‌گیری انجام نشد.");
-
-    }
+    $("trashArea").innerHTML = html;
 
 }
 
+function updateSummary(){
 
-/* =========================
-   بازیابی
-========================= */
+    let total = 0;
+    let remaining = 0;
 
-function importData(){
+    data.forEach(item => {
 
-    const input =
-        document.getElementById("fileInput");
+        const paid =
+            Array.isArray(item.paid)
+            ? item.paid.filter(Boolean).length
+            : 0;
 
-    input.value = "";
+        const left =
+            Math.max(0,item.months - paid);
 
-    input.click();
+        total += left * Number(item.amount || 0);
+        remaining += left;
+
+    });
+
+    $("count").textContent = faNum(data.length);
+    $("total").textContent = money(total);
+    $("remaining").textContent = faNum(remaining);
 
 }
 
+function exportBackup(){
 
-document.getElementById("fileInput")
-.addEventListener("change",function(){
+    const backup = {
 
-    const file = this.files[0];
+        app:"MohammadInstallments",
+        version:6,
+        exportedAt:new Date().toISOString(),
+        installments:data,
+        trash:trash
 
-    if(!file){
-        return;
-    }
+    };
 
+    const blob = new Blob(
+        [JSON.stringify(backup,null,2)],
+        {type:"application/json"}
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download =
+        "MohammadInstallments-Backup.json";
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+
+}
+
+function importBackupFile(file){
 
     const reader = new FileReader();
-
 
     reader.onload = function(){
 
         try{
 
-            const imported =
+            const obj =
                 JSON.parse(reader.result);
 
+            if(
+                !obj ||
+                !Array.isArray(obj.installments)
+            ){
 
-            if(!Array.isArray(imported)){
-
-                throw new Error("invalid");
+                throw new Error();
 
             }
 
+            if(
+                !confirm(
+                    "اطلاعات فعلی با نسخه پشتیبان جایگزین شود؟"
+                )
+            ) return;
 
-            data = imported;
+            data = obj.installments;
+
+            trash =
+                Array.isArray(obj.trash)
+                ? obj.trash
+                : [];
 
             saveData();
-
             render();
 
-            alert(
-                "اطلاعات با موفقیت بازیابی شد."
-            );
+            alert("بازیابی با موفقیت انجام شد.");
 
-        }catch(error){
+        }catch(e){
 
             alert(
                 "فایل پشتیبان معتبر نیست."
@@ -1469,147 +1473,119 @@ document.getElementById("fileInput")
 
     };
 
-
     reader.readAsText(file);
 
-});
+}
 
+function deleteAll(){
 
-/* =========================
-   اتصال تمام دکمه‌ها
-   بدون onclick داخل HTML
-========================= */
+    if(!data.length){
 
-document.getElementById("addButton")
-.addEventListener("click",function(){
+        alert("موردی برای حذف وجود ندارد.");
+        return;
 
-    openAdd();
+    }
 
-});
+    if(!confirm(
+        "همه اقساط به سطل زباله منتقل شوند؟"
+    )) return;
 
+    const now = new Date().toISOString();
 
-document.getElementById("closeButton")
-.addEventListener("click",function(){
+    data.forEach(item => {
 
-    closeModal();
+        trash.unshift({
+            ...item,
+            deletedAt:now
+        });
 
-});
+    });
 
+    data = [];
 
-document.getElementById("cancelButton")
-.addEventListener("click",function(){
-
-    closeModal();
-
-});
-
-
-document.getElementById("saveButton")
-.addEventListener("click",function(){
-
-    saveItem();
-
-});
-
-
-document.getElementById("search")
-.addEventListener("input",function(){
-
+    saveData();
     render();
 
-});
+}
 
+$("addButton").onclick =
+    () => openModal();
 
-document.getElementById("exportButton")
-.addEventListener("click",function(){
+$("closeButton").onclick =
+    closeModal;
 
-    exportData();
+$("cancelButton").onclick =
+    closeModal;
 
-});
+$("saveButton").onclick =
+    saveItem;
 
+$("search").addEventListener(
+    "input",
+    render
+);
 
-document.getElementById("importButton")
-.addEventListener("click",function(){
+$("exportButton").onclick =
+    exportBackup;
 
-    importData();
+$("importButton").onclick =
+    () => $("fileInput").click();
 
-});
+$("fileInput").addEventListener(
+    "change",
+    function(){
 
+        if(this.files && this.files[0]){
 
-document.getElementById("resetButton")
-.addEventListener("click",function(){
+            importBackupFile(this.files[0]);
 
-    resetAll();
+        }
 
-});
-
-
-/* بستن با لمس بیرون فرم */
-
-document.getElementById("modal")
-.addEventListener("click",function(event){
-
-    if(event.target === this){
-
-        closeModal();
-
-    }
-
-});
-
-
-/* دکمه‌های داخل لیست */
-
-document.getElementById("list")
-.addEventListener("click",function(event){
-
-    const monthButton =
-        event.target.closest(".monthBtn");
-
-    if(monthButton){
-
-        toggleMonth(
-            monthButton.dataset.id,
-            Number(monthButton.dataset.index)
-        );
-
-        return;
+        this.value = "";
 
     }
+);
 
+$("resetButton").onclick =
+    deleteAll;
 
-    const editButton =
-        event.target.closest(".editBtn");
+$("trashButton").onclick =
+    function(){
 
-    if(editButton){
+        trashVisible = !trashVisible;
 
-        editItem(editButton.dataset.id);
+        render();
 
-        return;
+        if(trashVisible){
+
+            setTimeout(() => {
+
+                $("trashArea")
+                    .scrollIntoView({
+                        behavior:"smooth",
+                        block:"start"
+                    });
+
+            },100);
+
+        }
+
+    };
+
+$("modal").addEventListener(
+    "click",
+    function(e){
+
+        if(e.target === $("modal")){
+
+            closeModal();
+
+        }
 
     }
-
-
-    const deleteButton =
-        event.target.closest(".deleteBtn");
-
-    if(deleteButton){
-
-        deleteItem(deleteButton.dataset.id);
-
-        return;
-
-    }
-
-});
-
-
-/* =========================
-   شروع برنامه
-========================= */
+);
 
 loadData();
-
 render();
 
 </script>
