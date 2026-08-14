@@ -1,23 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+name: Build APK
 
-    <application
-        android:allowBackup="true"
-        android:label="مدیریت اقساط"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-        </activity>
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-    </application>
+      - name: Build APK
+        run: gradle :app:assembleDebug
 
-</manifest>
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MohammadInstallments-APK
+          path: app/build/outputs/apk/debug/*.apk
