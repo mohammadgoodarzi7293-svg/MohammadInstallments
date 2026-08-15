@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -6,42 +5,24 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- پس‌زمینه -->
     <path
         android:fillColor="#1976D2"
-        android:pathData="M0,0 L108,0 L108,108 L0,108 Z" />
+        android:pathData="M54,4A50,50 0,1 0,54 104A50,50 0,1 0,54 4" />
 
-    <!-- کیف/دفتر مدیریت -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M27,34 L81,34 L81,82 L27,82 Z" />
+        android:pathData="M30,31L78,31L78,40L30,40Z" />
 
-    <!-- قسمت بالای دفتر -->
-    <path
-        android:fillColor="#E3F2FD"
-        android:pathData="M27,34 L81,34 L81,47 L27,47 Z" />
-
-    <!-- دسته -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M42,34 L42,27 Q42,23 46,23 L62,23 Q66,23 66,27 L66,34 L61,34 L61,29 L47,29 L47,34 Z" />
-
-    <!-- خطوط اقساط -->
-    <path
-        android:fillColor="#1976D2"
-        android:pathData="M37,55 L71,55 L71,59 L37,59 Z" />
+        android:pathData="M30,49L78,49L78,58L30,58Z" />
 
     <path
-        android:fillColor="#1976D2"
-        android:pathData="M37,65 L71,65 L71,69 L37,69 Z" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,67L61,67L61,76L30,76Z" />
 
     <path
-        android:fillColor="#1976D2"
-        android:pathData="M37,75 L57,75 L57,79 L37,79 Z" />
-
-    <!-- تیک -->
-    <path
-        android:fillColor="#22A447"
-        android:pathData="M63,73 L68,78 L78,67 L81,70 L68,84 L60,76 Z" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M67,67L78,67L78,76L67,76Z" />
 
 </vector>
