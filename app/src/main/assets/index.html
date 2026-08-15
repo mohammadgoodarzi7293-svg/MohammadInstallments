@@ -1,10 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 
 <title>مدیریت اقساط</title>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f766e">
 
 <style>
 *{
@@ -12,746 +15,639 @@
     -webkit-tap-highlight-color:transparent;
 }
 
-html,body{
-    margin:0;
-    padding:0;
-    width:100%;
-    min-height:100%;
-}
-
 body{
-    font-family:Tahoma,Arial,sans-serif;
-    background:#f3f6fa;
-    color:#17202a;
-    font-size:14px;
-    overflow-x:hidden;
-}
-
-button,input{
-    font-family:inherit;
-}
-
-button{
-    border:0;
-    cursor:pointer;
-}
-
-.header{
-    background:linear-gradient(135deg,#1268c4,#2499e8);
-    color:#fff;
-    padding:22px 14px 20px;
-    border-radius:0 0 26px 26px;
-    box-shadow:0 5px 18px rgba(0,0,0,.13);
-}
-
-.header h1{
     margin:0;
-    text-align:center;
-    font-size:24px;
+    font-family:Tahoma,Arial,sans-serif;
+    background:#f3f6f8;
+    color:#172033;
 }
 
-.header p{
-    margin:8px 0 16px;
-    text-align:center;
-    opacity:.92;
-    font-size:13px;
+header{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:#fff;
+    padding:16px;
+    border-bottom:1px solid #e2e8f0;
 }
 
-.summary{
-    width:100%;
-    max-width:700px;
-    margin:auto;
+h1{
+    margin:0 0 12px;
+    font-size:20px;
+    text-align:center;
+}
+
+.stats{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:7px;
+    gap:8px;
 }
 
 .stat{
-    min-width:0;
-    background:#fff;
-    color:#17202a;
-    border-radius:15px;
-    padding:11px 4px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:9px;
     text-align:center;
-    box-shadow:0 3px 12px rgba(0,0,0,.08);
 }
 
 .stat small{
     display:block;
-    color:#64748b;
     font-size:10px;
-    margin-bottom:6px;
+    color:#64748b;
 }
 
-.stat strong{
-    display:block;
-    font-size:13px;
-    word-break:break-word;
+.stat b{
+    font-size:14px;
 }
 
-.container{
-    width:100%;
+main{
+    padding:12px;
     max-width:700px;
     margin:auto;
-    padding:13px 11px 105px;
 }
 
-.searchBox{
-    background:#fff;
-    padding:5px;
-    border-radius:15px;
-    box-shadow:0 3px 13px rgba(0,0,0,.06);
-    margin-bottom:9px;
-}
-
-.search{
-    width:100%;
-    border:0;
-    outline:0;
-    background:#f4f6f8;
-    border-radius:11px;
-    padding:13px;
-    font-size:13px;
-}
-
-.addButton{
-    width:100%;
-    padding:15px;
-    border-radius:16px;
-    background:#1976d2;
-    color:#fff;
-    font-size:16px;
-    font-weight:bold;
-    box-shadow:0 5px 15px rgba(25,118,210,.25);
+.toolbar{
+    display:flex;
+    gap:8px;
     margin-bottom:12px;
 }
 
-.card{
-    background:#fff;
-    border-radius:18px;
-    padding:14px;
-    margin-bottom:11px;
-    box-shadow:0 3px 15px rgba(0,0,0,.07);
+.toolbar input{
+    flex:1;
 }
 
-.cardTop{
+.btn{
+    border:0;
+    border-radius:10px;
+    padding:10px 13px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.primary{
+    background:#0f766e;
+    color:white;
+}
+
+.secondary{
+    background:#e2e8f0;
+    color:#172033;
+}
+
+.danger{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+input{
+    width:100%;
+    padding:11px;
+    border:1px solid #cbd5e1;
+    border-radius:9px;
+    background:white;
+    font-family:inherit;
+}
+
+/* کارت بانک */
+
+.card{
+    background:white;
+    border:1px solid #e2e8f0;
+    border-radius:15px;
+    margin-bottom:12px;
+    box-shadow:0 2px 8px #00000008;
+    overflow:hidden;
+}
+
+/* سربرگ بانک */
+
+.cardHeader{
+    padding:14px;
+    cursor:pointer;
     display:flex;
     justify-content:space-between;
-    align-items:flex-start;
-    gap:8px;
+    align-items:center;
+    gap:10px;
 }
 
-.cardName{
+.cardHeader:active{
+    background:#f8fafc;
+}
+
+.cardMain{
+    min-width:0;
+    flex:1;
+}
+
+.name{
     font-size:16px;
     font-weight:bold;
 }
 
-.cardInfo{
-    color:#64748b;
+.amount{
     font-size:11px;
-    margin-top:6px;
-    line-height:2;
+    color:#64748b;
+    margin-top:5px;
+    line-height:1.8;
 }
 
-.actions{
+.loanBalance{
+    margin-top:7px;
+    font-size:12px;
+    font-weight:bold;
+    color:#0f766e;
+}
+
+.cardactions{
     display:flex;
     gap:5px;
     flex-shrink:0;
 }
 
-.smallButton{
-    width:35px;
-    height:35px;
-    border-radius:10px;
+.icon{
+    border:0;
     background:#f1f5f9;
-    font-size:16px;
+    border-radius:9px;
+    padding:8px;
+    cursor:pointer;
+    font-size:15px;
 }
 
-.smallButton.delete{
-    background:#fff0f0;
-}
+/* فلش کشویی */
 
-.smallButton.restore{
-    background:#ecfdf3;
-}
-
-.progressBox{
-    margin-top:11px;
-}
-
-.progressText{
+.arrow{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    background:#f1f5f9;
     display:flex;
-    justify-content:space-between;
-    color:#64748b;
-    font-size:10px;
-    margin-bottom:5px;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    transition:.2s;
+    flex-shrink:0;
+}
+
+.card.open .arrow{
+    transform:rotate(180deg);
+}
+
+/* محتوای کشویی */
+
+.cardBody{
+    display:none;
+    padding:0 14px 14px;
+}
+
+.card.open .cardBody{
+    display:block;
 }
 
 .progress{
-    width:100%;
-    height:8px;
-    background:#e5e7eb;
-    border-radius:20px;
+    height:6px;
+    background:#e2e8f0;
+    border-radius:99px;
+    margin-top:4px;
     overflow:hidden;
 }
 
 .progress i{
     display:block;
     height:100%;
-    background:#22a447;
-    border-radius:20px;
-}
-
-/* =========================
-   بخش کشویی اقساط
-========================= */
-
-.installmentToggle{
-    width:100%;
-    margin-top:12px;
-    padding:11px 12px;
-    background:#f1f5f9;
-    border-radius:12px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    color:#334155;
-    font-size:11px;
-    font-weight:bold;
-}
-
-.installmentToggle:active{
-    transform:scale(.99);
-}
-
-.toggleRight{
-    display:flex;
-    align-items:center;
-    gap:7px;
-}
-
-.toggleArrow{
-    width:24px;
-    height:24px;
-    border-radius:50%;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition:transform .25s ease;
-    box-shadow:0 1px 5px rgba(0,0,0,.08);
-}
-
-.installmentToggle.open .toggleArrow{
-    transform:rotate(180deg);
-}
-
-.installmentPanel{
-    max-height:0;
-    overflow:hidden;
-    opacity:0;
-    transition:
-        max-height .35s ease,
-        opacity .25s ease,
-        margin-top .25s ease;
-}
-
-.installmentPanel.open{
-    max-height:5000px;
-    opacity:1;
-    margin-top:10px;
-}
-
-.months{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:6px;
-}
-
-.month{
-    min-height:59px;
-    background:#f7f9fb;
-    border:1px solid #e1e6eb;
-    border-radius:11px;
-    padding:5px 2px;
-    color:#334155;
+    background:#16a34a;
     transition:.2s;
 }
 
+.remainingText{
+    font-size:11px;
+    color:#64748b;
+    margin-top:7px;
+}
+
+/* اقساط */
+
+.months{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    margin-top:10px;
+}
+
+.month{
+    border:1px solid #cbd5e1;
+    background:#fff;
+    border-radius:10px;
+    padding:9px 5px;
+    cursor:pointer;
+    font-family:inherit;
+}
+
 .month.paid{
-    background:#22a447;
-    border-color:#22a447;
-    color:#fff;
-}
-
-.month.overdue{
-    border:2px solid #ef4444;
-    background:#fff5f5;
-}
-
-.month.paid.overdue{
-    background:#22a447;
-    border-color:#22a447;
+    background:#dcfce7;
+    border-color:#22c55e;
 }
 
 .month.locked{
     opacity:.38;
-    background:#eef1f4;
-    color:#94a3b8;
     cursor:not-allowed;
+    background:#f1f5f9;
 }
 
-.monthDate{
+.date{
     display:block;
-    font-size:9px;
-    direction:ltr;
+    font-size:11px;
 }
 
-.monthMark{
+.mark{
     display:block;
-    font-size:17px;
+    font-size:16px;
+    margin-top:3px;
+    color:#16a34a;
+}
+
+/* کارمزد */
+
+.feesBox{
+    margin-top:14px;
+    border-top:1px solid #e2e8f0;
+    padding-top:10px;
+}
+
+.feesTitle{
+    font-size:12px;
+    font-weight:bold;
+    margin-bottom:7px;
+}
+
+.feeMonth{
+    border:1px solid #cbd5e1;
+    background:#fff;
+    border-radius:10px;
+    padding:9px 5px;
+    cursor:pointer;
+}
+
+.feeMonth.paid{
+    background:#dcfce7;
+    border-color:#22c55e;
+}
+
+.feeDate{
+    display:block;
+    font-size:10px;
+}
+
+.feeAmount{
+    display:block;
+    font-size:10px;
     margin-top:5px;
 }
 
-.empty{
-    background:#fff;
-    border-radius:18px;
-    padding:38px 15px;
-    text-align:center;
-    color:#64748b;
-}
-
-.trashTitle{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin:18px 2px 10px;
-}
-
-.trashTitle strong{
-    font-size:14px;
-}
-
-.trashTitle span{
-    font-size:10px;
-    color:#64748b;
-}
-
-.bottomBar{
-    position:fixed;
-    left:0;
-    right:0;
-    bottom:0;
-    z-index:50;
-    background:#fff;
-    border-top:1px solid #e2e8f0;
-    padding:7px 7px calc(7px + env(safe-area-inset-bottom));
-    display:flex;
-    gap:5px;
-}
-
-.bottomButton{
-    flex:1;
-    padding:10px 3px;
-    border-radius:10px;
-    background:#f1f5f9;
-    color:#334155;
-    font-size:10px;
-    font-weight:bold;
-}
-
-.bottomButton.danger{
-    background:#fee2e2;
-    color:#991b1b;
-}
+/* مودال */
 
 .modal{
+    display:none;
     position:fixed;
     inset:0;
-    z-index:100;
-    display:none;
-    align-items:flex-end;
-    justify-content:center;
-    background:rgba(0,0,0,.55);
+    background:#0008;
+    z-index:20;
+    padding:20px;
+    overflow:auto;
 }
 
-.modal.visible{
-    display:flex;
+.modal.show{
+    display:block;
 }
 
 .sheet{
-    width:100%;
     max-width:620px;
-    max-height:94vh;
-    overflow-y:auto;
-    background:#fff;
-    border-radius:24px 24px 0 0;
-    padding:18px 15px calc(23px + env(safe-area-inset-bottom));
+    margin:30px auto;
+    background:white;
+    border-radius:18px;
+    padding:18px;
 }
 
-.sheetTitle{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:9px;
+.sheet h2{
+    margin-top:0;
 }
 
-.sheetTitle h2{
-    margin:0;
-    font-size:18px;
+.formrow{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
 }
 
-.closeButton{
-    width:37px;
-    height:37px;
-    border-radius:50%;
-    background:#f1f5f9;
-    font-size:21px;
-}
-
-label{
+.sheet label{
     display:block;
-    margin:10px 0 5px;
+    font-size:11px;
     color:#475569;
-    font-size:11px;
+    margin:9px 0 4px;
 }
 
-.input{
-    width:100%;
-    border:1px solid #cbd5e1;
-    border-radius:11px;
-    padding:12px;
-    font-size:14px;
-    outline:none;
-    background:#fff;
-}
-
-.input:focus{
-    border-color:#1976d2;
-    box-shadow:0 0 0 3px rgba(25,118,210,.1);
-}
-
-.input.error{
-    border-color:#ef4444;
-    background:#fff7f7;
-}
-
-.formRow{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-}
-
-.dateRow{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-}
-
-.autoInfo{
-    margin-top:8px;
-    padding:9px;
-    background:#eff6ff;
-    border-radius:10px;
-    color:#334155;
+.hint{
     font-size:10px;
-    line-height:1.9;
-}
-
-.errorBox{
-    display:none;
-    margin-top:10px;
-    padding:10px;
-    background:#fff1f2;
-    border:1px solid #fecdd3;
-    color:#dc2626;
-    border-radius:10px;
-    font-size:11px;
-    line-height:1.9;
-}
-
-.errorBox.visible{
-    display:block;
-}
-
-.notice{
-    margin-top:8px;
-    padding:9px;
-    border-radius:10px;
-    background:#fff7ed;
-    color:#9a3412;
-    font-size:10px;
+    color:#64748b;
     line-height:1.8;
+    margin-top:9px;
 }
 
-.modalButtons{
+.modalBtns{
     display:flex;
     gap:8px;
-    margin-top:14px;
+    margin-top:15px;
 }
 
-.modalButton{
+.modalBtns button{
     flex:1;
-    padding:13px;
-    border-radius:12px;
-    font-size:13px;
-    font-weight:bold;
 }
 
-.cancel{
-    background:#f1f5f9;
-    color:#334155;
+.feeRow{
+    display:grid;
+    grid-template-columns:1fr 1fr auto;
+    gap:7px;
+    align-items:end;
+    margin-top:7px;
 }
 
-.save{
-    background:#1976d2;
-    color:#fff;
+.backup{
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+    margin:12px 0;
 }
 
-.toast{
-    position:fixed;
-    left:12px;
-    right:12px;
-    bottom:80px;
-    z-index:200;
-    background:#17202a;
-    color:#fff;
-    padding:12px;
-    border-radius:12px;
+.empty{
     text-align:center;
-    font-size:12px;
-    display:none;
+    padding:45px 20px;
+    color:#64748b;
+    background:white;
+    border-radius:15px;
 }
 
-.toast.show{
-    display:block;
-}
-
-@media(max-width:380px){
-
-    .header h1{
-        font-size:22px;
-    }
-
-    .stat strong{
-        font-size:11px;
-    }
+@media(max-width:480px){
 
     .months{
-        grid-template-columns:repeat(3,1fr);
+        grid-template-columns:repeat(2,1fr);
     }
 
-    .formRow,
-    .dateRow{
+    .formrow{
         grid-template-columns:1fr;
     }
 
-    .bottomButton{
-        font-size:9px;
+    .stats{
+        gap:5px;
     }
+
+    .stat b{
+        font-size:12px;
+    }
+
+    .cardHeader{
+        padding:12px;
+    }
+
 }
 </style>
 </head>
 
 <body>
 
-<header class="header">
+<header>
 
 <h1>مدیریت اقساط</h1>
 
-<p>مدیریت ساده و دقیق اقساط و بدهی‌ها</p>
-
-<div class="summary">
+<div class="stats">
 
 <div class="stat">
-<small>کل موارد</small>
-<strong id="count">۰</strong>
+<small>تعداد وام‌ها</small>
+<b id="count">۰</b>
 </div>
 
 <div class="stat">
-<small>مانده کل</small>
-<strong id="total">۰ تومان</strong>
+<small>مانده کل بدهی</small>
+<b id="total">۰</b>
 </div>
 
 <div class="stat">
 <small>اقساط باقی‌مانده</small>
-<strong id="remaining">۰</strong>
+<b id="remainCount">۰</b>
 </div>
 
 </div>
 
 </header>
 
-<main class="container">
+<main>
 
-<div class="searchBox">
-<input id="search"
-class="search"
-type="text"
-placeholder="جستجوی بانک یا قسط...">
-</div>
+<div class="toolbar">
 
-<button id="addButton" class="addButton">
-＋ افزودن قسط جدید
+<input
+id="search"
+placeholder="جستجوی بانک یا وام..."
+>
+
+<button
+class="btn primary"
+onclick="openAdd()"
+>
+＋ افزودن
 </button>
 
-<div id="list"></div>
+</div>
 
-<div id="trashArea"></div>
+<div class="backup">
 
-</main>
-
-<div class="bottomBar">
-
-<button id="exportButton" class="bottomButton">
+<button
+class="btn secondary"
+onclick="exportData()"
+>
 💾 پشتیبان‌گیری
 </button>
 
-<button id="importButton" class="bottomButton">
+<button
+class="btn secondary"
+onclick="importData()"
+>
 📥 بازیابی
 </button>
 
-<button id="trashButton" class="bottomButton">
-🗑️ سطل زباله
-</button>
-
-<button id="resetButton" class="bottomButton danger">
-حذف همه
-</button>
+<input
+id="fileInput"
+type="file"
+accept=".json,application/json"
+style="display:none"
+>
 
 </div>
 
-<input id="fileInput"
-type="file"
-accept=".json,application/json"
-style="display:none">
+<div id="list"></div>
 
-<div id="modal" class="modal">
+</main>
+
+
+<!-- فرم افزودن / ویرایش -->
+
+<div
+id="modal"
+class="modal"
+onclick="if(event.target===this)closeModal()"
+>
 
 <div class="sheet">
 
-<div class="sheetTitle">
-
 <h2 id="modalTitle">
-افزودن قسط جدید
+افزودن وام
 </h2>
 
-<button id="closeButton" class="closeButton">
-×
+<label>
+نام بانک / وام
+</label>
+
+<input
+id="nameInput"
+placeholder="مثلاً تجارت"
+>
+
+<div class="formrow">
+
+<div>
+
+<label>
+مبلغ قسط ماهانه (تومان)
+</label>
+
+<input
+id="amountInput"
+type="number"
+inputmode="numeric"
+>
+
+</div>
+
+<div>
+
+<label>
+تعداد اقساط (اختیاری)
+</label>
+
+<input
+id="monthsInput"
+type="number"
+min="1"
+inputmode="numeric"
+>
+
+</div>
+
+</div>
+
+
+<div class="formrow">
+
+<div>
+
+<label>
+تاریخ شروع
+</label>
+
+<input
+id="startInput"
+dir="ltr"
+placeholder="1405/05/22"
+>
+
+</div>
+
+<div>
+
+<label>
+تاریخ پایان (اختیاری)
+</label>
+
+<input
+id="endInput"
+dir="ltr"
+placeholder="1409/06/22"
+>
+
+</div>
+
+</div>
+
+
+<!-- کارمزدهای سالانه -->
+
+<div
+style="
+margin-top:14px;
+padding:12px;
+border:1px solid #e2e8f0;
+border-radius:12px;
+background:#f8fafc
+"
+>
+
+<div
+style="
+display:flex;
+justify-content:space-between;
+align-items:center
+"
+>
+
+<b>
+کارمزدهای سالانه
+</b>
+
+<button
+class="btn primary"
+type="button"
+onclick="addFee()"
+>
+＋ افزودن کارمزد
 </button>
 
 </div>
 
-<label>نام بانک / مورد *</label>
+<div id="fees"></div>
 
-<input id="nameInput"
-class="input"
-type="text"
-placeholder="مثلاً بانک رسالت">
+<div class="hint">
 
-<div class="formRow">
-
-<div>
-
-<label>مبلغ هر قسط *</label>
-
-<input id="amountInput"
-class="input"
-type="number"
-inputmode="numeric"
-min="0"
-placeholder="مثلاً ۵۰۰۰۰۰۰">
-
-</div>
-
-<div>
-
-<label>تعداد اقساط</label>
-
-<input id="monthsInput"
-class="input"
-type="number"
-inputmode="numeric"
-min="1"
-placeholder="مثلاً ۱۲">
+مثلاً سال اول ۹ میلیون با تاریخ مشخص،
+سال دوم ۷ میلیون با تاریخ مشخص.
+هر کارمزد مستقل است و جداگانه تیک می‌خورد.
 
 </div>
 
 </div>
 
-<label>کارمزد سالانه (%)</label>
 
-<input id="feeInput"
-class="input"
-type="number"
-inputmode="decimal"
-min="0"
-step="0.01"
-value="0"
-placeholder="مثلاً ۴">
+<div class="hint">
 
-<div class="notice">
-اگر این قسط کارمزد سالانه ندارد، مقدار ۰ را وارد کن.
-</div>
+اگر تعداد اقساط را وارد کنی،
+همان تعداد ساخته می‌شود.
 
-<div class="dateRow">
-
-<div>
-
-<label>تاریخ اولین قسط *</label>
-
-<input id="startDateInput"
-class="input"
-type="text"
-inputmode="numeric"
-dir="ltr"
-maxlength="10"
-placeholder="1405/05/22">
+اگر تعداد را خالی بگذاری و تاریخ پایان بدهی،
+تعداد ماه‌ها خودکار محاسبه می‌شود.
 
 </div>
 
-<div>
 
-<label>تاریخ آخرین قسط</label>
+<div class="modalBtns">
 
-<input id="endDateInput"
-class="input"
-type="text"
-inputmode="numeric"
-dir="ltr"
-maxlength="10"
-placeholder="خودکار">
-
-</div>
-
-</div>
-
-<div id="autoInfo" class="autoInfo">
-اگر تعداد اقساط و تاریخ اولین قسط را وارد کنی،
-تاریخ آخرین قسط خودکار محاسبه می‌شود.
-اگر تاریخ اولین و آخرین قسط را وارد کنی،
-تعداد اقساط خودکار محاسبه می‌شود.
-</div>
-
-<label>توضیحات</label>
-
-<input id="noteInput"
-class="input"
-type="text"
-placeholder="توضیحات اختیاری">
-
-<div id="errorBox" class="errorBox"></div>
-
-<div class="modalButtons">
-
-<button id="cancelButton"
-class="modalButton cancel">
+<button
+class="btn secondary"
+onclick="closeModal()"
+>
 انصراف
 </button>
 
-<button id="saveButton"
-class="modalButton save">
-ذخیره قسط
+<button
+class="btn primary"
+onclick="saveItem()"
+>
+ذخیره
 </button>
 
 </div>
@@ -760,1362 +656,1148 @@ class="modalButton save">
 
 </div>
 
-<div id="toast" class="toast"></div>
 
 <script>
 
-const STORAGE_KEY = "mohammad_installments_v7";
-const TRASH_KEY = "mohammad_installments_trash_v7";
-
-let installments = load(STORAGE_KEY);
-let trash = load(TRASH_KEY);
-let editingId = null;
-
-const $ = id => document.getElementById(id);
-
-function load(key){
-    try{
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : [];
-    }catch(e){
-        return [];
-    }
-}
-
-function saveData(){
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(installments)
-    );
-
-    localStorage.setItem(
-        TRASH_KEY,
-        JSON.stringify(trash)
-    );
-}
-
-function faNumber(value){
-    return String(value)
-        .replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
-}
-
-function enNumber(value){
-    return String(value || "")
-        .replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d))
-        .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
-}
-
-function money(value){
-    return faNumber(
-        Number(value || 0).toLocaleString("en-US")
-    ) + " تومان";
-}
-
-function showToast(text){
-    $("toast").textContent = text;
-    $("toast").classList.add("show");
-
-    setTimeout(()=>{
-        $("toast").classList.remove("show");
-    },2200);
-}
-
-function normalizeDateInput(input){
-
-    let value = enNumber(input.value)
-        .replace(/[^\d]/g,"");
-
-    if(value.length > 8)
-        value = value.substring(0,8);
-
-    let result = "";
-
-    if(value.length > 0)
-        result += value.substring(0,4);
-
-    if(value.length >= 5)
-        result += "/" + value.substring(4,6);
-
-    if(value.length >= 7)
-        result += "/" + value.substring(6,8);
-
-    input.value = result;
-}
-
-function validJalali(date){
-
-    if(!/^\d{4}\/\d{2}\/\d{2}$/.test(date))
-        return false;
-
-    const m = Number(date.substring(5,7));
-    const d = Number(date.substring(8,10));
-
-    if(m < 1 || m > 12)
-        return false;
-
-    const max =
-        m <= 6 ? 31 :
-        m <= 11 ? 30 :
-        30;
-
-    return d >= 1 && d <= max;
-}
-
-function jalaliToGregorian(jy,jm,jd){
-
-    jy = Number(jy);
-    jm = Number(jm);
-    jd = Number(jd);
-
-    let gy;
-
-    if(jy > 979){
-        gy = 1600;
-        jy -= 979;
-    }else{
-        gy = 621;
-    }
-
-    let days =
-        365 * jy +
-        Math.floor(jy / 33) * 8 +
-        Math.floor(((jy % 33) + 3) / 4) +
-        78 +
-        jd +
-        (jm < 7
-            ? (jm - 1) * 31
-            : (jm - 7) * 30 + 186);
-
-    gy += 400 * Math.floor(days / 146097);
-
-    days %= 146097;
-
-    if(days > 36524){
-
-        gy += 100 * Math.floor(--days / 36524);
-
-        days %= 36524;
-
-        if(days >= 365)
-            days++;
-
-    }
-
-    gy += 4 * Math.floor(days / 1461);
-
-    days %= 1461;
-
-    if(days > 365){
-
-        gy += Math.floor((days - 1) / 365);
-
-        days = (days - 1) % 365;
-
-    }
-
-    let gd = days + 1;
-
-    const leap =
-        (gy % 4 === 0 && gy % 100 !== 0) ||
-        gy % 400 === 0;
-
-    const monthDays =
-        [0,31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
-
-    let gm = 1;
-
-    while(gd > monthDays[gm]){
-        gd -= monthDays[gm];
-        gm++;
-    }
-
-    return [gy,gm,gd];
-}
-
-function gregorianToJalali(gy,gm,gd){
-
-    gy = Number(gy);
-    gm = Number(gm);
-    gd = Number(gd);
-
-    let jy;
-
-    if(gy > 1600){
-        jy = 979;
-        gy -= 1600;
-    }else{
-        jy = 0;
-        gy -= 621;
-    }
-
-    let gy2 = gm > 2 ? gy + 1 : gy;
-
-    let days =
-        365 * gy +
-        Math.floor((gy2 + 3) / 4) -
-        Math.floor((gy2 + 99) / 100) +
-        Math.floor((gy2 + 399) / 400) -
-        80 +
-        gd;
-
-    const monthDays =
-        [0,31,28,31,30,31,30,31,31,30,31,30,31];
-
-    for(let i=1;i<gm;i++)
-        days += monthDays[i];
-
-    jy += 33 * Math.floor(days / 12053);
-
-    days %= 12053;
-
-    jy += 4 * Math.floor(days / 1461);
-
-    days %= 1461;
-
-    if(days > 365){
-
-        jy += Math.floor((days - 1) / 365);
-
-        days = (days - 1) % 365;
-    }
-
-    let jm =
-        days < 186
-        ? 1 + Math.floor(days / 31)
-        : 7 + Math.floor((days - 186) / 30);
-
-    let jd =
-        1 +
-        (
-            days < 186
-            ? days % 31
-            : (days - 186) % 30
-        );
-
-    return [jy,jm,jd];
-}
-
-function jalaliToDate(text){
-
-    const parts = text.split("/");
-
-    if(parts.length !== 3)
-        return null;
-
-    const jy = Number(parts[0]);
-    const jm = Number(parts[1]);
-    const jd = Number(parts[2]);
-
-    if(!jy || !validJalali(text))
-        return null;
-
-    const g = jalaliToGregorian(jy,jm,jd);
-
-    return new Date(
-        g[0],
-        g[1]-1,
-        g[2]
-    );
-}
-
-function dateToJalali(date){
-
-    const j =
-        gregorianToJalali(
-            date.getFullYear(),
-            date.getMonth()+1,
-            date.getDate()
-        );
-
-    return String(j[0]).padStart(4,"0") +
-        "/" +
-        String(j[1]).padStart(2,"0") +
-        "/" +
-        String(j[2]).padStart(2,"0");
-}
-
-function daysInJalaliMonth(year,month){
-
-    if(month <= 6)
-        return 31;
-
-    if(month <= 11)
-        return 30;
-
-    for(let day=30;day>=29;day--){
-
-        const text =
-            `${year}/12/${day}`;
-
-        if(jalaliToDate(text))
-            return day;
-    }
-
-    return 29;
-}
-
-function addJalaliMonths(text,count){
-
-    const p = text.split("/").map(Number);
-
-    let y = p[0];
-    let m = p[1];
-    let d = p[2];
-
-    const total =
-        (y * 12 + (m-1)) + count;
-
-    y = Math.floor(total / 12);
-    m = total % 12 + 1;
-
-    const max =
-        daysInJalaliMonth(y,m);
-
-    if(d > max)
-        d = max;
-
-    return String(y).padStart(4,"0") +
-        "/" +
-        String(m).padStart(2,"0") +
-        "/" +
-        String(d).padStart(2,"0");
-}
-
-function calculateEndDate(){
-
-    const start =
-        $("startDateInput").value.trim();
-
-    const months =
-        Number(
-            enNumber(
-                $("monthsInput").value
-            )
-        );
-
-    if(
-        start.length === 10 &&
-        validJalali(start) &&
-        months >= 1
-    ){
-
-        $("endDateInput").value =
-            addJalaliMonths(
-                start,
-                months-1
-            );
-    }
-}
-
-function calculateMonths(){
-
-    const start =
-        $("startDateInput").value.trim();
-
-    const end =
-        $("endDateInput").value.trim();
-
-    if(
-        start.length !== 10 ||
-        end.length !== 10 ||
-        !validJalali(start) ||
-        !validJalali(end)
+/* ================================
+   اطلاعات
+================================ */
+
+const KEY='installments_test_v5';
+
+let data=
+JSON.parse(
+localStorage.getItem(KEY)||'null'
+)||[];
+
+let editId=null;
+
+
+/* ================================
+   ابزارها
+================================ */
+
+const fa=s=>
+String(s)
+.replace(
+    /\d/g,
+    d=>'۰۱۲۳۴۵۶۷۸۹'[d]
+);
+
+const num=s=>
+Number(
+    String(s||0)
+    .replace(
+        /[۰-۹]/g,
+        d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)
     )
-        return;
+    .replace(/,/g,'')
+)||0;
 
-    const a =
-        start.split("/").map(Number);
+const money=n=>
+fa(
+    Number(n||0)
+    .toLocaleString('en-US')
+)
++' تومان';
 
-    const b =
-        end.split("/").map(Number);
 
-    let months =
-        (b[0]-a[0])*12 +
-        (b[1]-a[1]) +
-        1;
+const cleanDate=s=>
+String(s||'')
+.trim()
+.replace(
+    /[۰-۹]/g,
+    d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)
+)
+.replace(/[-.]/g,'/');
 
-    if(months < 1)
-        return;
 
-    const calculated =
-        addJalaliMonths(
-            start,
-            months-1
-        );
+function pd(s){
 
-    if(calculated === end)
-        $("monthsInput").value = months;
+    let a=
+    cleanDate(s)
+    .split('/')
+    .map(Number);
+
+    return
+    a.length===3 &&
+    a[0]>0 &&
+    a[1]>=1 &&
+    a[1]<=12 &&
+    a[2]>=1 &&
+    a[2]<=31
+    ? {
+        y:a[0],
+        m:a[1],
+        d:a[2]
+    }
+    :null;
 }
 
-function clearErrors(){
 
-    document
-        .querySelectorAll(".input.error")
-        .forEach(el=>
-            el.classList.remove("error")
-        );
+function idx(d){
 
-    $("errorBox").classList.remove("visible");
-    $("errorBox").innerHTML = "";
+    return d.y*12+d.m-1;
+
 }
 
-function showErrors(errors,fields){
 
-    clearErrors();
+function addm(s,n){
 
-    fields.forEach(id=>{
-        if($(id))
-            $(id).classList.add("error");
-    });
+    let d=pd(s);
 
-    $("errorBox").innerHTML =
-        errors.map(x=>"• "+x).join("<br>");
+    if(!d)
+        return '';
 
-    $("errorBox").classList.add("visible");
+    let i=idx(d)+n;
+
+    let y=Math.floor(i/12);
+
+    let m=i%12+1;
+
+    return
+    y+
+    '/' +
+    String(m).padStart(2,'0')+
+    '/' +
+    String(d.d).padStart(2,'0');
+
 }
 
-function validateForm(){
 
-    const errors = [];
-    const fields = [];
+function between(a,b){
 
-    const name =
-        $("nameInput").value.trim();
+    return idx(b)-idx(a)+1;
 
-    const amount =
-        Number(
-            enNumber(
-                $("amountInput").value
-            )
-        );
-
-    const months =
-        Number(
-            enNumber(
-                $("monthsInput").value
-            )
-        );
-
-    const start =
-        $("startDateInput").value.trim();
-
-    const end =
-        $("endDateInput").value.trim();
-
-    if(!name){
-        errors.push(
-            "نام بانک یا مورد را وارد نکردی."
-        );
-        fields.push("nameInput");
-    }
-
-    if(!amount || amount <= 0){
-        errors.push(
-            "مبلغ هر قسط را وارد نکردی."
-        );
-        fields.push("amountInput");
-    }
-
-    if(!start){
-
-        errors.push(
-            "تاریخ اولین قسط را وارد نکردی."
-        );
-
-        fields.push("startDateInput");
-
-    }else if(
-        start.length !== 10 ||
-        !validJalali(start)
-    ){
-
-        errors.push(
-            "تاریخ اولین قسط صحیح نیست؛ مثلاً 1405/05/22."
-        );
-
-        fields.push("startDateInput");
-    }
-
-    if(end){
-
-        if(
-            end.length !== 10 ||
-            !validJalali(end)
-        ){
-
-            errors.push(
-                "تاریخ آخرین قسط صحیح نیست."
-            );
-
-            fields.push("endDateInput");
-        }
-    }
-
-    if(!months && !end){
-
-        errors.push(
-            "تعداد اقساط را وارد کن یا تاریخ آخرین قسط را وارد کن."
-        );
-
-        fields.push("monthsInput");
-    }
-
-    if(months && months < 1){
-
-        errors.push(
-            "تعداد اقساط باید حداقل ۱ باشد."
-        );
-
-        fields.push("monthsInput");
-    }
-
-    if(
-        start &&
-        validJalali(start) &&
-        months >= 1 &&
-        end &&
-        validJalali(end)
-    ){
-
-        const calculated =
-            addJalaliMonths(
-                start,
-                months-1
-            );
-
-        if(calculated !== end){
-
-            errors.push(
-                "تعداد اقساط و تاریخ آخرین قسط با هم مطابقت ندارند."
-            );
-
-            fields.push(
-                "monthsInput",
-                "endDateInput"
-            );
-        }
-    }
-
-    if(errors.length){
-
-        showErrors(errors,fields);
-        return false;
-    }
-
-    return true;
 }
 
-function openModal(item=null){
 
-    editingId =
-        item ? item.id : null;
+function makeDates(start,n){
 
-    clearErrors();
-
-    $("modalTitle").textContent =
-        item
-        ? "ویرایش قسط"
-        : "افزودن قسط جدید";
-
-    $("nameInput").value =
-        item ? item.name : "";
-
-    $("amountInput").value =
-        item ? item.amount : "";
-
-    $("monthsInput").value =
-        item ? item.months : "";
-
-    $("feeInput").value =
-        item ? item.fee : 0;
-
-    $("startDateInput").value =
-        item ? item.startDate : "";
-
-    $("endDateInput").value =
-        item ? item.endDate : "";
-
-    $("noteInput").value =
-        item ? item.note : "";
-
-    $("modal").classList.add("visible");
-}
-
-function closeModal(){
-
-    $("modal").classList.remove("visible");
-
-    editingId = null;
-
-    clearErrors();
-}
-
-function saveInstallment(){
-
-    const start =
-        $("startDateInput").value.trim();
-
-    const end =
-        $("endDateInput").value.trim();
-
-    const months =
-        Number(
-            enNumber(
-                $("monthsInput").value
-            )
-        );
-
-    if(
-        start.length === 10 &&
-        validJalali(start) &&
-        months >= 1
-    ){
-
-        $("endDateInput").value =
-            addJalaliMonths(
-                start,
-                months-1
-            );
-
-    }else if(
-        start.length === 10 &&
-        end.length === 10 &&
-        validJalali(start) &&
-        validJalali(end)
-    ){
-
-        calculateMonths();
-    }
-
-    if(!validateForm())
-        return;
-
-    const oldItem =
-        editingId
-        ? installments.find(
-            x=>x.id === editingId
-          )
-        : null;
-
-    const item = {
-
-        id:
-            editingId ||
-            Date.now().toString(),
-
-        name:
-            $("nameInput").value.trim(),
-
-        amount:
-            Number(
-                enNumber(
-                    $("amountInput").value
-                )
-            ),
-
-        months:
-            Number(
-                enNumber(
-                    $("monthsInput").value
-                )
-            ),
-
-        fee:
-            Number(
-                enNumber(
-                    $("feeInput").value
-                )
-            ) || 0,
-
-        startDate:
-            $("startDateInput").value.trim(),
-
-        endDate:
-            $("endDateInput").value.trim(),
-
-        note:
-            $("noteInput").value.trim(),
-
-        paid:
-            oldItem &&
-            Array.isArray(oldItem.paid)
-            ? oldItem.paid
-            : [],
-
-        createdAt:
-            oldItem?.createdAt ||
-            Date.now(),
-
-        collapsed:
-            oldItem?.collapsed ??
-            true
-    };
-
-    if(editingId){
-
-        const index =
-            installments.findIndex(
-                x=>x.id===editingId
-            );
-
-        if(index >= 0)
-            installments[index] = item;
-
-    }else{
-
-        installments.unshift(item);
-    }
-
-    saveData();
-    render();
-    closeModal();
-
-    showToast(
-        "قسط با موفقیت ذخیره شد."
+    return Array.from(
+        {length:n},
+        (_,i)=>({
+            date:addm(start,i),
+            paid:false
+        })
     );
+
 }
 
-function isPaid(item,index){
 
-    return Array.isArray(item.paid) &&
-        item.paid.includes(index);
+function esc(s){
+
+    return String(s)
+    .replace(
+        /[&<>"']/g,
+        m=>({
+            '&':'&amp;',
+            '<':'&lt;',
+            '>':'&gt;',
+            '"':'&quot;',
+            "'":'&#39;'
+        }[m])
+    );
+
 }
 
-/*
-  فقط قسط بعدی قابل انتخاب است.
-*/
 
-function isPreviousPaid(item,index){
+function persist(){
 
-    if(index === 0)
-        return true;
+    localStorage.setItem(
+        KEY,
+        JSON.stringify(data)
+    );
 
-    return isPaid(item,index-1);
 }
 
-function togglePaid(item,index){
 
-    /*
-      جلوگیری از رد کردن ترتیب اقساط
-    */
-
-    if(!isPreviousPaid(item,index)){
-
-        showToast(
-            "ابتدا قسط قبلی را تیک بزن."
-        );
-
-        return;
-    }
-
-    if(!Array.isArray(item.paid))
-        item.paid = [];
-
-    const pos =
-        item.paid.indexOf(index);
-
-    if(pos >= 0){
-
-        /*
-          اگر قسطی را برداریم،
-          اقساط بعد از آن هم باید برداشته شوند.
-        */
-
-        item.paid =
-            item.paid.filter(
-                x=>x < index
-            );
-
-    }else{
-
-        item.paid.push(index);
-    }
-
-    saveData();
-    render();
-}
+/* ================================
+   کشویی بانک‌ها
+================================ */
 
 function toggleCard(id){
 
-    const item =
-        installments.find(
-            x=>x.id===id
-        );
-
-    if(!item)
-        return;
-
-    item.collapsed =
-        !item.collapsed;
-
-    saveData();
-    render();
-}
-
-function moveToTrash(id){
-
-    const index =
-        installments.findIndex(
-            x=>x.id===id
-        );
-
-    if(index < 0)
-        return;
-
-    const item =
-        installments.splice(index,1)[0];
-
-    item.deletedAt = Date.now();
-
-    trash.unshift(item);
-
-    saveData();
-    render();
-
-    showToast(
-        "قسط به سطل زباله منتقل شد."
+    const card=
+    document.getElementById(
+        'card-'+id
     );
+
+    if(!card)
+        return;
+
+    card.classList.toggle('open');
+
 }
 
-function restoreItem(id){
 
-    const index =
-        trash.findIndex(
-            x=>x.id===id
-        );
-
-    if(index < 0)
-        return;
-
-    const item =
-        trash.splice(index,1)[0];
-
-    delete item.deletedAt;
-
-    installments.unshift(item);
-
-    saveData();
-    render();
-
-    showToast(
-        "قسط بازیابی شد."
-    );
-}
-
-function permanentlyDelete(id){
-
-    if(!confirm(
-        "این مورد برای همیشه حذف شود؟"
-    ))
-        return;
-
-    trash =
-        trash.filter(
-            x=>x.id!==id
-        );
-
-    saveData();
-    render();
-
-    showToast(
-        "مورد برای همیشه حذف شد."
-    );
-}
-
-function deleteAll(){
-
-    if(!installments.length){
-
-        showToast(
-            "موردی برای حذف وجود ندارد."
-        );
-
-        return;
-    }
-
-    if(!confirm(
-        "مطمئنی می‌خواهی همه اقساط حذف شوند؟\n\nاقساط به سطل زباله منتقل می‌شوند و بعداً قابل بازگردانی هستند."
-    ))
-        return;
-
-    installments.forEach(item=>{
-
-        item.deletedAt =
-            Date.now();
-
-        trash.unshift(item);
-
-    });
-
-    installments = [];
-
-    saveData();
-    render();
-
-    showToast(
-        "همه اقساط به سطل زباله منتقل شدند."
-    );
-}
-
-function clearTrash(){
-
-    if(!trash.length){
-
-        showToast(
-            "سطل زباله خالی است."
-        );
-
-        return;
-    }
-
-    if(!confirm(
-        "مطمئنی می‌خواهی تمام موارد سطل زباله برای همیشه حذف شوند؟"
-    ))
-        return;
-
-    trash = [];
-
-    saveData();
-    render();
-
-    showToast(
-        "سطل زباله پاک شد."
-    );
-}
+/* ================================
+   نمایش
+================================ */
 
 function render(){
 
-    const search =
-        $("search").value
-            .trim()
-            .toLowerCase();
+    let q=
+    document
+    .getElementById('search')
+    .value
+    .toLowerCase()
+    .trim();
 
-    const filtered =
-        installments.filter(item=>
-            item.name
-                .toLowerCase()
-                .includes(search) ||
-            (item.note || "")
-                .toLowerCase()
-                .includes(search)
-        );
+    let shown=
+    data.filter(
+        x=>
+        x.name
+        .toLowerCase()
+        .includes(q)
+    );
 
-    $("count").textContent =
-        faNumber(
-            installments.length
-        );
 
-    let total = 0;
-    let remaining = 0;
+    let remain=0;
 
-    installments.forEach(item=>{
+    let total=0;
 
-        const paidCount =
-            Array.isArray(item.paid)
-            ? item.paid.length
-            : 0;
+    let remainN=0;
 
-        remaining +=
-            Math.max(
-                0,
-                item.months-paidCount
-            );
 
-        total +=
-            Math.max(
-                0,
-                item.months-paidCount
-            ) *
-            Number(item.amount || 0);
+    data.forEach(x=>{
+
+        x.dates.forEach(d=>{
+
+            if(!d.paid){
+
+                remain++;
+
+                remainN++;
+
+                total+=
+                num(
+                    d.amount ??
+                    x.amount
+                );
+
+            }
+
+        });
+
+
+        /*
+          کارمزدهای سالانه
+          جداگانه در مانده کل حساب می‌شوند.
+        */
+
+        (x.fees||[]).forEach(f=>{
+
+            if(!f.paid){
+
+                total+=num(f.amount);
+
+                remainN++;
+
+            }
+
+        });
+
     });
 
-    $("total").textContent =
-        money(total);
 
-    $("remaining").textContent =
-        faNumber(remaining);
+    document
+    .getElementById('count')
+    .textContent=
+    fa(data.length);
 
-    if(!filtered.length){
 
-        $("list").innerHTML =
-            `<div class="empty">
-                هنوز قسطی ثبت نشده است.
-                <br><br>
-                از دکمه «افزودن قسط جدید» شروع کن.
-            </div>`;
+    document
+    .getElementById('total')
+    .textContent=
+    money(total);
 
-    }else{
 
-        $("list").innerHTML =
-            filtered
-                .map(renderCard)
-                .join("");
+    document
+    .getElementById('remainCount')
+    .textContent=
+    fa(remainN);
+
+
+    if(!shown.length){
+
+        document
+        .getElementById('list')
+        .innerHTML=
+        '<div class="empty">'+
+        'هنوز وامی اضافه نشده.'+
+        '</div>';
+
+        return;
+
     }
 
-    renderTrash();
-}
 
-function renderCard(item){
+    document
+    .getElementById('list')
+    .innerHTML=
 
-    const paidCount =
-        Array.isArray(item.paid)
-        ? item.paid.length
-        : 0;
+    shown
+    .map(x=>{
 
-    const percent =
-        item.months
-        ? Math.round(
-            paidCount /
-            item.months *
+        let paid=
+        x.dates
+        .filter(d=>d.paid)
+        .length;
+
+
+        let pct=
+        x.dates.length
+        ?
+        Math.round(
+            paid/
+            x.dates.length*
             100
-          )
-        : 0;
+        )
+        :0;
 
-    const collapsed =
-        item.collapsed !== false;
 
-    let monthsHtml = "";
+        /*
+          مانده فقط اقساط این بانک
+        */
 
-    for(let i=0;i<item.months;i++){
+        let rem=
+        x.dates
+        .filter(d=>!d.paid)
+        .reduce(
+            (s,d)=>
+            s+
+            num(
+                d.amount ??
+                x.amount
+            ),
+            0
+        );
 
-        const date =
-            addJalaliMonths(
-                item.startDate,
-                i
-            );
 
-        const paid =
-            isPaid(item,i);
+        /*
+          همه اقساط قفل هستند
+          مگر اولین قسط پرداخت نشده باشد
+          یا قسط قبلی پرداخت شده باشد.
+        */
 
-        const unlocked =
-            isPreviousPaid(
-                item,
-                i
-            );
+        let monthsHtml=
+        x.dates
+        .map((d,i)=>{
 
-        const locked =
-            !paid && !unlocked;
+            const previousPaid=
+            i===0 ||
+            x.dates[i-1].paid;
 
-        monthsHtml += `
+            const locked=
+            !d.paid &&
+            !previousPaid;
+
+
+            return `
+
             <button
                 class="month
-                    ${paid ? "paid" : ""}
-                    ${locked ? "locked" : ""}
-                "
+                ${d.paid?'paid':''}
+                ${locked?'locked':''}"
                 onclick="
-                    togglePaidById(
-                        '${item.id}',
-                        ${i}
-                    )
+                    event.stopPropagation();
+                    toggle(${x.id},${i})
                 "
-                ${locked ? "disabled" : ""}
+                ${locked?'disabled':''}
             >
 
-                <span class="monthDate">
-                    ${date}
+                <span class="date">
+                    ${fa(d.date)}
                 </span>
 
-                <span class="monthMark">
-                    ${
-                        paid
-                        ? "✓"
-                        : locked
-                        ? "🔒"
-                        : (i+1)
-                    }
+                <span class="mark">
+                    ${d.paid?'✓':'○'}
                 </span>
 
             </button>
-        `;
-    }
 
-    return `
-    <div class="card">
+            `;
 
-        <div
-            class="cardTop"
-            onclick="toggleCard('${item.id}')"
-            style="cursor:pointer"
-        >
+        })
+        .join('');
 
-            <div style="flex:1">
 
-                <div class="cardName">
-                    ${escapeHtml(item.name)}
+        /*
+          کارمزدهای سالانه
+        */
+
+        let feesHtml='';
+
+        if(x.fees?.length){
+
+            feesHtml=
+
+            `
+
+            <div class="feesBox">
+
+                <div class="feesTitle">
+                    کارمزدهای سالانه
                 </div>
 
-                <div class="cardInfo">
+                <div class="months">
 
-                    مبلغ هر قسط:
-                    ${money(item.amount)}
+                ${
+                    x.fees
+                    .map((f,i)=>`
 
-                    <br>
+                        <button
+                            class="
+                            feeMonth
+                            ${f.paid?'paid':''}
+                            "
+                            onclick="
+                                event.stopPropagation();
+                                feeToggle(${x.id},${i})
+                            "
+                        >
 
-                    تعداد:
-                    ${faNumber(item.months)}
-                    قسط
+                            <span class="feeDate">
+                                ${fa(f.date)}
+                            </span>
 
-                    <br>
+                            <span class="feeAmount">
+                                ${money(f.amount)}
+                            </span>
 
-                    اولین:
-                    ${item.startDate}
+                            <span class="mark">
+                                ${f.paid?'✓':'○'}
+                            </span>
 
-                    <br>
+                        </button>
 
-                    آخرین:
-                    ${item.endDate}
-
-                    <br>
-
-                    کارمزد سالانه:
-                    ${faNumber(item.fee || 0)}٪
-
-                    ${
-                        item.note
-                        ? `<br>${escapeHtml(item.note)}`
-                        : ""
-                    }
+                    `)
+                    .join('')
+                }
 
                 </div>
 
             </div>
+
+            `;
+
+        }
+
+
+        return `
+
+        <section
+            class="card"
+            id="card-${x.id}"
+        >
+
+            <!-- سربرگ بانک -->
 
             <div
-                class="actions"
-                onclick="event.stopPropagation()"
+                class="cardHeader"
+                onclick="toggleCard(${x.id})"
             >
 
-                <button
-                    class="smallButton"
-                    onclick="editById('${item.id}')"
-                >
-                    ✏️
-                </button>
+                <div class="cardMain">
 
-                <button
-                    class="smallButton delete"
-                    onclick="moveById('${item.id}')"
-                >
-                    🗑️
-                </button>
+                    <div class="name">
 
-            </div>
-
-        </div>
-
-        <div class="progressBox">
-
-            <div class="progressText">
-
-                <span>
-                    پرداخت شده:
-                    ${faNumber(paidCount)}
-                    از
-                    ${faNumber(item.months)}
-                </span>
-
-                <span>
-                    ${faNumber(percent)}٪
-                </span>
-
-            </div>
-
-            <div class="progress">
-                <i
-                    style="width:${percent}%"
-                ></i>
-            </div>
-
-        </div>
-
-        <button
-            class="installmentToggle
-                ${collapsed ? "" : "open"}
-            "
-            onclick="
-                event.stopPropagation();
-                toggleCard('${item.id}')
-            "
-        >
-
-            <span class="toggleRight">
-
-                <span class="toggleArrow">
-                    ${collapsed ? "⌄" : "⌃"}
-                </span>
-
-                <span>
-                    اقساط این بانک
-                </span>
-
-            </span>
-
-            <span>
-                ${faNumber(paidCount)}
-                /
-                ${faNumber(item.months)}
-            </span>
-
-        </button>
-
-        <div
-            class="installmentPanel
-                ${collapsed ? "" : "open"}
-            "
-        >
-
-            <div class="months">
-                ${monthsHtml}
-            </div>
-
-        </div>
-
-    </div>
-    `;
-}
-
-function renderTrash(){
-
-    if(!trash.length){
-
-        $("trashArea").innerHTML = "";
-
-        return;
-    }
-
-    $("trashArea").innerHTML = `
-
-        <div class="trashTitle">
-
-            <strong>
-                🗑️ سطل زباله
-            </strong>
-
-            <span>
-                ${faNumber(trash.length)}
-                مورد
-            </span>
-
-        </div>
-
-        ${trash.map(item=>`
-
-            <div class="card">
-
-                <div class="cardTop">
-
-                    <div>
-
-                        <div class="cardName">
-                            ${escapeHtml(item.name)}
-                        </div>
-
-                        <div class="cardInfo">
-                            ${money(item.amount)}
-                        </div>
+                        ${esc(x.name)}
 
                     </div>
 
-                    <div class="actions">
+                    <div class="amount">
 
-                        <button
-                            class="smallButton restore"
-                            onclick="
-                                restoreById('${item.id}')
-                            "
-                        >
-                            ↩️
-                        </button>
+                        قسط ماهانه:
+                        ${money(x.amount)}
 
-                        <button
-                            class="smallButton delete"
-                            onclick="
-                                deleteForeverById('${item.id}')
-                            "
-                        >
-                            ❌
-                        </button>
+                        <br>
+
+                        ${fa(x.dates.length)}
+                        قسط
+
+                    </div>
+
+                    <div class="loanBalance">
+
+                        مانده وام این بانک:
+                        ${money(rem)}
 
                     </div>
 
                 </div>
 
+
+                <div class="cardactions">
+
+                    <button
+                        class="icon"
+                        onclick="
+                            event.stopPropagation();
+                            editItem(${x.id})
+                        "
+                    >
+                        ✏️
+                    </button>
+
+                    <button
+                        class="icon"
+                        onclick="
+                            event.stopPropagation();
+                            del(${x.id})
+                        "
+                    >
+                        🗑️
+                    </button>
+
+                    <span class="arrow">
+                        ▼
+                    </span>
+
+                </div>
+
             </div>
 
-        `).join("")}
+
+            <!-- محتوای کشویی -->
+
+            <div class="cardBody">
+
+                <div class="progress">
+
+                    <i
+                        style="width:${pct}%"
+                    ></i>
+
+                </div>
+
+
+                <div class="remainingText">
+
+                    ${fa(x.dates.length-paid)}
+                    قسط باقی‌مانده
+
+                    —
+                    مانده اقساط:
+
+                    <b>
+                        ${money(rem)}
+                    </b>
+
+                </div>
+
+
+                <div class="months">
+
+                    ${monthsHtml}
+
+                </div>
+
+
+                ${feesHtml}
+
+            </div>
+
+        </section>
+
+        `;
+
+    })
+    .join('');
+
+}
+
+
+/* ================================
+   افزودن
+================================ */
+
+function openAdd(){
+
+    editId=null;
+
+    document
+    .getElementById('modalTitle')
+    .textContent=
+    'افزودن وام';
+
+
+    [
+        'nameInput',
+        'amountInput',
+        'monthsInput',
+        'startInput',
+        'endInput'
+    ]
+    .forEach(
+        id=>
+        document
+        .getElementById(id)
+        .value=''
+    );
+
+
+    document
+    .getElementById('fees')
+    .innerHTML='';
+
+
+    document
+    .getElementById('modal')
+    .classList
+    .add('show');
+
+}
+
+
+/* ================================
+   بستن
+================================ */
+
+function closeModal(){
+
+    document
+    .getElementById('modal')
+    .classList
+    .remove('show');
+
+    editId=null;
+
+}
+
+
+/* ================================
+   افزودن کارمزد سالانه
+================================ */
+
+function addFee(
+    amount='',
+    date=''
+){
+
+    let d=
+    document
+    .createElement('div');
+
+    d.className='feeRow';
+
+
+    d.innerHTML=`
+
+        <div>
+
+            <label>
+                مبلغ
+            </label>
+
+            <input
+                class="fa"
+                type="number"
+                value="${amount}"
+                placeholder="9000000"
+            >
+
+        </div>
+
+        <div>
+
+            <label>
+                تاریخ سررسید
+            </label>
+
+            <input
+                class="fd"
+                dir="ltr"
+                value="${date}"
+                placeholder="1405/12/01"
+            >
+
+        </div>
 
         <button
-            class="addButton"
-            style="
-                background:#dc2626;
-                margin-top:4px
+            class="icon"
+            type="button"
+            onclick="
+                this.parentElement.remove()
             "
-            onclick="clearTrash()"
         >
-            حذف دائمی سطل زباله
+            🗑️
         </button>
+
     `;
+
+
+    document
+    .getElementById('fees')
+    .appendChild(d);
+
 }
 
-function escapeHtml(text){
 
-    return String(text || "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
+/* ================================
+   خواندن کارمزدها
+================================ */
+
+function readFees(){
+
+    return [
+
+        ...document
+        .querySelectorAll('.feeRow')
+
+    ]
+
+    .map(r=>({
+
+        amount:
+        num(
+            r
+            .querySelector('.fa')
+            .value
+        ),
+
+        date:
+        cleanDate(
+            r
+            .querySelector('.fd')
+            .value
+        ),
+
+        paid:false
+
+    }))
+
+    .filter(
+        f=>
+        f.amount>0 &&
+        pd(f.date)
+    );
+
 }
 
-function editById(id){
 
-    const item =
-        installments.find(
-            x=>x.id===id
+/* ================================
+   ذخیره
+================================ */
+
+function saveItem(){
+
+    let name=
+    document
+    .getElementById('nameInput')
+    .value
+    .trim();
+
+
+    let amount=
+    num(
+        document
+        .getElementById('amountInput')
+        .value
+    );
+
+
+    let start=
+    cleanDate(
+        document
+        .getElementById('startInput')
+        .value
+    );
+
+
+    let end=
+    cleanDate(
+        document
+        .getElementById('endInput')
+        .value
+    );
+
+
+    let n=
+    num(
+        document
+        .getElementById('monthsInput')
+        .value
+    );
+
+
+    if(
+        !name ||
+        !amount ||
+        !pd(start)
+    ){
+
+        alert(
+            'نام، مبلغ قسط و تاریخ شروع را وارد کن.'
         );
 
-    if(item)
-        openModal(item);
-}
+        return;
 
-function moveById(id){
-    moveToTrash(id);
-}
+    }
 
-function togglePaidById(id,index){
 
-    const item =
-        installments.find(
-            x=>x.id===id
+    /*
+      اگر تعداد قسط وارد نشده
+      از تاریخ شروع و پایان محاسبه می‌کنیم.
+    */
+
+    if(
+        !n &&
+        pd(end)
+    ){
+
+        n=
+        between(
+            pd(start),
+            pd(end)
         );
 
-    if(item)
-        togglePaid(item,index);
+    }
+
+
+    if(!n){
+
+        alert(
+            'تعداد اقساط یا تاریخ پایان را وارد کن.'
+        );
+
+        return;
+
+    }
+
+
+    /*
+      اگر تاریخ پایان داده شده،
+      تعداد واقعی را از تاریخ‌ها محاسبه می‌کنیم.
+    */
+
+    if(pd(end)){
+
+        let derived=
+        between(
+            pd(start),
+            pd(end)
+        );
+
+        if(derived>0)
+            n=derived;
+
+    }
+
+
+    let dates=
+    makeDates(
+        start,
+        n
+    );
+
+
+    let feesList=
+    readFees();
+
+
+    let old=
+    editId
+    ?
+    data.find(
+        x=>x.id===editId
+    )
+    :null;
+
+
+    /*
+      تیک‌های قبلی حفظ می‌شوند.
+    */
+
+    let oldPaid=
+    new Map(
+        (old?.dates||[])
+        .map(
+            d=>[
+                d.date,
+                d.paid
+            ]
+        )
+    );
+
+
+    /*
+      تیک کارمزدهای قبلی هم حفظ می‌شود.
+    */
+
+    let oldFees=
+    new Map(
+        (old?.fees||[])
+        .map(
+            f=>[
+                f.date,
+                f.paid
+            ]
+        )
+    );
+
+
+    let item={
+
+        id:
+        editId ||
+        Date.now(),
+
+        name,
+
+        amount,
+
+        endDate:end,
+
+        dates:
+        dates.map(
+            d=>({
+
+                date:d.date,
+
+                paid:
+                oldPaid.get(d.date)
+                ||false
+
+            })
+        ),
+
+        /*
+          کارمزد با مبلغ و تاریخ مستقل
+        */
+
+        fees:
+        feesList.map(
+            f=>({
+
+                ...f,
+
+                paid:
+                oldFees.get(f.date)
+                ||false
+
+            })
+        )
+
+    };
+
+
+    if(old){
+
+        data=
+        data.map(
+            x=>
+            x.id===editId
+            ?item
+            :x
+        );
+
+    }else{
+
+        data.push(item);
+
+    }
+
+
+    persist();
+
+    closeModal();
+
+    render();
+
 }
 
-function restoreById(id){
-    restoreItem(id);
+
+/* ================================
+   ویرایش
+================================ */
+
+function editItem(id){
+
+    let x=
+    data.find(
+        a=>a.id===id
+    );
+
+    if(!x)
+        return;
+
+
+    editId=id;
+
+
+    document
+    .getElementById('modalTitle')
+    .textContent=
+    'ویرایش وام';
+
+
+    document
+    .getElementById('nameInput')
+    .value=
+    x.name;
+
+
+    document
+    .getElementById('amountInput')
+    .value=
+    x.amount;
+
+
+    document
+    .getElementById('monthsInput')
+    .value=
+    x.dates.length;
+
+
+    document
+    .getElementById('startInput')
+    .value=
+    x.dates[0]?.date||'';
+
+
+    document
+    .getElementById('endInput')
+    .value=
+    x.endDate||'';
+
+
+    document
+    .getElementById('fees')
+    .innerHTML='';
+
+
+    /*
+      کارمزدهای سالانه قبلی
+      دوباره داخل فرم قرار می‌گیرند.
+    */
+
+    (x.fees||[])
+    .forEach(
+        f=>
+        addFee(
+            f.amount,
+            f.date
+        )
+    );
+
+
+    document
+    .getElementById('modal')
+    .classList
+    .add('show');
+
 }
 
-function deleteForeverById(id){
-    permanentlyDelete(id);
+
+/* ================================
+   حذف
+================================ */
+
+function del(id){
+
+    if(
+        confirm(
+            'این وام حذف شود؟'
+        )
+    ){
+
+        data=
+        data.filter(
+            x=>x.id!==id
+        );
+
+        persist();
+
+        render();
+
+    }
+
 }
+
+
+/* ================================
+   تیک قسط
+================================ */
+
+function toggle(id,i){
+
+    let x=
+    data.find(
+        a=>a.id===id
+    );
+
+    if(!x)
+        return;
+
+
+    /*
+      اجازه نمی‌دهیم کاربر
+      قسط‌ها را از وسط تیک بزند.
+    */
+
+    if(
+        !x.dates[i].paid &&
+        i>0 &&
+        !x.dates[i-1].paid
+    ){
+
+        return;
+
+    }
+
+
+    x.dates[i].paid=
+    !x.dates[i].paid;
+
+
+    persist();
+
+    render();
+
+}
+
+
+/* ================================
+   تیک کارمزد
+================================ */
+
+function feeToggle(id,i){
+
+    let x=
+    data.find(
+        a=>a.id===id
+    );
+
+    if(!x)
+        return;
+
+
+    x.fees[i].paid=
+    !x.fees[i].paid;
+
+
+    persist();
+
+    render();
+
+}
+
+
+/* ================================
+   پشتیبان‌گیری
+================================ */
 
 function exportData(){
 
-    const data = {
+    let a=
+    document.createElement('a');
 
-        version:7,
 
-        installments,
+    a.href=
+    URL.createObjectURL(
 
-        trash,
-
-        exportedAt:
-            new Date().toISOString()
-    };
-
-    const blob =
         new Blob(
             [
                 JSON.stringify(
@@ -2125,172 +1807,146 @@ function exportData(){
                 )
             ],
             {
-                type:"application/json"
+                type:
+                'application/json'
             }
-        );
+        )
 
-    const url =
-        URL.createObjectURL(blob);
+    );
 
-    const a =
-        document.createElement("a");
 
-    a.href = url;
+    a.download=
+    'پشتیبان_اقساط.json';
 
-    a.download =
-        "MohammadInstallments-backup.json";
 
-    document.body.appendChild(a);
+    document
+    .body
+    .appendChild(a);
+
 
     a.click();
 
     a.remove();
 
-    URL.revokeObjectURL(url);
-
-    showToast(
-        "فایل پشتیبان آماده شد."
-    );
 }
 
-function importData(file){
 
-    const reader =
+/* ================================
+   بازیابی
+================================ */
+
+function importData(){
+
+    const input=
+    document
+    .getElementById('fileInput');
+
+
+    input.value='';
+
+
+    input.onchange=()=>{
+
+        let file=
+        input.files[0];
+
+
+        if(!file)
+            return;
+
+
+        let r=
         new FileReader();
 
-    reader.onload = function(){
 
-        try{
+        r.onload=()=>{
 
-            const data =
+            try{
+
+                let imported=
                 JSON.parse(
-                    reader.result
+                    r.result
                 );
 
-            if(
-                !data ||
-                !Array.isArray(
-                    data.installments
-                )
-            ){
-                throw new Error();
+
+                if(
+                    !Array.isArray(imported)
+                ){
+
+                    throw new Error();
+
+                }
+
+
+                data=
+                imported;
+
+
+                persist();
+
+                render();
+
+
+                alert(
+                    'پشتیبان با موفقیت بازیابی شد.'
+                );
+
+
+            }catch(e){
+
+                alert(
+                    'فایل پشتیبان معتبر نیست.'
+                );
+
             }
 
-            installments =
-                data.installments;
+        };
 
-            trash =
-                Array.isArray(data.trash)
-                ? data.trash
-                : [];
 
-            saveData();
-            render();
+        r.readAsText(file);
 
-            showToast(
-                "پشتیبان با موفقیت بازیابی شد."
-            );
-
-        }catch(e){
-
-            alert(
-                "فایل پشتیبان معتبر نیست."
-            );
-        }
     };
 
-    reader.readAsText(file);
+
+    input.click();
+
 }
 
-/* =========================
-   رویدادها
-========================= */
 
-$("addButton").onclick =
-    ()=>openModal();
+/* ================================
+   جستجو
+================================ */
 
-$("closeButton").onclick =
-    closeModal;
-
-$("cancelButton").onclick =
-    closeModal;
-
-$("saveButton").onclick =
-    saveInstallment;
-
-$("search").addEventListener(
-    "input",
+document
+.getElementById('search')
+.addEventListener(
+    'input',
     render
 );
 
-$("exportButton").onclick =
-    exportData;
 
-$("importButton").onclick =
-    ()=>$("fileInput").click();
-
-$("fileInput").addEventListener(
-    "change",
-    function(){
-
-        if(this.files[0])
-            importData(
-                this.files[0]
-            );
-
-        this.value = "";
-    }
-);
-
-$("trashButton").onclick =
-    ()=>{
-
-        $("trashArea").scrollIntoView({
-            behavior:"smooth"
-        });
-    };
-
-$("resetButton").onclick =
-    deleteAll;
-
-$("startDateInput").addEventListener(
-    "input",
-    function(){
-
-        normalizeDateInput(this);
-
-        calculateEndDate();
-    }
-);
-
-$("endDateInput").addEventListener(
-    "input",
-    function(){
-
-        normalizeDateInput(this);
-
-        calculateMonths();
-    }
-);
-
-$("monthsInput").addEventListener(
-    "input",
-    function(){
-
-        calculateEndDate();
-    }
-);
-
-$("modal").addEventListener(
-    "click",
-    function(e){
-
-        if(e.target === $("modal"))
-            closeModal();
-    }
-);
+/* ================================
+   نمایش اولیه
+================================ */
 
 render();
+
+
+/* Service Worker */
+
+if(
+    'serviceWorker'
+    in navigator
+){
+
+    navigator
+    .serviceWorker
+    .register('./sw.js')
+    .catch(
+        ()=>{}
+    );
+
+}
 
 </script>
 
