@@ -1,11 +1,13 @@
 package com.mohammadgoudarzi.installments;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.webkit.JavascriptInterface;
@@ -32,11 +34,14 @@ public class MainActivity extends FragmentActivity {
     private static final int REQUEST_CREATE_BACKUP = 4101;
     private static final int REQUEST_OPEN_BACKUP = 4102;
 
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 9001;
+
     private WebView webView;
 
     private String pendingBackupText = null;
 
     private SharedPreferences securityPrefs;
+    private SharedPreferences notificationPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +49,11 @@ public class MainActivity extends FragmentActivity {
 
         securityPrefs = getSharedPreferences(
                 "app_security",
+                MODE_PRIVATE
+        );
+
+        notificationPrefs = getSharedPreferences(
+                "installment_notifications",
                 MODE_PRIVATE
         );
 
@@ -79,6 +89,10 @@ public class MainActivity extends FragmentActivity {
                 super.onPageFinished(view, url);
 
                 injectNativeFeatures();
+
+                requestNotificationPermission();
+
+                scheduleNotificationAlarm();
             }
         });
 
@@ -94,31 +108,37 @@ public class MainActivity extends FragmentActivity {
         setContentView(webView);
     }
 
+    /*
+     * قفل برنامه با اثر انگشت
+     * یا قفل خود گوشی
+     */
     private void showSecurityLock() {
 
         BiometricManager biometricManager =
                 BiometricManager.from(this);
 
-        int canAuthenticate =
+        int authenticators =
+                BiometricManager.Authenticators.BIOMETRIC_STRONG
+                        |
+                BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+
+        int result =
                 biometricManager.canAuthenticate(
-                        BiometricManager.Authenticators.BIOMETRIC_STRONG
-                                |
-                        BiometricManager.Authenticators.BIOMETRIC_WEAK
-                                |
-                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                        authenticators
                 );
 
-        if (canAuthenticate ==
-                BiometricManager.BIOMETRIC_SUCCESS) {
+        if (
+                result ==
+                        BiometricManager.BIOMETRIC_SUCCESS
+        ) {
 
             Executor executor =
-                    androidx.core.content.ContextCompat.getMainExecutor(
-                            this
-                    );
+                    androidx.core.content.ContextCompat
+                            .getMainExecutor(this);
 
             BiometricPrompt biometricPrompt =
                     new BiometricPrompt(
-                            this,
+                            (FragmentActivity) this,
                             executor,
                             new BiometricPrompt.AuthenticationCallback() {
 
@@ -158,14 +178,14 @@ public class MainActivity extends FragmentActivity {
 
             BiometricPrompt.PromptInfo promptInfo =
                     new BiometricPrompt.PromptInfo.Builder()
-                            .setTitle("ورود به مدیریت اقساط")
-                            .setSubtitle("برای ورود از اثر انگشت یا قفل گوشی استفاده کنید")
+                            .setTitle(
+                                    "ورود به مدیریت اقساط"
+                            )
+                            .setSubtitle(
+                                    "اثر انگشت یا قفل گوشی را وارد کنید"
+                            )
                             .setAllowedAuthenticators(
-                                    BiometricManager.Authenticators.BIOMETRIC_STRONG
-                                            |
-                                    BiometricManager.Authenticators.BIOMETRIC_WEAK
-                                            |
-                                    BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                                    authenticators
                             )
                             .build();
 
@@ -175,10 +195,133 @@ public class MainActivity extends FragmentActivity {
 
         } else {
 
+            Toast.makeText(
+                    this,
+                    "قفل صفحه گوشی فعال نیست.",
+                    Toast.LENGTH_LONG
+            ).show();
+
             initializeApp();
         }
     }
 
+    /*
+     * درخواست اجازه Notification
+     * برای Android 13 به بالا
+     */
+    private void requestNotificationPermission() {
+
+        if (
+                Build.VERSION.SDK_INT >=
+                        Build.VERSION_CODES.TIRAMISU
+        ) {
+
+            if (
+                    checkSelfPermission(
+                            "android.permission.POST_NOTIFICATIONS"
+                    )
+                            !=
+                    android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+
+                requestPermissions(
+                        new String[]{
+                                "android.permission.POST_NOTIFICATIONS"
+                        },
+                        REQUEST_NOTIFICATION_PERMISSION
+                );
+            }
+        }
+    }
+
+    /*
+     * تنظیم Alarm
+     *
+     * برنامه هر روز بررسی می‌کند
+     * که قسطی در محدوده 48 ساعت آینده هست یا نه.
+     */
+    private void scheduleNotificationAlarm() {
+
+        try {
+
+            AlarmManager alarmManager =
+                    (AlarmManager)
+                            getSystemService(
+                                    Context.ALARM_SERVICE
+                            );
+
+            if (alarmManager == null)
+                return;
+
+            Intent intent =
+                    new Intent(
+                            this,
+                            NotificationReceiver.class
+                    );
+
+            PendingIntent pendingIntent =
+                    PendingIntent.getBroadcast(
+                            this,
+                            7001,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                                    |
+                            pendingIntentFlags()
+                    );
+
+            long interval =
+                    24L
+                            * 60L
+                            * 60L
+                            * 1000L;
+
+            long firstRun =
+                    System.currentTimeMillis()
+                            + 60L * 1000L;
+
+            if (
+                    Build.VERSION.SDK_INT >=
+                            Build.VERSION_CODES.M
+            ) {
+
+                alarmManager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        firstRun,
+                        pendingIntent
+                );
+
+            } else {
+
+                alarmManager.setRepeating(
+                        AlarmManager.RTC_WAKEUP,
+                        firstRun,
+                        interval,
+                        pendingIntent
+                );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    private int pendingIntentFlags() {
+
+        if (
+                Build.VERSION.SDK_INT >=
+                        Build.VERSION_CODES.M
+        ) {
+
+            return PendingIntent.FLAG_IMMUTABLE;
+        }
+
+        return 0;
+    }
+
+    /*
+     * امکانات Native
+     */
     private void injectNativeFeatures() {
 
         String js =
@@ -221,7 +364,7 @@ public class MainActivity extends FragmentActivity {
                 + "border-radius:14px;"
                 + "box-shadow:0 6px 22px rgba(0,0,0,.22);"
                 + "padding:6px;"
-                + "min-width:210px;"
+                + "min-width:220px;"
                 + "}"
 
                 + ".devMenu.open{"
@@ -279,7 +422,7 @@ public class MainActivity extends FragmentActivity {
 
                 + "s.type='button';"
                 + "s.className='devMenuItem';"
-                + "s.textContent='🔐 قفل برنامه';"
+                + "s.textContent='🔐 فعال کردن قفل برنامه';"
 
                 + "s.onclick=function(){"
                 + "AndroidBridge.enableAppLock();"
@@ -300,6 +443,19 @@ public class MainActivity extends FragmentActivity {
                 + "};"
 
                 + "m.appendChild(u);"
+
+                + "var n=document.createElement('button');"
+
+                + "n.type='button';"
+                + "n.className='devMenuItem';"
+                + "n.textContent='🔔 فعال‌سازی یادآوری اقساط';"
+
+                + "n.onclick=function(){"
+                + "AndroidBridge.enableNotifications();"
+                + "m.classList.remove('open');"
+                + "};"
+
+                + "m.appendChild(n);"
 
                 + "h.appendChild(b);"
                 + "h.appendChild(m);"
@@ -348,6 +504,8 @@ public class MainActivity extends FragmentActivity {
 
                 + "showToast('پشتیبان با موفقیت بازیابی شد.');"
 
+                + "AndroidBridge.syncInstallments();"
+
                 + "}"
                 + ");"
 
@@ -362,6 +520,8 @@ public class MainActivity extends FragmentActivity {
 
                 + "saveData();"
                 + "render();"
+
+                + "AndroidBridge.syncInstallments();"
 
                 + "}"
 
@@ -392,6 +552,7 @@ public class MainActivity extends FragmentActivity {
                 + "exportedAt:new Date().toISOString(),"
 
                 + "installments:i?JSON.parse(i):[],"
+
                 + "trash:t?JSON.parse(t):[]"
 
                 + "};"
@@ -422,6 +583,9 @@ public class MainActivity extends FragmentActivity {
         );
     }
 
+    /*
+     * ذخیره پشتیبان
+     */
     private void createBackupFile() {
 
         Intent intent =
@@ -448,6 +612,9 @@ public class MainActivity extends FragmentActivity {
         );
     }
 
+    /*
+     * انتخاب فایل پشتیبان
+     */
     private void openBackupPicker() {
 
         Intent intent =
@@ -479,25 +646,24 @@ public class MainActivity extends FragmentActivity {
 
     private void writeBackup(Uri uri) {
 
-        if(pendingBackupText == null)
+        if (pendingBackupText == null)
             return;
 
-        try(
+        try (
                 OutputStream output =
                         getContentResolver()
                                 .openOutputStream(uri)
-        ){
+        ) {
 
-            if(output == null)
+            if (output == null)
                 throw new IOException(
                         "Output stream is null"
                 );
 
             output.write(
-                    pendingBackupText
-                            .getBytes(
-                                    StandardCharsets.UTF_8
-                            )
+                    pendingBackupText.getBytes(
+                            StandardCharsets.UTF_8
+                    )
             );
 
             output.flush();
@@ -508,7 +674,7 @@ public class MainActivity extends FragmentActivity {
                     Toast.LENGTH_SHORT
             ).show();
 
-        }catch(Exception e){
+        } catch (Exception e) {
 
             Toast.makeText(
                     this,
@@ -516,15 +682,15 @@ public class MainActivity extends FragmentActivity {
                     Toast.LENGTH_LONG
             ).show();
 
-        }finally{
+        } finally {
 
-            pendingBackupText=null;
+            pendingBackupText = null;
         }
     }
 
     private void readBackup(Uri uri) {
 
-        try(
+        try (
                 InputStream input =
                         getContentResolver()
                                 .openInputStream(uri);
@@ -536,17 +702,17 @@ public class MainActivity extends FragmentActivity {
                                         StandardCharsets.UTF_8
                                 )
                         )
-        ){
+        ) {
 
             StringBuilder text =
                     new StringBuilder();
 
             String line;
 
-            while(
-                    (line=reader.readLine())
-                            !=null
-            ){
+            while (
+                    (line = reader.readLine())
+                            != null
+            ) {
 
                 text.append(line)
                         .append('\n');
@@ -567,17 +733,19 @@ public class MainActivity extends FragmentActivity {
                     null
             );
 
-        }catch(Exception e){
+        } catch (Exception e) {
 
             Toast.makeText(
                     this,
                     "خواندن فایل پشتیبان انجام نشد.",
                     Toast.LENGTH_LONG
             ).show();
-
         }
     }
 
+    /*
+     * فعال کردن قفل
+     */
     private void setAppLock(boolean enabled) {
 
         securityPrefs.edit()
@@ -596,12 +764,46 @@ public class MainActivity extends FragmentActivity {
         ).show();
     }
 
+    /*
+     * ذخیره اطلاعات اقساط برای Receiver
+     */
+    private void syncInstallments(String json) {
+
+        if (json == null)
+            json = "[]";
+
+        notificationPrefs.edit()
+                .putString(
+                        "installments",
+                        json
+                )
+                .apply();
+
+        scheduleNotificationAlarm();
+    }
+
+    /*
+     * فعال‌سازی Notification
+     */
+    private void enableNotifications() {
+
+        requestNotificationPermission();
+
+        scheduleNotificationAlarm();
+
+        Toast.makeText(
+                this,
+                "یادآوری اقساط فعال شد.",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
     @Override
     protected void onActivityResult(
             int requestCode,
             int resultCode,
             Intent data
-    ){
+    ) {
 
         super.onActivityResult(
                 requestCode,
@@ -609,13 +811,13 @@ public class MainActivity extends FragmentActivity {
                 data
         );
 
-        if(
+        if (
                 resultCode != RESULT_OK ||
                 data == null ||
                 data.getData() == null
-        ){
+        ) {
 
-            pendingBackupText=null;
+            pendingBackupText = null;
 
             return;
         }
@@ -623,47 +825,31 @@ public class MainActivity extends FragmentActivity {
         Uri uri =
                 data.getData();
 
-        if(
+        if (
                 requestCode ==
                         REQUEST_CREATE_BACKUP
-        ){
+        ) {
 
             writeBackup(uri);
 
-        }else if(
+        } else if (
                 requestCode ==
                         REQUEST_OPEN_BACKUP
-        ){
+        ) {
 
             readBackup(uri);
         }
     }
 
-    @Override
-    protected void onResume() {
-
-        super.onResume();
-
-        if(
-                webView != null &&
-                securityPrefs != null &&
-                securityPrefs.getBoolean(
-                        "lock_enabled",
-                        false
-                )
-        ){
-
-            // قفل فقط هنگام شروع برنامه اعمال می‌شود.
-            // بازگشت از فایل‌منیجر باعث قفل مجدد نمی‌شود.
-        }
-    }
-
+    /*
+     * ارتباط Java و HTML
+     */
     public class AndroidBridge {
 
         @JavascriptInterface
         public void saveBackup(
                 String text
-        ){
+        ) {
 
             runOnUiThread(
                     () -> {
@@ -672,13 +858,12 @@ public class MainActivity extends FragmentActivity {
                                 text;
 
                         createBackupFile();
-
                     }
             );
         }
 
         @JavascriptInterface
-        public void openBackupPicker(){
+        public void openBackupPicker() {
 
             runOnUiThread(
                     MainActivity.this::
@@ -687,12 +872,110 @@ public class MainActivity extends FragmentActivity {
         }
 
         @JavascriptInterface
-        public void contactDeveloper(){
+        public void enableAppLock() {
 
             runOnUiThread(
                     () -> {
 
-                        try{
+                        setAppLock(true);
+
+                        showSecurityLock();
+                    }
+            );
+        }
+
+        @JavascriptInterface
+        public void disableAppLock() {
+
+            runOnUiThread(
+                    () -> {
+
+                        setAppLock(false);
+                    }
+            );
+        }
+
+        @JavascriptInterface
+        public void enableNotifications() {
+
+            runOnUiThread(
+                    MainActivity.this::
+                            enableNotifications
+            );
+        }
+
+        @JavascriptInterface
+        public void syncInstallments() {
+
+            runOnUiThread(
+                    () -> {
+
+                        try {
+
+                            String json =
+                                    (String)
+                                            webView
+                                                    .evaluateJavascript(
+                                                            "JSON.stringify(installments)",
+                                                            null
+                                                    );
+
+                            /*
+                             * evaluateJavascript به صورت
+                             * asynchronous است؛ بنابراین
+                             * از localStorage هم می‌خوانیم.
+                             */
+
+                            webView.evaluateJavascript(
+                                    "localStorage.getItem('mohammad_installments_v10')",
+                                    value -> {
+
+                                        if (value != null) {
+
+                                            String clean =
+                                                    value;
+
+                                            if (
+                                                    clean.startsWith("\"")
+                                                            &&
+                                                    clean.endsWith("\"")
+                                            ) {
+
+                                                try {
+
+                                                    clean =
+                                                            org.json.JSONObject
+                                                                    .newInstance(
+                                                                            clean
+                                                                    )
+                                                                    .optString();
+
+                                                } catch (Exception ignored) {
+                                                }
+                                            }
+
+                                            syncInstallments(
+                                                    clean
+                                            );
+                                        }
+                                    }
+                            );
+
+                        } catch (Exception e) {
+
+                            e.printStackTrace();
+                        }
+                    }
+            );
+        }
+
+        @JavascriptInterface
+        public void contactDeveloper() {
+
+            runOnUiThread(
+                    () -> {
+
+                        try {
 
                             Intent intent =
                                     new Intent(
@@ -714,69 +997,16 @@ public class MainActivity extends FragmentActivity {
                                     intent
                             );
 
-                        }catch(Exception e){
+                        } catch (Exception e) {
 
                             Toast.makeText(
                                     MainActivity.this,
                                     "برنامه ایمیل روی گوشی پیدا نشد.",
                                     Toast.LENGTH_LONG
                             ).show();
-
                         }
-
-                    }
-            );
-        }
-
-        @JavascriptInterface
-        public void enableAppLock(){
-
-            runOnUiThread(
-                    () -> {
-
-                        BiometricManager manager =
-                                BiometricManager.from(
-                                        MainActivity.this
-                                );
-
-                        int result =
-                                manager.canAuthenticate(
-                                        BiometricManager.Authenticators.BIOMETRIC_STRONG
-                                                |
-                                        BiometricManager.Authenticators.BIOMETRIC_WEAK
-                                                |
-                                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
-                                );
-
-                        if(
-                                result ==
-                                        BiometricManager.BIOMETRIC_SUCCESS
-                        ){
-
-                            setAppLock(true);
-
-                        }else{
-
-                            Toast.makeText(
-                                    MainActivity.this,
-                                    "قفل صفحه یا اثر انگشت روی گوشی فعال نیست.",
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        }
-                    }
-            );
-        }
-
-        @JavascriptInterface
-        public void disableAppLock(){
-
-            runOnUiThread(
-                    () -> {
-
-                        setAppLock(false);
-
                     }
             );
         }
     }
-            }
+                    }
