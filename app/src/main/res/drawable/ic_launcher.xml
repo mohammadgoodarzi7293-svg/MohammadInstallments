@@ -1,1 +1,47 @@
 
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- پس‌زمینه -->
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M0,0 L108,0 L108,108 L0,108 Z" />
+
+    <!-- کیف/دفتر مدیریت -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M27,34 L81,34 L81,82 L27,82 Z" />
+
+    <!-- قسمت بالای دفتر -->
+    <path
+        android:fillColor="#E3F2FD"
+        android:pathData="M27,34 L81,34 L81,47 L27,47 Z" />
+
+    <!-- دسته -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,34 L42,27 Q42,23 46,23 L62,23 Q66,23 66,27 L66,34 L61,34 L61,29 L47,29 L47,34 Z" />
+
+    <!-- خطوط اقساط -->
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M37,55 L71,55 L71,59 L37,59 Z" />
+
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M37,65 L71,65 L71,69 L37,69 Z" />
+
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M37,75 L57,75 L57,79 L37,79 Z" />
+
+    <!-- تیک -->
+    <path
+        android:fillColor="#22A447"
+        android:pathData="M63,73 L68,78 L78,67 L81,70 L68,84 L60,76 Z" />
+
+</vector>
