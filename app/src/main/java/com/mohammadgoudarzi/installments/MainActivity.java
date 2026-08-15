@@ -1,14 +1,30 @@
 package com.mohammadgoudarzi.installments;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,23 +32,45 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executor;
 
 public class MainActivity extends Activity {
 
     private static final int REQUEST_CREATE_BACKUP = 4101;
     private static final int REQUEST_OPEN_BACKUP = 4102;
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 5001;
+
+    private static final String PREFS_NAME =
+            "mohammad_installments_settings";
+
+    private static final String PREF_APP_LOCK =
+            "app_lock_enabled";
+
+    private static final String PREF_BIOMETRIC =
+            "biometric_enabled";
 
     private WebView webView;
 
     private String pendingBackupText = null;
 
+    private SharedPreferences settingsPrefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        settingsPrefs =
+                getSharedPreferences(
+                        PREFS_NAME,
+                        MODE_PRIVATE
+                );
+
+        requestNotificationPermission();
+
         webView = new WebView(this);
 
-        WebSettings settings = webView.getSettings();
+        WebSettings settings =
+                webView.getSettings();
 
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -42,19 +80,24 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
 
-        webView.setWebViewClient(new WebViewClient() {
+        webView.setWebViewClient(
+                new WebViewClient() {
 
-            @Override
-            public void onPageFinished(
-                    WebView view,
-                    String url
-            ) {
+                    @Override
+                    public void onPageFinished(
+                            WebView view,
+                            String url
+                    ) {
 
-                super.onPageFinished(view, url);
+                        super.onPageFinished(
+                                view,
+                                url
+                        );
 
-                injectNativeFeatures();
-            }
-        });
+                        injectNativeFeatures();
+                    }
+                }
+        );
 
         webView.addJavascriptInterface(
                 new AndroidBridge(),
@@ -68,6 +111,145 @@ public class MainActivity extends Activity {
         setContentView(webView);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (settingsPrefs != null &&
+                settingsPrefs.getBoolean(
+                        PREF_APP_LOCK,
+                        false
+                )) {
+
+            if (webView != null) {
+                webView.postDelayed(
+                        () -> authenticateUser(),
+                        300
+                );
+            }
+        }
+    }
+
+    /*
+     * درخواست مجوز اعلان
+     */
+    private void requestNotificationPermission() {
+
+        if (
+                Build.VERSION.SDK_INT >=
+                Build.VERSION_CODES.TIRAMISU
+        ) {
+
+            if (
+                    ContextCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.POST_NOTIFICATIONS
+                    )
+                    != PackageManager.PERMISSION_GRANTED
+            ) {
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{
+                                Manifest.permission.POST_NOTIFICATIONS
+                        },
+                        REQUEST_NOTIFICATION_PERMISSION
+                );
+            }
+        }
+    }
+
+    /*
+     * احراز هویت با اثر انگشت / قفل گوشی
+     */
+    private void authenticateUser() {
+
+        BiometricManager biometricManager =
+                BiometricManager.from(this);
+
+        int result =
+                biometricManager.canAuthenticate(
+                        BiometricManager.Authenticators.BIOMETRIC_STRONG |
+                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                );
+
+        if (
+                result !=
+                BiometricManager.BIOMETRIC_SUCCESS
+        ) {
+
+            return;
+        }
+
+        Executor executor =
+                ContextCompat.getMainExecutor(this);
+
+        BiometricPrompt biometricPrompt =
+                new BiometricPrompt(
+                        this,
+                        executor,
+                        new BiometricPrompt.AuthenticationCallback() {
+
+                            @Override
+                            public void onAuthenticationSucceeded(
+                                    @NonNull BiometricPrompt.AuthenticationResult result
+                            ) {
+
+                                super.onAuthenticationSucceeded(
+                                        result
+                                );
+                            }
+
+                            @Override
+                            public void onAuthenticationError(
+                                    int errorCode,
+                                    @NonNull CharSequence errString
+                            ) {
+
+                                super.onAuthenticationError(
+                                        errorCode,
+                                        errString
+                                );
+
+                                if (
+                                        errorCode !=
+                                        BiometricPrompt.ERROR_USER_CANCELED
+                                ) {
+
+                                    finish();
+                                }
+                            }
+
+                            @Override
+                            public void onAuthenticationFailed() {
+
+                                super.onAuthenticationFailed();
+                            }
+                        }
+                );
+
+        BiometricPrompt.PromptInfo promptInfo =
+                new BiometricPrompt.PromptInfo.Builder()
+                        .setTitle(
+                                "قفل مدیریت اقساط"
+                        )
+                        .setSubtitle(
+                                "برای ورود به برنامه احراز هویت کنید"
+                        )
+                        .setAllowedAuthenticators(
+                                BiometricManager.Authenticators.BIOMETRIC_STRONG |
+                                BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                        )
+                        .build();
+
+        biometricPrompt.authenticate(
+                promptInfo
+        );
+    }
+
+    /*
+     * فعال کردن امکانات Native
+     */
     private void injectNativeFeatures() {
 
         String js =
@@ -76,6 +258,10 @@ public class MainActivity extends Activity {
                 + "if(window.__nativeFeaturesInstalled)return;"
 
                 + "window.__nativeFeaturesInstalled=true;"
+
+                /*
+                 * استایل منو
+                 */
 
                 + "var style=document.createElement('style');"
 
@@ -110,7 +296,7 @@ public class MainActivity extends Activity {
                 + "border-radius:14px;"
                 + "box-shadow:0 6px 22px rgba(0,0,0,.22);"
                 + "padding:6px;"
-                + "min-width:190px;"
+                + "min-width:220px;"
                 + "}"
 
                 + ".devMenu.open{"
@@ -126,6 +312,7 @@ public class MainActivity extends Activity {
                 + "text-align:right;"
                 + "font-size:12px;"
                 + "color:#334155;"
+                + "border:0;"
                 + "}"
 
                 + ".devMenuItem:active{"
@@ -135,6 +322,10 @@ public class MainActivity extends Activity {
                 + "';"
 
                 + "document.head.appendChild(style);"
+
+                /*
+                 * پیدا کردن Header
+                 */
 
                 + "var h=document.querySelector('.header');"
 
@@ -151,8 +342,11 @@ public class MainActivity extends Activity {
                 + "m.id='devMenu';"
                 + "m.className='devMenu';"
 
-                + "var e=document.createElement('button');"
+                /*
+                 * تماس با توسعه دهنده
+                 */
 
+                + "var e=document.createElement('button');"
                 + "e.type='button';"
                 + "e.className='devMenuItem';"
                 + "e.textContent='✉️ پیام به توسعه‌دهنده';"
@@ -162,7 +356,38 @@ public class MainActivity extends Activity {
                 + "m.classList.remove('open');"
                 + "};"
 
+                /*
+                 * تنظیمات قفل
+                 */
+
+                + "var lock=document.createElement('button');"
+                + "lock.type='button';"
+                + "lock.className='devMenuItem';"
+                + "lock.textContent='🔐 قفل برنامه';"
+
+                + "lock.onclick=function(){"
+                + "AndroidBridge.configureLock();"
+                + "m.classList.remove('open');"
+                + "};"
+
+                /*
+                 * وضعیت اعلان
+                 */
+
+                + "var notification=document.createElement('button');"
+                + "notification.type='button';"
+                + "notification.className='devMenuItem';"
+                + "notification.textContent='🔔 فعال‌سازی یادآوری اقساط';"
+
+                + "notification.onclick=function(){"
+                + "AndroidBridge.requestNotifications();"
+                + "m.classList.remove('open');"
+                + "};"
+
                 + "m.appendChild(e);"
+                + "m.appendChild(lock);"
+                + "m.appendChild(notification);"
+
                 + "h.appendChild(b);"
                 + "h.appendChild(m);"
 
@@ -177,6 +402,10 @@ public class MainActivity extends Activity {
                 + "});"
 
                 + "}"
+
+                /*
+                 * بازیابی
+                 */
 
                 + "window.__nativeImportBackup=function(text){"
 
@@ -210,6 +439,10 @@ public class MainActivity extends Activity {
 
                 + "showToast('پشتیبان با موفقیت بازیابی شد.');"
 
+                + "AndroidBridge.updateNotificationData("
+                + "JSON.stringify(installments)"
+                + ");"
+
                 + "}"
                 + ");"
 
@@ -225,6 +458,10 @@ public class MainActivity extends Activity {
                 + "saveData();"
                 + "render();"
 
+                + "AndroidBridge.updateNotificationData("
+                + "JSON.stringify(installments)"
+                + ");"
+
                 + "}"
 
                 + "}catch(err){"
@@ -234,6 +471,10 @@ public class MainActivity extends Activity {
                 + "}"
 
                 + "};"
+
+                /*
+                 * پشتیبان گیری
+                 */
 
                 + "var ex=document.getElementById('exportButton');"
 
@@ -266,6 +507,10 @@ public class MainActivity extends Activity {
 
                 + "}"
 
+                /*
+                 * بازیابی
+                 */
+
                 + "var im=document.getElementById('importButton');"
 
                 + "if(im){"
@@ -276,6 +521,53 @@ public class MainActivity extends Activity {
 
                 + "}"
 
+                /*
+                 * انتقال اطلاعات اقساط به Android
+                 */
+
+                + "if(typeof saveData==='function'){"
+
+                + "var originalSaveData=saveData;"
+
+                + "window.saveData=function(){"
+
+                + "var result=originalSaveData.apply(this,arguments);"
+
+                + "try{"
+
+                + "var data=localStorage.getItem('mohammad_installments_v10');"
+
+                + "if(data){"
+
+                + "AndroidBridge.updateNotificationData(data);"
+
+                + "}"
+
+                + "}catch(err){}"
+
+                + "return result;"
+
+                + "};"
+
+                + "}"
+
+                /*
+                 * ارسال اطلاعات فعلی هنگام شروع
+                 */
+
+                + "try{"
+
+                + "var initialData="
+                + "localStorage.getItem('mohammad_installments_v10');"
+
+                + "if(initialData){"
+
+                + "AndroidBridge.updateNotificationData(initialData);"
+
+                + "}"
+
+                + "}catch(err){}"
+
                 + "})()";
 
         webView.evaluateJavascript(
@@ -283,6 +575,10 @@ public class MainActivity extends Activity {
                 null
         );
     }
+
+    /*
+     * ساخت فایل پشتیبان
+     */
 
     private void createBackupFile() {
 
@@ -309,6 +605,10 @@ public class MainActivity extends Activity {
                 REQUEST_CREATE_BACKUP
         );
     }
+
+    /*
+     * انتخاب فایل پشتیبان
+     */
 
     private void openBackupPicker() {
 
@@ -339,18 +639,24 @@ public class MainActivity extends Activity {
         );
     }
 
+    /*
+     * ذخیره پشتیبان
+     */
+
     private void writeBackup(Uri uri) {
 
-        if(pendingBackupText == null)
+        if (
+                pendingBackupText == null
+        )
             return;
 
-        try(
+        try (
                 OutputStream output =
                         getContentResolver()
                                 .openOutputStream(uri)
-        ){
+        ) {
 
-            if(output == null)
+            if (output == null)
                 throw new IOException(
                         "Output stream is null"
                 );
@@ -370,7 +676,7 @@ public class MainActivity extends Activity {
                     Toast.LENGTH_SHORT
             ).show();
 
-        }catch(Exception e){
+        } catch (Exception e) {
 
             Toast.makeText(
                     this,
@@ -378,15 +684,19 @@ public class MainActivity extends Activity {
                     Toast.LENGTH_LONG
             ).show();
 
-        }finally{
+        } finally {
 
-            pendingBackupText=null;
+            pendingBackupText = null;
         }
     }
 
+    /*
+     * خواندن پشتیبان
+     */
+
     private void readBackup(Uri uri) {
 
-        try(
+        try (
                 InputStream input =
                         getContentResolver()
                                 .openInputStream(uri);
@@ -398,17 +708,17 @@ public class MainActivity extends Activity {
                                         StandardCharsets.UTF_8
                                 )
                         )
-        ){
+        ) {
 
             StringBuilder text =
                     new StringBuilder();
 
             String line;
 
-            while(
-                    (line=reader.readLine())
-                            !=null
-            ){
+            while (
+                    (line = reader.readLine())
+                            != null
+            ) {
 
                 text.append(line)
                         .append('\n');
@@ -418,7 +728,7 @@ public class MainActivity extends Activity {
                     text.toString();
 
             String jsArg =
-                    org.json.JSONObject.quote(
+                    JSONObject.quote(
                             json
                     );
 
@@ -429,7 +739,7 @@ public class MainActivity extends Activity {
                     null
             );
 
-        }catch(Exception e){
+        } catch (Exception e) {
 
             Toast.makeText(
                     this,
@@ -440,12 +750,16 @@ public class MainActivity extends Activity {
         }
     }
 
+    /*
+     * دریافت نتیجه انتخاب فایل
+     */
+
     @Override
     protected void onActivityResult(
             int requestCode,
             int resultCode,
             Intent data
-    ){
+    ) {
 
         super.onActivityResult(
                 requestCode,
@@ -453,13 +767,13 @@ public class MainActivity extends Activity {
                 data
         );
 
-        if(
+        if (
                 resultCode != RESULT_OK ||
                 data == null ||
                 data.getData() == null
-        ){
+        ) {
 
-            pendingBackupText=null;
+            pendingBackupText = null;
 
             return;
         }
@@ -467,28 +781,36 @@ public class MainActivity extends Activity {
         Uri uri =
                 data.getData();
 
-        if(
+        if (
                 requestCode ==
                         REQUEST_CREATE_BACKUP
-        ){
+        ) {
 
             writeBackup(uri);
 
-        }else if(
+        } else if (
                 requestCode ==
                         REQUEST_OPEN_BACKUP
-        ){
+        ) {
 
             readBackup(uri);
         }
     }
 
+    /*
+     * رابط JavaScript
+     */
+
     public class AndroidBridge {
+
+        /*
+         * پشتیبان گیری
+         */
 
         @JavascriptInterface
         public void saveBackup(
                 String text
-        ){
+        ) {
 
             runOnUiThread(
                     () -> {
@@ -502,8 +824,12 @@ public class MainActivity extends Activity {
             );
         }
 
+        /*
+         * بازیابی
+         */
+
         @JavascriptInterface
-        public void openBackupPicker(){
+        public void openBackupPicker() {
 
             runOnUiThread(
                     MainActivity.this::
@@ -511,13 +837,17 @@ public class MainActivity extends Activity {
             );
         }
 
+        /*
+         * تماس با توسعه دهنده
+         */
+
         @JavascriptInterface
-        public void contactDeveloper(){
+        public void contactDeveloper() {
 
             runOnUiThread(
                     () -> {
 
-                        try{
+                        try {
 
                             Intent intent =
                                     new Intent(
@@ -539,7 +869,7 @@ public class MainActivity extends Activity {
                                     intent
                             );
 
-                        }catch(Exception e){
+                        } catch (Exception e) {
 
                             Toast.makeText(
                                     MainActivity.this,
@@ -552,5 +882,191 @@ public class MainActivity extends Activity {
                     }
             );
         }
+
+        /*
+         * تنظیم قفل برنامه
+         */
+
+        @JavascriptInterface
+        public void configureLock() {
+
+            runOnUiThread(
+                    () -> {
+
+                        boolean enabled =
+                                settingsPrefs.getBoolean(
+                                        PREF_APP_LOCK,
+                                        false
+                                );
+
+                        settingsPrefs.edit()
+                                .putBoolean(
+                                        PREF_APP_LOCK,
+                                        !enabled
+                                )
+                                .apply();
+
+                        if (!enabled) {
+
+                            settingsPrefs.edit()
+                                    .putBoolean(
+                                            PREF_BIOMETRIC,
+                                            true
+                                    )
+                                    .apply();
+
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "قفل برنامه فعال شد.",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            authenticateUser();
+
+                        } else {
+
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "قفل برنامه غیرفعال شد.",
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+
+                    }
+            );
+        }
+
+        /*
+         * درخواست اعلان
+         */
+
+        @JavascriptInterface
+        public void requestNotifications() {
+
+            runOnUiThread(
+                    () -> {
+
+                        requestNotificationPermission();
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                "یادآوری اقساط فعال شد.",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    }
+            );
+        }
+
+        /*
+         * دریافت اطلاعات اقساط
+         * و ذخیره برای NotificationReceiver
+         */
+
+        @JavascriptInterface
+        public void updateNotificationData(
+                String data
+        ) {
+
+            try {
+
+                SharedPreferences prefs =
+                        getSharedPreferences(
+                                "installment_notifications",
+                                MODE_PRIVATE
+                        );
+
+                prefs.edit()
+                        .putString(
+                                "installments",
+                                data
+                        )
+                        .apply();
+
+                scheduleNotificationCheck();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            }
+        }
     }
-}
+
+    /*
+     * زمان‌بندی بررسی اقساط
+     */
+
+    private void scheduleNotificationCheck() {
+
+        try {
+
+            AlarmManager alarmManager =
+                    (AlarmManager)
+                            getSystemService(
+                                    Context.ALARM_SERVICE
+                            );
+
+            if (alarmManager == null)
+                return;
+
+            Intent intent =
+                    new Intent(
+                            this,
+                            NotificationReceiver.class
+                    );
+
+            PendingIntent pendingIntent =
+                    PendingIntent.getBroadcast(
+                            this,
+                            4810,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT |
+                            pendingIntentFlags()
+                    );
+
+            long triggerTime =
+                    System.currentTimeMillis()
+                            + (60L * 60L * 1000L);
+
+            if (
+                    Build.VERSION.SDK_INT >=
+                    Build.VERSION_CODES.M
+            ) {
+
+                alarmManager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        triggerTime,
+                        pendingIntent
+                );
+
+            } else {
+
+                alarmManager.set(
+                        AlarmManager.RTC_WAKEUP,
+                        triggerTime,
+                        pendingIntent
+                );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        }
+    }
+
+    private int pendingIntentFlags() {
+
+        if (
+                Build.VERSION.SDK_INT >=
+                Build.VERSION_CODES.M
+        ) {
+
+            return PendingIntent.FLAG_IMMUTABLE;
+
+        }
+
+        return 0;
+    }
+    }
