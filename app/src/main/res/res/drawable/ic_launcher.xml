@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- پس‌زمینه آیکن -->
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M18,8 L90,8 Q100,8 100,18 L100,90 Q100,100 90,100 L18,100 Q8,100 8,90 L8,18 Q8,8 18,8 Z" />
+
+    <!-- برگه اقساط -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,24 L76,24 Q80,24 80,28 L80,82 Q80,86 76,86 L32,86 Q28,86 28,82 L28,28 Q28,24 32,24 Z" />
+
+    <!-- خط‌های داخل برگه -->
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M38,36 L70,36 L70,40 L38,40 Z" />
+
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M38,47 L70,47 L70,51 L38,51 Z" />
+
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M38,58 L54,58 L54,62 L38,62 Z" />
+
+    <!-- علامت تیک -->
+    <path
+        android:fillColor="#22A447"
+        android:pathData="M43,68 L48,73 L68,54 L72,58 L48,82 L39,73 Z" />
+
+</vector>
