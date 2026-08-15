@@ -6,6 +6,7 @@
     <application
         android:allowBackup="true"
         android:label="مدیریت اقساط"
+        android:icon="@drawable/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
