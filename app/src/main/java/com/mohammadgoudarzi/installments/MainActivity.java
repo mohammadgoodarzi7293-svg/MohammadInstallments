@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -33,7 +32,6 @@ public class MainActivity extends FragmentActivity {
 
     private static final int REQUEST_CREATE_BACKUP = 4101;
     private static final int REQUEST_OPEN_BACKUP = 4102;
-
     private static final int REQUEST_NOTIFICATION_PERMISSION = 9001;
 
     private WebView webView;
@@ -138,7 +136,7 @@ public class MainActivity extends FragmentActivity {
 
             BiometricPrompt biometricPrompt =
                     new BiometricPrompt(
-                            (FragmentActivity) this,
+                            this,
                             executor,
                             new BiometricPrompt.AuthenticationCallback() {
 
@@ -236,9 +234,6 @@ public class MainActivity extends FragmentActivity {
 
     /*
      * تنظیم Alarm
-     *
-     * برنامه هر روز بررسی می‌کند
-     * که قسطی در محدوده 48 ساعت آینده هست یا نه.
      */
     private void scheduleNotificationAlarm() {
 
@@ -250,8 +245,9 @@ public class MainActivity extends FragmentActivity {
                                     Context.ALARM_SERVICE
                             );
 
-            if (alarmManager == null)
+            if (alarmManager == null) {
                 return;
+            }
 
             Intent intent =
                     new Intent(
@@ -646,8 +642,9 @@ public class MainActivity extends FragmentActivity {
 
     private void writeBackup(Uri uri) {
 
-        if (pendingBackupText == null)
+        if (pendingBackupText == null) {
             return;
+        }
 
         try (
                 OutputStream output =
@@ -655,10 +652,11 @@ public class MainActivity extends FragmentActivity {
                                 .openOutputStream(uri)
         ) {
 
-            if (output == null)
+            if (output == null) {
                 throw new IOException(
                         "Output stream is null"
                 );
+            }
 
             output.write(
                     pendingBackupText.getBytes(
@@ -769,8 +767,9 @@ public class MainActivity extends FragmentActivity {
      */
     private void syncInstallments(String json) {
 
-        if (json == null)
+        if (json == null) {
             json = "[]";
+        }
 
         notificationPrefs.edit()
                 .putString(
@@ -904,6 +903,12 @@ public class MainActivity extends FragmentActivity {
             );
         }
 
+        /*
+         * نسخه اصلاح‌شده
+         *
+         * اطلاعات اقساط مستقیماً از localStorage
+         * خوانده می‌شود.
+         */
         @JavascriptInterface
         public void syncInstallments() {
 
@@ -912,52 +917,46 @@ public class MainActivity extends FragmentActivity {
 
                         try {
 
-                            String json =
-                                    (String)
-                                            webView
-                                                    .evaluateJavascript(
-                                                            "JSON.stringify(installments)",
-                                                            null
-                                                    );
-
-                            /*
-                             * evaluateJavascript به صورت
-                             * asynchronous است؛ بنابراین
-                             * از localStorage هم می‌خوانیم.
-                             */
-
                             webView.evaluateJavascript(
                                     "localStorage.getItem('mohammad_installments_v10')",
                                     value -> {
 
-                                        if (value != null) {
+                                        if (
+                                                value == null ||
+                                                "null".equals(value)
+                                        ) {
 
-                                            String clean =
-                                                    value;
+                                            MainActivity.this
+                                                    .syncInstallments("[]");
+
+                                            return;
+                                        }
+
+                                        String clean =
+                                                value;
+
+                                        try {
+
+                                            Object parsed =
+                                                    new org.json.JSONTokener(
+                                                            value
+                                                    ).nextValue();
 
                                             if (
-                                                    clean.startsWith("\"")
-                                                            &&
-                                                    clean.endsWith("\"")
+                                                    parsed instanceof String
                                             ) {
 
-                                                try {
-
-                                                    clean =
-                                                            org.json.JSONObject
-                                                                    .newInstance(
-                                                                            clean
-                                                                    )
-                                                                    .optString();
-
-                                                } catch (Exception ignored) {
-                                                }
+                                                clean =
+                                                        (String) parsed;
                                             }
 
-                                            syncInstallments(
-                                                    clean
-                                            );
+                                        } catch (Exception ignored) {
                                         }
+
+                                        MainActivity.this
+                                                .syncInstallments(
+                                                        clean
+                                                );
                                     }
                             );
 
@@ -1009,4 +1008,4 @@ public class MainActivity extends FragmentActivity {
             );
         }
     }
-                    }
+}
