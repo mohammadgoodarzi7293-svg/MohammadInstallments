@@ -1,6 +1,5 @@
 package com.mohammadgoudarzi.installments;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -49,6 +48,9 @@ public class MainActivity extends FragmentActivity {
 
     private static final String REMINDER_TIME =
             "reminder_time";
+
+    private static final String INSTALLMENTS_KEY =
+            "installments";
 
     private WebView webView;
 
@@ -144,6 +146,12 @@ public class MainActivity extends FragmentActivity {
 
                         requestNotificationPermission();
 
+                        /*
+                         * اطلاعات فعلی اقساط را
+                         * برای سیستم اعلان ارسال می‌کنیم.
+                         */
+                        syncInstallmentsFromWebView();
+
                         scheduleNotificationAlarm();
                     }
                 }
@@ -162,7 +170,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
+     * =========================================================
      * قفل برنامه
+     * =========================================================
      */
     private void showSecurityLock() {
 
@@ -265,7 +275,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
+     * =========================================================
      * اجازه Notification
+     * =========================================================
      */
     private void requestNotificationPermission() {
 
@@ -293,7 +305,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
+     * =========================================================
      * بررسی اجازه Alarm دقیق
+     * =========================================================
      */
     private boolean canScheduleExactAlarms() {
 
@@ -317,7 +331,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
+     * =========================================================
      * باز کردن صفحه اجازه Alarm دقیق
+     * =========================================================
      */
     private void requestExactAlarmPermission() {
 
@@ -350,7 +366,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
+     * =========================================================
      * لغو آلارم قبلی
+     * =========================================================
      */
     private void cancelNotificationAlarm() {
 
@@ -395,16 +413,14 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
+     * =========================================================
      * تنظیم آلارم دقیق طبق تنظیمات کاربر
+     * =========================================================
      */
     private void scheduleNotificationAlarm() {
 
         try {
 
-            /*
-             * اگر یادآوری خاموش باشد،
-             * آلارم قبلی را هم لغو کن.
-             */
             boolean enabled =
                     notificationPrefs.getBoolean(
                             REMINDER_ENABLED,
@@ -430,9 +446,6 @@ public class MainActivity extends FragmentActivity {
 
             /*
              * Android 12+
-             *
-             * برای آلارم دقیق باید اجازه
-             * SCHEDULE_EXACT_ALARM وجود داشته باشد.
              */
             if (!canScheduleExactAlarms()) {
 
@@ -498,18 +511,10 @@ public class MainActivity extends FragmentActivity {
             }
 
             /*
-             * اول آلارم قبلی را لغو کن
-             * تا آلارم قدیمی باقی نماند.
+             * آلارم قبلی حذف شود.
              */
             cancelNotificationAlarm();
 
-            /*
-             * زمان اجرای Receiver
-             *
-             * Receiver خودش بر اساس تاریخ اقساط
-             * بررسی می‌کند که آیا امروز باید
-             * اعلان ارسال شود یا خیر.
-             */
             Calendar calendar =
                     Calendar.getInstance();
 
@@ -534,7 +539,7 @@ public class MainActivity extends FragmentActivity {
             );
 
             /*
-             * اگر ساعت امروز گذشته،
+             * اگر ساعت امروز گذشته باشد،
              * آلارم برای فردا تنظیم می‌شود.
              */
             if (
@@ -568,11 +573,6 @@ public class MainActivity extends FragmentActivity {
                             pendingIntentFlags()
                     );
 
-            /*
-             * Android 6+
-             *
-             * آلارم دقیق و قابل اجرا در Doze
-             */
             if (
                     Build.VERSION.SDK_INT >=
                             Build.VERSION_CODES.M
@@ -619,7 +619,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
+     * =========================================================
      * امکانات Native
+     * =========================================================
      */
     private void injectNativeFeatures() {
 
@@ -743,9 +745,6 @@ public class MainActivity extends FragmentActivity {
 
                 + "m.appendChild(u);"
 
-                /*
-                 * تنظیم یادآوری
-                 */
                 + "var n=document.createElement('button');"
 
                 + "n.type='button';"
@@ -776,6 +775,11 @@ public class MainActivity extends FragmentActivity {
 
                 + "}"
 
+                /*
+                 * =====================================================
+                 * بازیابی Backup
+                 * =====================================================
+                 */
                 + "window.__nativeImportBackup=function(text){"
 
                 + "try{"
@@ -837,6 +841,11 @@ public class MainActivity extends FragmentActivity {
 
                 + "};"
 
+                /*
+                 * =====================================================
+                 * Export
+                 * =====================================================
+                 */
                 + "var ex=document.getElementById('exportButton');"
 
                 + "if(ex){"
@@ -869,12 +878,49 @@ public class MainActivity extends FragmentActivity {
 
                 + "}"
 
+                /*
+                 * =====================================================
+                 * Import
+                 * =====================================================
+                 */
                 + "var im=document.getElementById('importButton');"
 
                 + "if(im){"
 
                 + "im.onclick=function(){"
                 + "AndroidBridge.openBackupPicker();"
+                + "};"
+
+                + "}"
+
+                /*
+                 * =====================================================
+                 * همگام‌سازی خودکار
+                 *
+                 * هر بار saveData اجرا شود،
+                 * اطلاعات جدید برای Android ارسال می‌شود.
+                 * =====================================================
+                 */
+                + "if(typeof window.saveData==='function'&&!window.__originalSaveData){"
+
+                + "window.__originalSaveData=window.saveData;"
+
+                + "window.saveData=function(){"
+
+                + "var result=window.__originalSaveData.apply(this,arguments);"
+
+                + "try{"
+
+                + "if(window.AndroidBridge){"
+
+                + "AndroidBridge.syncInstallments();"
+
+                + "}"
+
+                + "}catch(e){}"
+
+                + "return result;"
+
                 + "};"
 
                 + "}"
@@ -887,6 +933,72 @@ public class MainActivity extends FragmentActivity {
         );
     }
 
+    /*
+     * =========================================================
+     * گرفتن اطلاعات فعلی اقساط از WebView
+     * =========================================================
+     */
+    private void syncInstallmentsFromWebView() {
+
+        if (webView == null) {
+            return;
+        }
+
+        try {
+
+            webView.evaluateJavascript(
+                    "localStorage.getItem('mohammad_installments_v10')",
+                    value -> {
+
+                        if (
+                                value == null ||
+                                "null".equals(value)
+                        ) {
+
+                            syncInstallments("[]");
+
+                            return;
+                        }
+
+                        String clean =
+                                value;
+
+                        try {
+
+                            Object parsed =
+                                    new org.json.JSONTokener(
+                                            value
+                                    ).nextValue();
+
+                            if (
+                                    parsed instanceof String
+                            ) {
+
+                                clean =
+                                        (String)
+                                                parsed;
+                            }
+
+                        } catch (Exception ignored) {
+                        }
+
+                        syncInstallments(
+                                clean
+                        );
+                    }
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * =========================================================
+     * ساخت فایل Backup
+     * =========================================================
+     */
     private void createBackupFile() {
 
         Intent intent =
@@ -913,6 +1025,11 @@ public class MainActivity extends FragmentActivity {
         );
     }
 
+    /*
+     * =========================================================
+     * انتخاب Backup
+     * =========================================================
+     */
     private void openBackupPicker() {
 
         Intent intent =
@@ -942,6 +1059,11 @@ public class MainActivity extends FragmentActivity {
         );
     }
 
+    /*
+     * =========================================================
+     * ذخیره Backup
+     * =========================================================
+     */
     private void writeBackup(Uri uri) {
 
         if (pendingBackupText == null) {
@@ -955,6 +1077,7 @@ public class MainActivity extends FragmentActivity {
         ) {
 
             if (output == null) {
+
                 throw new IOException(
                         "Output stream is null"
                 );
@@ -988,6 +1111,11 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    /*
+     * =========================================================
+     * خواندن Backup
+     * =========================================================
+     */
     private void readBackup(Uri uri) {
 
         try (
@@ -1043,6 +1171,11 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    /*
+     * =========================================================
+     * فعال/غیرفعال کردن قفل
+     * =========================================================
+     */
     private void setAppLock(boolean enabled) {
 
         securityPrefs.edit()
@@ -1062,39 +1195,64 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
-     * ذخیره اطلاعات اقساط برای Receiver
+     * =========================================================
+     * ذخیره اطلاعات اقساط برای NotificationReceiver
+     *
+     * این متد مهم‌ترین بخش اتصال
+     * برنامه به سیستم یادآوری است.
+     * =========================================================
      */
     private void syncInstallments(String json) {
 
-        if (json == null) {
+        if (
+                json == null ||
+                json.trim().isEmpty()
+        ) {
+
             json = "[]";
         }
 
+        /*
+         * اطلاعات جدید را ذخیره می‌کنیم.
+         */
         notificationPrefs.edit()
                 .putString(
-                        "installments",
+                        INSTALLMENTS_KEY,
                         json
                 )
                 .apply();
 
         /*
-         * با تغییر اطلاعات اقساط،
-         * آلارم دوباره تنظیم می‌شود.
+         * اعلان‌های قبلی را حذف می‌کنیم.
+         *
+         * بنابراین:
+         *
+         * تیک قسط
+         * ویرایش قسط
+         * تغییر تاریخ
+         * حذف قسط
+         *
+         * باعث باقی ماندن اعلان قدیمی نمی‌شود.
+         */
+        NotificationReceiver
+                .cancelAllPostedNotifications(this);
+
+        /*
+         * آلارم طبق تنظیمات فعلی
+         * دوباره ساخته می‌شود.
          */
         scheduleNotificationAlarm();
     }
 
     /*
+     * =========================================================
      * فعال‌سازی Notification
+     * =========================================================
      */
     private void enableNotifications() {
 
         requestNotificationPermission();
 
-        /*
-         * اگر اجازه Alarm دقیق وجود ندارد،
-         * صفحه تنظیمات سیستم باز می‌شود.
-         */
         if (!canScheduleExactAlarms()) {
 
             requestExactAlarmPermission();
@@ -1124,6 +1282,11 @@ public class MainActivity extends FragmentActivity {
         ).show();
     }
 
+    /*
+     * =========================================================
+     * نتیجه Backup
+     * =========================================================
+     */
     @Override
     protected void onActivityResult(
             int requestCode,
@@ -1168,7 +1331,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
+     * =========================================================
      * ارتباط Java و HTML
+     * =========================================================
      */
     public class AndroidBridge {
 
@@ -1231,8 +1396,9 @@ public class MainActivity extends FragmentActivity {
         }
 
         /*
-         * این متد از HTML صدا زده می‌شود
-         * وقتی کاربر تنظیمات یادآوری را تغییر می‌دهد.
+         * =====================================================
+         * تغییر تنظیمات یادآوری
+         * =====================================================
          */
         @JavascriptInterface
         public void reminderSettingsChanged(
@@ -1285,6 +1451,9 @@ public class MainActivity extends FragmentActivity {
                                 time = "16:00";
                             }
 
+                            /*
+                             * تنظیمات جدید ذخیره می‌شود.
+                             */
                             notificationPrefs.edit()
                                     .putBoolean(
                                             REMINDER_ENABLED,
@@ -1301,13 +1470,22 @@ public class MainActivity extends FragmentActivity {
                                     .apply();
 
                             /*
-                             * مهم:
-                             *
-                             * آلارم قبلی لغو و آلارم جدید
-                             * دقیقاً طبق تنظیمات جدید ساخته می‌شود.
+                             * اعلان‌های قبلی حذف شوند.
+                             */
+                            NotificationReceiver
+                                    .cancelAllPostedNotifications(
+                                            MainActivity.this
+                                    );
+
+                            /*
+                             * آلارم قبلی حذف شود.
                              */
                             cancelNotificationAlarm();
 
+                            /*
+                             * اگر فعال است،
+                             * آلارم جدید ساخته شود.
+                             */
                             if (enabled) {
 
                                 scheduleNotificationAlarm();
@@ -1322,70 +1500,24 @@ public class MainActivity extends FragmentActivity {
         }
 
         /*
+         * =====================================================
          * دریافت اطلاعات اقساط از localStorage
+         * =====================================================
          */
         @JavascriptInterface
         public void syncInstallments() {
 
             runOnUiThread(
-                    () -> {
-
-                        try {
-
-                            webView.evaluateJavascript(
-                                    "localStorage.getItem('mohammad_installments_v10')",
-                                    value -> {
-
-                                        if (
-                                                value == null ||
-                                                "null".equals(value)
-                                        ) {
-
-                                            MainActivity.this
-                                                    .syncInstallments(
-                                                            "[]"
-                                                    );
-
-                                            return;
-                                        }
-
-                                        String clean =
-                                                value;
-
-                                        try {
-
-                                            Object parsed =
-                                                    new org.json.JSONTokener(
-                                                            value
-                                                    ).nextValue();
-
-                                            if (
-                                                    parsed instanceof String
-                                            ) {
-
-                                                clean =
-                                                        (String)
-                                                                parsed;
-                                            }
-
-                                        } catch (Exception ignored) {
-                                        }
-
-                                        MainActivity.this
-                                                .syncInstallments(
-                                                        clean
-                                                );
-                                    }
-                            );
-
-                        } catch (Exception e) {
-
-                            e.printStackTrace();
-                        }
-                    }
+                    MainActivity.this::
+                            syncInstallmentsFromWebView
             );
         }
 
+        /*
+         * =====================================================
+         * پیام به توسعه‌دهنده
+         * =====================================================
+         */
         @JavascriptInterface
         public void contactDeveloper() {
 
