@@ -18,6 +18,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 
 public class NotificationReceiver extends BroadcastReceiver {
 
@@ -39,6 +41,16 @@ public class NotificationReceiver extends BroadcastReceiver {
     private static final String REMINDER_TIME =
             "reminder_time";
 
+    /*
+     * شناسه اعلان‌هایی که قبلاً نمایش داده شده‌اند.
+     *
+     * با این لیست می‌توانیم وقتی کاربر
+     * قسط را تیک زد یا ویرایش کرد،
+     * اعلان قبلی را هم حذف کنیم.
+     */
+    private static final String POSTED_NOTIFICATION_IDS =
+            "posted_notification_ids";
+
     private static final int ALARM_REQUEST_CODE = 7001;
 
     @Override
@@ -49,21 +61,44 @@ public class NotificationReceiver extends BroadcastReceiver {
 
         createNotificationChannel(context);
 
+        /*
+         * اگر یادآوری خاموش باشد،
+         * هیچ کاری انجام نده.
+         */
+        SharedPreferences prefs =
+                context.getSharedPreferences(
+                        PREFS_NAME,
+                        Context.MODE_PRIVATE
+                );
+
+        boolean enabled =
+                prefs.getBoolean(
+                        REMINDER_ENABLED,
+                        true
+                );
+
+        if (!enabled) {
+            cancelAlarm(context);
+            return;
+        }
+
+        /*
+         * بررسی تمام اقساط.
+         */
         checkInstallments(context);
 
         /*
-         * خیلی مهم:
-         *
-         * این آلارم یک‌بار مصرف است.
-         * بعد از اجرای آن، آلارم روز بعد
-         * دوباره تنظیم می‌شود.
+         * چون AlarmManager آلارم را
+         * یک‌بار مصرف اجرا می‌کند،
+         * آلارم روز بعد را دوباره می‌سازیم.
          */
         scheduleNextAlarm(context);
     }
 
     /*
-     * بررسی اقساطی که امروز باید
-     * برای آنها اعلان ارسال شود.
+     * =========================================================
+     * بررسی اقساط
+     * =========================================================
      */
     private void checkInstallments(
             Context context
@@ -87,10 +122,16 @@ public class NotificationReceiver extends BroadcastReceiver {
                 return;
             }
 
+            /*
+             * 1 = یک روز / 24 ساعت قبل
+             * 2 = دو روز قبل
+             *
+             * امکانات قبلی حفظ شده‌اند.
+             */
             int daysBefore =
                     prefs.getInt(
                             REMINDER_DAYS,
-                            2
+                            1
                     );
 
             if (
@@ -98,7 +139,8 @@ public class NotificationReceiver extends BroadcastReceiver {
                             &&
                     daysBefore != 2
             ) {
-                daysBefore = 2;
+
+                daysBefore = 1;
             }
 
             String json =
@@ -111,13 +153,14 @@ public class NotificationReceiver extends BroadcastReceiver {
                     new JSONArray(json);
 
             /*
-             * امروز + تعداد روز انتخابی
+             * تاریخ هدف را پیدا می‌کنیم.
              *
-             * مثال:
+             * اگر daysBefore = 1 باشد:
              *
-             * امروز ۱۰
-             * ۱ روز قبل → دنبال قسط روز ۱۱
-             * ۲ روز قبل → دنبال قسط روز ۱۲
+             * امروز 10
+             * قسط 11
+             *
+             * یعنی اعلان 24 ساعت قبل.
              */
             Calendar target =
                     Calendar.getInstance();
@@ -181,8 +224,9 @@ public class NotificationReceiver extends BroadcastReceiver {
                             dates.getJSONObject(j);
 
                     /*
-                     * قسط پرداخت شده
-                     * نباید اعلان بدهد.
+                     * قسط پرداخت شده:
+                     *
+                     * اعلان نباید نمایش داده شود.
                      */
                     if (
                             dateObject.optBoolean(
@@ -209,9 +253,8 @@ public class NotificationReceiver extends BroadcastReceiver {
                             );
 
                     /*
-                     * فقط قسطی که دقیقاً
-                     * به اندازه daysBefore
-                     * روز دیگر سررسید دارد.
+                     * آیا تاریخ این قسط
+                     * همان تاریخ هدف است؟
                      */
                     if (
                             !targetDate.equals(
@@ -222,7 +265,8 @@ public class NotificationReceiver extends BroadcastReceiver {
                     }
 
                     /*
-                     * جلوگیری از اعلان تکراری
+                     * کلید اختصاصی برای جلوگیری
+                     * از اعلان تکراری.
                      */
                     String notificationKey =
                             "notified_"
@@ -258,6 +302,10 @@ public class NotificationReceiver extends BroadcastReceiver {
                             notificationId
                     );
 
+                    /*
+                     * ثبت می‌کنیم که این اعلان
+                     * نمایش داده شده است.
+                     */
                     prefs.edit()
                             .putBoolean(
                                     notificationKey,
@@ -274,7 +322,9 @@ public class NotificationReceiver extends BroadcastReceiver {
     }
 
     /*
-     * ارسال Notification
+     * =========================================================
+     * نمایش اعلان
+     * =========================================================
      */
     private void showNotification(
             Context context,
@@ -324,8 +374,11 @@ public class NotificationReceiver extends BroadcastReceiver {
         String daysText;
 
         if (daysBefore == 1) {
-            daysText = "۱ روز قبل";
+
+            daysText = "۲۴ ساعت قبل";
+
         } else {
+
             daysText = "۲ روز قبل";
         }
 
@@ -353,37 +406,30 @@ public class NotificationReceiver extends BroadcastReceiver {
                         context,
                         CHANNEL_ID
                 )
-
-                .setSmallIcon(
-                        android.R.drawable.ic_dialog_info
-                )
-
-                .setContentTitle(
-                        "🔔 یادآوری قسط"
-                )
-
-                .setContentText(
-                        shortText
-                )
-
-                .setStyle(
-                        new NotificationCompat
-                                .BigTextStyle()
-                                .bigText(
-                                        bigText
-                                )
-                )
-
-                .setPriority(
-                        NotificationCompat
-                                .PRIORITY_HIGH
-                )
-
-                .setAutoCancel(true)
-
-                .setContentIntent(
-                        pendingIntent
-                );
+                        .setSmallIcon(
+                                android.R.drawable.ic_dialog_info
+                        )
+                        .setContentTitle(
+                                "🔔 یادآوری قسط"
+                        )
+                        .setContentText(
+                                shortText
+                        )
+                        .setStyle(
+                                new NotificationCompat
+                                        .BigTextStyle()
+                                        .bigText(
+                                                bigText
+                                        )
+                        )
+                        .setPriority(
+                                NotificationCompat
+                                        .PRIORITY_HIGH
+                        )
+                        .setAutoCancel(true)
+                        .setContentIntent(
+                                pendingIntent
+                        );
 
         try {
 
@@ -394,6 +440,18 @@ public class NotificationReceiver extends BroadcastReceiver {
                             builder.build()
                     );
 
+            /*
+             * شناسه اعلان را ذخیره می‌کنیم.
+             *
+             * بعداً اگر کاربر قسط را تیک بزند
+             * یا ویرایش کند، MainActivity
+             * می‌تواند همین اعلان را حذف کند.
+             */
+            addPostedNotificationId(
+                    context,
+                    notificationId
+            );
+
         } catch (SecurityException e) {
 
             e.printStackTrace();
@@ -401,12 +459,106 @@ public class NotificationReceiver extends BroadcastReceiver {
     }
 
     /*
-     * تنظیم آلارم روز بعد
-     *
-     * ساعت دقیقاً از تنظیمات کاربر
-     * خوانده می‌شود.
+     * =========================================================
+     * ثبت شناسه اعلان
+     * =========================================================
      */
-    private void scheduleNextAlarm(
+    private void addPostedNotificationId(
+            Context context,
+            int notificationId
+    ) {
+
+        SharedPreferences prefs =
+                context.getSharedPreferences(
+                        PREFS_NAME,
+                        Context.MODE_PRIVATE
+                );
+
+        Set<String> ids =
+                new HashSet<>(
+                        prefs.getStringSet(
+                                POSTED_NOTIFICATION_IDS,
+                                new HashSet<>()
+                        )
+                );
+
+        ids.add(
+                String.valueOf(
+                        notificationId
+                )
+        );
+
+        prefs.edit()
+                .putStringSet(
+                        POSTED_NOTIFICATION_IDS,
+                        ids
+                )
+                .apply();
+    }
+
+    /*
+     * =========================================================
+     * حذف تمام اعلان‌های ثبت‌شده
+     *
+     * MainActivity هنگام تغییر اطلاعات اقساط
+     * این متد را صدا خواهد زد.
+     * =========================================================
+     */
+    public static void cancelAllPostedNotifications(
+            Context context
+    ) {
+
+        try {
+
+            SharedPreferences prefs =
+                    context.getSharedPreferences(
+                            PREFS_NAME,
+                            Context.MODE_PRIVATE
+                    );
+
+            Set<String> ids =
+                    prefs.getStringSet(
+                            POSTED_NOTIFICATION_IDS,
+                            new HashSet<>()
+                    );
+
+            NotificationManagerCompat manager =
+                    NotificationManagerCompat
+                            .from(context);
+
+            for (String id : ids) {
+
+                try {
+
+                    int notificationId =
+                            Integer.parseInt(id);
+
+                    manager.cancel(
+                            notificationId
+                    );
+
+                } catch (Exception ignored) {
+                }
+            }
+
+            prefs.edit()
+                    .remove(
+                            POSTED_NOTIFICATION_IDS
+                    )
+                    .apply();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * =========================================================
+     * تنظیم آلارم بعدی
+     * =========================================================
+     */
+    public static void scheduleNextAlarm(
             Context context
     ) {
 
@@ -425,6 +577,9 @@ public class NotificationReceiver extends BroadcastReceiver {
                     );
 
             if (!enabled) {
+
+                cancelAlarm(context);
+
                 return;
             }
 
@@ -480,7 +635,7 @@ public class NotificationReceiver extends BroadcastReceiver {
             }
 
             /*
-             * Android 12+
+             * آلارم دقیق در Android 12+
              */
             if (
                     Build.VERSION.SDK_INT >=
@@ -491,20 +646,16 @@ public class NotificationReceiver extends BroadcastReceiver {
                         !alarmManager
                                 .canScheduleExactAlarms()
                 ) {
+
                     return;
                 }
             }
 
-            Calendar next =
+            Calendar now =
                     Calendar.getInstance();
 
-            /*
-             * همیشه روز بعد
-             */
-            next.add(
-                    Calendar.DAY_OF_YEAR,
-                    1
-            );
+            Calendar next =
+                    Calendar.getInstance();
 
             next.set(
                     Calendar.HOUR_OF_DAY,
@@ -525,6 +676,25 @@ public class NotificationReceiver extends BroadcastReceiver {
                     Calendar.MILLISECOND,
                     0
             );
+
+            /*
+             * اگر ساعت انتخابی هنوز نرسیده،
+             * امروز همان ساعت اجرا شود.
+             *
+             * اگر گذشته باشد،
+             * فردا اجرا شود.
+             */
+            if (
+                    next.getTimeInMillis()
+                            <=
+                    now.getTimeInMillis()
+            ) {
+
+                next.add(
+                        Calendar.DAY_OF_YEAR,
+                        1
+                );
+            }
 
             Intent intent =
                     new Intent(
@@ -575,7 +745,56 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
     }
 
-    private int createNotificationId(
+    /*
+     * =========================================================
+     * لغو آلارم
+     * =========================================================
+     */
+    public static void cancelAlarm(
+            Context context
+    ) {
+
+        try {
+
+            AlarmManager alarmManager =
+                    (AlarmManager)
+                            context.getSystemService(
+                                    Context.ALARM_SERVICE
+                            );
+
+            if (alarmManager == null) {
+                return;
+            }
+
+            Intent intent =
+                    new Intent(
+                            context,
+                            NotificationReceiver.class
+                    );
+
+            PendingIntent pendingIntent =
+                    PendingIntent.getBroadcast(
+                            context,
+                            ALARM_REQUEST_CODE,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                                    |
+                            pendingIntentFlags()
+                    );
+
+            alarmManager.cancel(
+                    pendingIntent
+            );
+
+            pendingIntent.cancel();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    private static int createNotificationId(
             String itemId,
             int index,
             String date
@@ -593,7 +812,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         return Math.abs(hash);
     }
 
-    private int pendingIntentFlags() {
+    private static int pendingIntentFlags() {
 
         if (
                 Build.VERSION.SDK_INT >=
@@ -607,7 +826,9 @@ public class NotificationReceiver extends BroadcastReceiver {
     }
 
     /*
-     * ساخت Notification Channel
+     * =========================================================
+     * Notification Channel
+     * =========================================================
      */
     private void createNotificationChannel(
             Context context
@@ -647,9 +868,9 @@ public class NotificationReceiver extends BroadcastReceiver {
     }
 
     /*
-     * ==============================
+     * =========================================================
      * تبدیل میلادی به شمسی
-     * ==============================
+     * =========================================================
      */
     private int[] gregorianToJalali(
             int gy,
