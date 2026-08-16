@@ -2782,6 +2782,387 @@ $("confirmModal").addEventListener(
 render();
 
 </script>
+<!-- تنظیمات یادآوری اقساط -->
+<div id="reminderModal" class="modal">
 
+    <div class="sheet">
+
+        <div class="sheetTitle">
+            <h2>🔔 تنظیم یادآوری اقساط</h2>
+
+            <button
+                type="button"
+                class="closeButton"
+                onclick="closeReminderSettings()">
+                ×
+            </button>
+        </div>
+
+        <div class="notice">
+            یادآوری سررسید اقساط را می‌توانی روشن یا خاموش کنی،
+            تعداد روزهای قبل و ساعت ارسال اعلان را خودت تعیین کنی.
+        </div>
+
+        <label>وضعیت یادآوری</label>
+
+        <div style="
+            display:flex;
+            gap:8px;
+            margin-top:6px;
+        ">
+
+            <button
+                id="reminderOnButton"
+                type="button"
+                onclick="setReminderEnabled(true)"
+                style="
+                    flex:1;
+                    padding:13px;
+                    border-radius:12px;
+                    background:#dcfce7;
+                    color:#166534;
+                    font-weight:bold;
+                ">
+                🔔 روشن
+            </button>
+
+            <button
+                id="reminderOffButton"
+                type="button"
+                onclick="setReminderEnabled(false)"
+                style="
+                    flex:1;
+                    padding:13px;
+                    border-radius:12px;
+                    background:#fee2e2;
+                    color:#991b1b;
+                    font-weight:bold;
+                ">
+                🔕 خاموش
+            </button>
+
+        </div>
+
+        <label for="reminderDays">
+            زمان یادآوری
+        </label>
+
+        <select
+            id="reminderDays"
+            class="input">
+
+            <option value="1">
+                ۱ روز قبل
+            </option>
+
+            <option value="2">
+                ۲ روز قبل
+            </option>
+
+        </select>
+
+        <label for="reminderTime">
+            ساعت ارسال یادآوری
+        </label>
+
+        <input
+            id="reminderTime"
+            class="input"
+            type="time"
+            value="16:00"
+            dir="ltr">
+
+        <div
+            id="reminderPreview"
+            class="autoInfo">
+            یادآوری در حال تنظیم است.
+        </div>
+
+        <div class="modalButtons">
+
+            <button
+                type="button"
+                class="modalButton cancel"
+                onclick="closeReminderSettings()">
+                انصراف
+            </button>
+
+            <button
+                type="button"
+                class="modalButton save"
+                onclick="saveReminderSettings()">
+                ذخیره تنظیمات
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+(function(){
+
+    const REMINDER_KEY =
+        "mohammad_installments_reminder_settings";
+
+    let reminderSettings = {
+        enabled: true,
+        daysBefore: 2,
+        time: "16:00"
+    };
+
+    function loadReminderSettings(){
+
+        try{
+
+            const saved =
+                localStorage.getItem(
+                    REMINDER_KEY
+                );
+
+            if(saved){
+
+                const parsed =
+                    JSON.parse(saved);
+
+                reminderSettings =
+                    Object.assign(
+                        reminderSettings,
+                        parsed
+                    );
+            }
+
+        }catch(e){
+
+            console.log(
+                "خطا در خواندن تنظیمات یادآوری",
+                e
+            );
+        }
+    }
+
+    function updateReminderPreview(){
+
+        const preview =
+            document.getElementById(
+                "reminderPreview"
+            );
+
+        if(!preview)
+            return;
+
+        if(!reminderSettings.enabled){
+
+            preview.innerHTML =
+                "🔕 یادآوری اقساط خاموش است.";
+
+            return;
+        }
+
+        const daysText =
+            reminderSettings.daysBefore === 1
+                ? "۱ روز قبل"
+                : "۲ روز قبل";
+
+        preview.innerHTML =
+            "🔔 یادآوری روشن است.<br>" +
+            "اعلان <strong>" +
+            daysText +
+            "</strong> در ساعت <strong>" +
+            reminderSettings.time +
+            "</strong> ارسال می‌شود.";
+    }
+
+    window.openReminderSettings =
+        function(){
+
+            loadReminderSettings();
+
+            document.getElementById(
+                "reminderDays"
+            ).value =
+                String(
+                    reminderSettings.daysBefore
+                );
+
+            document.getElementById(
+                "reminderTime"
+            ).value =
+                reminderSettings.time || "16:00";
+
+            updateReminderButtons();
+
+            updateReminderPreview();
+
+            document.getElementById(
+                "reminderModal"
+            ).classList.add("visible");
+        };
+
+    window.closeReminderSettings =
+        function(){
+
+            document.getElementById(
+                "reminderModal"
+            ).classList.remove("visible");
+        };
+
+    window.setReminderEnabled =
+        function(enabled){
+
+            reminderSettings.enabled =
+                enabled;
+
+            updateReminderButtons();
+
+            updateReminderPreview();
+        };
+
+    function updateReminderButtons(){
+
+        const on =
+            document.getElementById(
+                "reminderOnButton"
+            );
+
+        const off =
+            document.getElementById(
+                "reminderOffButton"
+            );
+
+        if(!on || !off)
+            return;
+
+        if(reminderSettings.enabled){
+
+            on.style.background =
+                "#22c55e";
+
+            on.style.color =
+                "#ffffff";
+
+            off.style.background =
+                "#f1f5f9";
+
+            off.style.color =
+                "#64748b";
+
+        }else{
+
+            on.style.background =
+                "#f1f5f9";
+
+            on.style.color =
+                "#64748b";
+
+            off.style.background =
+                "#ef4444";
+
+            off.style.color =
+                "#ffffff";
+        }
+    }
+
+    window.saveReminderSettings =
+        function(){
+
+            const days =
+                parseInt(
+                    document.getElementById(
+                        "reminderDays"
+                    ).value,
+                    10
+                );
+
+            const time =
+                document.getElementById(
+                    "reminderTime"
+                ).value;
+
+            if(days !== 1 && days !== 2){
+
+                alert(
+                    "تعداد روز یادآوری معتبر نیست."
+                );
+
+                return;
+            }
+
+            if(!time){
+
+                alert(
+                    "لطفاً ساعت یادآوری را وارد کنید."
+                );
+
+                return;
+            }
+
+            reminderSettings.daysBefore =
+                days;
+
+            reminderSettings.time =
+                time;
+
+            localStorage.setItem(
+                REMINDER_KEY,
+                JSON.stringify(
+                    reminderSettings
+                )
+            );
+
+            /*
+             * اطلاع دادن به بخش Native
+             * برای لغو آلارم‌های قبلی
+             * و ساخت آلارم‌های جدید
+             */
+            if(
+                window.AndroidBridge &&
+                AndroidBridge.reminderSettingsChanged
+            ){
+
+                AndroidBridge
+                    .reminderSettingsChanged(
+                        JSON.stringify(
+                            reminderSettings
+                        )
+                    );
+            }
+
+            updateReminderPreview();
+
+            closeReminderSettings();
+
+            if(typeof showToast === "function"){
+
+                showToast(
+                    "تنظیمات یادآوری با موفقیت ذخیره شد."
+                );
+
+            }else{
+
+                alert(
+                    "تنظیمات یادآوری ذخیره شد."
+                );
+            }
+        };
+
+    /*
+     * هنگام باز شدن صفحه،
+     * تنظیمات قبلی را بخوان.
+     */
+    loadReminderSettings();
+
+    /*
+     * این تابع را برای منوی Native
+     * قابل دسترس می‌کنیم.
+     */
+    window.__openReminderSettings =
+        window.openReminderSettings;
+
+})();
+
+</script>
 </body>
 </html>
