@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- دسترسی اینترنت -->
+    <!-- اینترنت -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- اجازه نمایش Notification در Android 13 به بالا -->
+    <!-- اعلان‌ها در Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- اجازه تنظیم Alarm برای یادآوری اقساط -->
+    <!-- آلارم دقیق -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- اجرای مجدد آلارم‌ها بعد از روشن شدن گوشی -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -17,7 +20,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- صفحه اصلی برنامه -->
+        <!-- صفحه اصلی -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -29,10 +32,23 @@
 
         </activity>
 
-        <!-- دریافت Alarm و ارسال یادآوری قسط -->
+        <!-- دریافت Alarm -->
         <receiver
             android:name=".NotificationReceiver"
             android:exported="false" />
+
+        <!-- دریافت رویداد روشن شدن گوشی -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+
+        </receiver>
 
     </application>
 
