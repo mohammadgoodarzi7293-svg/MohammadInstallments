@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- دسترسی اینترنت -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- اجازه نمایش Notification در Android 13 به بالا -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- اجازه تنظیم Alarm برای یادآوری اقساط -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:allowBackup="true"
@@ -10,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- صفحه اصلی برنامه -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -20,6 +28,11 @@
             </intent-filter>
 
         </activity>
+
+        <!-- دریافت Alarm و ارسال یادآوری قسط -->
+        <receiver
+            android:name=".NotificationReceiver"
+            android:exported="false" />
 
     </application>
 
