@@ -14,46 +14,85 @@ import androidx.core.app.NotificationManagerCompat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import java.util.HashSet;
+import java.util.Set;
 
 public class NotificationReceiver extends BroadcastReceiver {
 
-    private static final String CHANNEL_ID = "installment_notifications";
-    private static final int NOTIFICATION_ID = 4810;
+    private static final String CHANNEL_ID =
+            "installment_notifications";
+
+    private static final String PREFS_NAME =
+            "installment_notifications";
+
+    private static final String INSTALLMENTS_KEY =
+            "installments";
 
     @Override
     public void onReceive(Context context, Intent intent) {
+
         createNotificationChannel(context);
+
         checkInstallments(context);
     }
 
     private void checkInstallments(Context context) {
+
         try {
+
             android.content.SharedPreferences prefs =
                     context.getSharedPreferences(
-                            "installment_notifications",
+                            PREFS_NAME,
                             Context.MODE_PRIVATE
                     );
 
-            String json = prefs.getString("installments", "[]");
-            JSONArray installments = new JSONArray(json);
+            String json =
+                    prefs.getString(
+                            INSTALLMENTS_KEY,
+                            "[]"
+                    );
 
-            Calendar now = Calendar.getInstance();
+            JSONArray installments =
+                    new JSONArray(json);
 
-            // دو روز بعد
-            Calendar target = (Calendar) now.clone();
-            target.add(Calendar.DAY_OF_YEAR, 2);
+            Calendar today =
+                    Calendar.getInstance();
+
+            /*
+             * دو روز بعد
+             */
+            Calendar target =
+                    (Calendar) today.clone();
+
+            target.add(
+                    Calendar.DAY_OF_YEAR,
+                    2
+            );
+
+            /*
+             * تبدیل تاریخ میلادی امروز به شمسی
+             */
+            int[] jalaliTarget =
+                    gregorianToJalali(
+                            target.get(Calendar.YEAR),
+                            target.get(Calendar.MONTH) + 1,
+                            target.get(Calendar.DAY_OF_MONTH)
+                    );
 
             String targetDate =
-                    new SimpleDateFormat(
-                            "yyyy/MM/dd",
-                            Locale.US
-                    ).format(target.getTime());
+                    formatJalaliDate(
+                            jalaliTarget[0],
+                            jalaliTarget[1],
+                            jalaliTarget[2]
+                    );
 
-            for (int i = 0; i < installments.length(); i++) {
+            Set<String> notifiedKeys =
+                    new HashSet<>();
+
+            for (int i = 0;
+                 i < installments.length();
+                 i++) {
 
                 JSONObject item =
                         installments.getJSONObject(i);
@@ -64,24 +103,39 @@ public class NotificationReceiver extends BroadcastReceiver {
                                 "قسط"
                         );
 
+                String itemId =
+                        item.optString(
+                                "id",
+                                String.valueOf(i)
+                        );
+
                 JSONArray dates =
-                        item.optJSONArray("dates");
+                        item.optJSONArray(
+                                "dates"
+                        );
 
                 if (dates == null)
                     continue;
 
-                for (int j = 0; j < dates.length(); j++) {
+                for (int j = 0;
+                     j < dates.length();
+                     j++) {
 
                     JSONObject dateObject =
                             dates.getJSONObject(j);
 
+                    /*
+                     * اگر قسط پرداخت شده باشد
+                     * اعلان نده
+                     */
                     if (
                             dateObject.optBoolean(
                                     "paid",
                                     false
                             )
-                    )
+                    ) {
                         continue;
+                    }
 
                     String date =
                             dateObject.optString(
@@ -93,95 +147,82 @@ public class NotificationReceiver extends BroadcastReceiver {
                         continue;
 
                     String normalizedDate =
-                            normalizeDate(date);
+                            normalizeJalaliDate(date);
 
                     if (
                             !targetDate.equals(
                                     normalizedDate
                             )
-                    )
+                    ) {
                         continue;
+                    }
 
+                    /*
+                     * کلید یکتا برای جلوگیری
+                     * از اعلان تکراری
+                     */
                     String notificationKey =
                             "notified_"
-                                    + name
+                                    + itemId
                                     + "_"
-                                    + normalizedDate;
+                                    + normalizedDate
+                                    + "_"
+                                    + j;
 
                     if (
-                            !prefs.getBoolean(
+                            notifiedKeys.contains(
+                                    notificationKey
+                            )
+                    ) {
+                        continue;
+                    }
+
+                    if (
+                            prefs.getBoolean(
                                     notificationKey,
                                     false
                             )
                     ) {
-
-                        showNotification(
-                                context,
-                                name,
-                                normalizedDate
-                        );
-
-                        prefs.edit()
-                                .putBoolean(
-                                        notificationKey,
-                                        true
-                                )
-                                .apply();
+                        continue;
                     }
+
+                    int notificationId =
+                            createNotificationId(
+                                    itemId,
+                                    j
+                            );
+
+                    showNotification(
+                            context,
+                            name,
+                            normalizedDate,
+                            notificationId
+                    );
+
+                    notifiedKeys.add(
+                            notificationKey
+                    );
+
+                    prefs.edit()
+                            .putBoolean(
+                                    notificationKey,
+                                    true
+                            )
+                            .apply();
                 }
             }
 
         } catch (Exception e) {
+
             e.printStackTrace();
         }
-    }
-
-    private String normalizeDate(String date) {
-
-        String[] formats = {
-                "yyyy/MM/dd",
-                "yyyy-MM-dd",
-                "yyyy/MM/dd HH:mm",
-                "yyyy-MM-dd HH:mm"
-        };
-
-        for (String format : formats) {
-
-            try {
-
-                SimpleDateFormat sdf =
-                        new SimpleDateFormat(
-                                format,
-                                Locale.US
-                        );
-
-                sdf.setLenient(false);
-
-                Date parsed =
-                        sdf.parse(date);
-
-                if (parsed != null) {
-
-                    return new SimpleDateFormat(
-                            "yyyy/MM/dd",
-                            Locale.US
-                    ).format(parsed);
-                }
-
-            } catch (Exception ignored) {
-            }
-        }
-
-        return date.length() >= 10
-                ? date.substring(0, 10)
-                        .replace('-', '/')
-                : date;
     }
 
     private void showNotification(
             Context context,
             String installmentName,
-            String dueDate
+            String dueDate,
+            int notificationId
     ) {
 
         Intent intent =
@@ -199,7 +240,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(
                         context,
-                        NOTIFICATION_ID,
+                        notificationId,
                         intent,
                         PendingIntent.FLAG_UPDATE_CURRENT
                                 |
@@ -227,21 +268,24 @@ public class NotificationReceiver extends BroadcastReceiver {
                 )
 
                 .setStyle(
-                        new NotificationCompat.BigTextStyle()
+                        new NotificationCompat
+                                .BigTextStyle()
                                 .bigText(
                                         "قسط «"
                                                 + installmentName
-                                                + "»\n"
+                                                + "»\n\n"
                                                 + "تاریخ سررسید: "
                                                 + dueDate
                                                 + "\n\n"
-                                                + "این یادآوری ۴۸ ساعت قبل، "
-                                                + "رأس ساعت ۱۶:۰۰ است."
+                                                + "این قسط ۴۸ ساعت قبل "
+                                                + "یادآوری می‌شود.\n"
+                                                + "زمان یادآوری: ساعت ۱۶:۰۰"
                                 )
                 )
 
                 .setPriority(
-                        NotificationCompat.PRIORITY_HIGH
+                        NotificationCompat
+                                .PRIORITY_HIGH
                 )
 
                 .setAutoCancel(true)
@@ -255,7 +299,7 @@ public class NotificationReceiver extends BroadcastReceiver {
             NotificationManagerCompat
                     .from(context)
                     .notify(
-                            NOTIFICATION_ID,
+                            notificationId,
                             builder.build()
                     );
 
@@ -263,6 +307,18 @@ public class NotificationReceiver extends BroadcastReceiver {
 
             e.printStackTrace();
         }
+    }
+
+    private int createNotificationId(
+            String itemId,
+            int index
+    ) {
+
+        int hash =
+                (itemId + "_" + index)
+                        .hashCode();
+
+        return Math.abs(hash);
     }
 
     private int pendingIntentFlags() {
@@ -293,12 +349,15 @@ public class NotificationReceiver extends BroadcastReceiver {
                     new NotificationChannel(
                             CHANNEL_ID,
                             "یادآوری اقساط",
-                            NotificationManager.IMPORTANCE_HIGH
+                            NotificationManager
+                                    .IMPORTANCE_HIGH
                     );
 
             channel.setDescription(
                     "اعلان سررسید اقساط"
             );
+
+            channel.enableVibration(true);
 
             NotificationManager manager =
                     context.getSystemService(
@@ -312,5 +371,158 @@ public class NotificationReceiver extends BroadcastReceiver {
                 );
             }
         }
+    }
+
+    /*
+     * ==============================
+     * تبدیل میلادی به شمسی
+     * ==============================
+     */
+
+    private int[] gregorianToJalali(
+            int gy,
+            int gm,
+            int gd
+    ) {
+
+        int jy;
+
+        if (gy > 1600) {
+
+            jy = 979;
+            gy -= 1600;
+
+        } else {
+
+            jy = 0;
+            gy -= 621;
+        }
+
+        int gy2 =
+                gm > 2
+                        ? gy + 1
+                        : gy;
+
+        int[] monthDays = {
+                0,
+                31,
+                28,
+                31,
+                30,
+                31,
+                30,
+                31,
+                31,
+                30,
+                31,
+                30,
+                31
+        };
+
+        int days =
+                365 * gy
+                        + (gy2 + 3) / 4
+                        - (gy2 + 99) / 100
+                        + (gy2 + 399) / 400
+                        - 80
+                        + gd;
+
+        for (int i = 1; i < gm; i++) {
+
+            days += monthDays[i];
+        }
+
+        jy +=
+                33 * (days / 12053);
+
+        days %= 12053;
+
+        jy +=
+                4 * (days / 1461);
+
+        days %= 1461;
+
+        if (days > 365) {
+
+            jy +=
+                    (days - 1) / 365;
+
+            days =
+                    (days - 1) % 365;
+        }
+
+        int jm;
+
+        if (days < 186) {
+
+            jm =
+                    1 + days / 31;
+
+        } else {
+
+            jm =
+                    7
+                            + (days - 186)
+                            / 30;
+        }
+
+        int jd;
+
+        if (days < 186) {
+
+            jd =
+                    1 + days % 31;
+
+        } else {
+
+            jd =
+                    1
+                            + (days - 186)
+                            % 30;
+        }
+
+        return new int[]{
+                jy,
+                jm,
+                jd
+        };
+    }
+
+    private String formatJalaliDate(
+            int year,
+            int month,
+            int day
+    ) {
+
+        return String.format(
+                java.util.Locale.US,
+                "%04d/%02d/%02d",
+                year,
+                month,
+                day
+        );
+    }
+
+    private String normalizeJalaliDate(
+            String date
+    ) {
+
+        if (date == null)
+            return "";
+
+        String value =
+                date.trim()
+                        .replace('-', '/');
+
+        if (value.length() >= 10) {
+
+            value =
+                    value.substring(
+                            0,
+                            10
+                    );
+        }
+
+        return value;
     }
 }
