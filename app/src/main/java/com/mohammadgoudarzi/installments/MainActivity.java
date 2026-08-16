@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -26,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
 import java.util.concurrent.Executor;
 
 public class MainActivity extends FragmentActivity {
@@ -33,6 +35,20 @@ public class MainActivity extends FragmentActivity {
     private static final int REQUEST_CREATE_BACKUP = 4101;
     private static final int REQUEST_OPEN_BACKUP = 4102;
     private static final int REQUEST_NOTIFICATION_PERMISSION = 9001;
+
+    private static final int NOTIFICATION_ALARM_REQUEST_CODE = 7001;
+
+    private static final String NOTIFICATION_PREFS =
+            "installment_notifications";
+
+    private static final String REMINDER_ENABLED =
+            "reminder_enabled";
+
+    private static final String REMINDER_DAYS =
+            "reminder_days";
+
+    private static final String REMINDER_TIME =
+            "reminder_time";
 
     private WebView webView;
 
@@ -51,13 +67,46 @@ public class MainActivity extends FragmentActivity {
         );
 
         notificationPrefs = getSharedPreferences(
-                "installment_notifications",
+                NOTIFICATION_PREFS,
                 MODE_PRIVATE
         );
 
-        if (securityPrefs.getBoolean("lock_enabled", false)) {
+        /*
+         * تنظیمات پیش‌فرض یادآوری
+         *
+         * روشن
+         * ۲ روز قبل
+         * ساعت ۱۶:۰۰
+         */
+        if (!notificationPrefs.contains(REMINDER_ENABLED)) {
+
+            notificationPrefs.edit()
+                    .putBoolean(
+                            REMINDER_ENABLED,
+                            true
+                    )
+                    .putInt(
+                            REMINDER_DAYS,
+                            2
+                    )
+                    .putString(
+                            REMINDER_TIME,
+                            "16:00"
+                    )
+                    .apply();
+        }
+
+        if (
+                securityPrefs.getBoolean(
+                        "lock_enabled",
+                        false
+                )
+        ) {
+
             showSecurityLock();
+
         } else {
+
             initializeApp();
         }
     }
@@ -66,7 +115,8 @@ public class MainActivity extends FragmentActivity {
 
         webView = new WebView(this);
 
-        WebSettings settings = webView.getSettings();
+        WebSettings settings =
+                webView.getSettings();
 
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -76,23 +126,28 @@ public class MainActivity extends FragmentActivity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
 
-        webView.setWebViewClient(new WebViewClient() {
+        webView.setWebViewClient(
+                new WebViewClient() {
 
-            @Override
-            public void onPageFinished(
-                    WebView view,
-                    String url
-            ) {
+                    @Override
+                    public void onPageFinished(
+                            WebView view,
+                            String url
+                    ) {
 
-                super.onPageFinished(view, url);
+                        super.onPageFinished(
+                                view,
+                                url
+                        );
 
-                injectNativeFeatures();
+                        injectNativeFeatures();
 
-                requestNotificationPermission();
+                        requestNotificationPermission();
 
-                scheduleNotificationAlarm();
-            }
-        });
+                        scheduleNotificationAlarm();
+                    }
+                }
+        );
 
         webView.addJavascriptInterface(
                 new AndroidBridge(),
@@ -107,8 +162,7 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
-     * قفل برنامه با اثر انگشت
-     * یا قفل خود گوشی
+     * قفل برنامه
      */
     private void showSecurityLock() {
 
@@ -138,30 +192,37 @@ public class MainActivity extends FragmentActivity {
                     new BiometricPrompt(
                             this,
                             executor,
-                            new BiometricPrompt.AuthenticationCallback() {
+                            new BiometricPrompt
+                                    .AuthenticationCallback() {
 
                                 @Override
-                                public void onAuthenticationSucceeded(
-                                        @NonNull BiometricPrompt.AuthenticationResult result
+                                public void
+                                onAuthenticationSucceeded(
+                                        @NonNull
+                                        BiometricPrompt.AuthenticationResult result
                                 ) {
 
-                                    super.onAuthenticationSucceeded(
-                                            result
-                                    );
+                                    super
+                                            .onAuthenticationSucceeded(
+                                                    result
+                                            );
 
                                     initializeApp();
                                 }
 
                                 @Override
-                                public void onAuthenticationError(
+                                public void
+                                onAuthenticationError(
                                         int errorCode,
-                                        @NonNull CharSequence errString
+                                        @NonNull
+                                        CharSequence errString
                                 ) {
 
-                                    super.onAuthenticationError(
-                                            errorCode,
-                                            errString
-                                    );
+                                    super
+                                            .onAuthenticationError(
+                                                    errorCode,
+                                                    errString
+                                            );
 
                                     Toast.makeText(
                                             MainActivity.this,
@@ -204,8 +265,7 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
-     * درخواست اجازه Notification
-     * برای Android 13 به بالا
+     * اجازه Notification
      */
     private void requestNotificationPermission() {
 
@@ -233,9 +293,66 @@ public class MainActivity extends FragmentActivity {
     }
 
     /*
-     * تنظیم Alarm
+     * بررسی اجازه Alarm دقیق
      */
-    private void scheduleNotificationAlarm() {
+    private boolean canScheduleExactAlarms() {
+
+        if (
+                Build.VERSION.SDK_INT >=
+                        Build.VERSION_CODES.S
+        ) {
+
+            AlarmManager alarmManager =
+                    (AlarmManager)
+                            getSystemService(
+                                    Context.ALARM_SERVICE
+                            );
+
+            return alarmManager != null
+                    &&
+                    alarmManager.canScheduleExactAlarms();
+        }
+
+        return true;
+    }
+
+    /*
+     * باز کردن صفحه اجازه Alarm دقیق
+     */
+    private void requestExactAlarmPermission() {
+
+        if (
+                Build.VERSION.SDK_INT >=
+                        Build.VERSION_CODES.S
+        ) {
+
+            try {
+
+                Intent intent =
+                        new Intent(
+                                Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
+                        );
+
+                intent.setData(
+                        Uri.parse(
+                                "package:"
+                                        + getPackageName()
+                        )
+                );
+
+                startActivity(intent);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /*
+     * لغو آلارم قبلی
+     */
+    private void cancelNotificationAlarm() {
 
         try {
 
@@ -258,43 +375,229 @@ public class MainActivity extends FragmentActivity {
             PendingIntent pendingIntent =
                     PendingIntent.getBroadcast(
                             this,
-                            7001,
+                            NOTIFICATION_ALARM_REQUEST_CODE,
                             intent,
                             PendingIntent.FLAG_UPDATE_CURRENT
                                     |
                             pendingIntentFlags()
                     );
 
-            long interval =
-                    24L
-                            * 60L
-                            * 60L
-                            * 1000L;
+            alarmManager.cancel(
+                    pendingIntent
+            );
 
-            long firstRun =
+            pendingIntent.cancel();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * تنظیم آلارم دقیق طبق تنظیمات کاربر
+     */
+    private void scheduleNotificationAlarm() {
+
+        try {
+
+            /*
+             * اگر یادآوری خاموش باشد،
+             * آلارم قبلی را هم لغو کن.
+             */
+            boolean enabled =
+                    notificationPrefs.getBoolean(
+                            REMINDER_ENABLED,
+                            true
+                    );
+
+            if (!enabled) {
+
+                cancelNotificationAlarm();
+
+                return;
+            }
+
+            AlarmManager alarmManager =
+                    (AlarmManager)
+                            getSystemService(
+                                    Context.ALARM_SERVICE
+                            );
+
+            if (alarmManager == null) {
+                return;
+            }
+
+            /*
+             * Android 12+
+             *
+             * برای آلارم دقیق باید اجازه
+             * SCHEDULE_EXACT_ALARM وجود داشته باشد.
+             */
+            if (!canScheduleExactAlarms()) {
+
+                requestExactAlarmPermission();
+
+                return;
+            }
+
+            int daysBefore =
+                    notificationPrefs.getInt(
+                            REMINDER_DAYS,
+                            2
+                    );
+
+            if (
+                    daysBefore != 1
+                            &&
+                    daysBefore != 2
+            ) {
+
+                daysBefore = 2;
+            }
+
+            String time =
+                    notificationPrefs.getString(
+                            REMINDER_TIME,
+                            "16:00"
+                    );
+
+            int hour = 16;
+            int minute = 0;
+
+            try {
+
+                String[] parts =
+                        time.split(":");
+
+                if (parts.length >= 2) {
+
+                    hour =
+                            Integer.parseInt(
+                                    parts[0]
+                            );
+
+                    minute =
+                            Integer.parseInt(
+                                    parts[1]
+                            );
+                }
+
+            } catch (Exception ignored) {
+
+                hour = 16;
+                minute = 0;
+            }
+
+            if (hour < 0 || hour > 23) {
+                hour = 16;
+            }
+
+            if (minute < 0 || minute > 59) {
+                minute = 0;
+            }
+
+            /*
+             * اول آلارم قبلی را لغو کن
+             * تا آلارم قدیمی باقی نماند.
+             */
+            cancelNotificationAlarm();
+
+            /*
+             * زمان اجرای Receiver
+             *
+             * Receiver خودش بر اساس تاریخ اقساط
+             * بررسی می‌کند که آیا امروز باید
+             * اعلان ارسال شود یا خیر.
+             */
+            Calendar calendar =
+                    Calendar.getInstance();
+
+            calendar.set(
+                    Calendar.HOUR_OF_DAY,
+                    hour
+            );
+
+            calendar.set(
+                    Calendar.MINUTE,
+                    minute
+            );
+
+            calendar.set(
+                    Calendar.SECOND,
+                    0
+            );
+
+            calendar.set(
+                    Calendar.MILLISECOND,
+                    0
+            );
+
+            /*
+             * اگر ساعت امروز گذشته،
+             * آلارم برای فردا تنظیم می‌شود.
+             */
+            if (
+                    calendar.getTimeInMillis()
+                            <=
                     System.currentTimeMillis()
-                            + 60L * 1000L;
+            ) {
 
+                calendar.add(
+                        Calendar.DAY_OF_YEAR,
+                        1
+                );
+            }
+
+            long triggerAt =
+                    calendar.getTimeInMillis();
+
+            Intent intent =
+                    new Intent(
+                            this,
+                            NotificationReceiver.class
+                    );
+
+            PendingIntent pendingIntent =
+                    PendingIntent.getBroadcast(
+                            this,
+                            NOTIFICATION_ALARM_REQUEST_CODE,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                                    |
+                            pendingIntentFlags()
+                    );
+
+            /*
+             * Android 6+
+             *
+             * آلارم دقیق و قابل اجرا در Doze
+             */
             if (
                     Build.VERSION.SDK_INT >=
                             Build.VERSION_CODES.M
             ) {
 
-                alarmManager.setAndAllowWhileIdle(
+                alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
-                        firstRun,
+                        triggerAt,
                         pendingIntent
                 );
 
             } else {
 
-                alarmManager.setRepeating(
+                alarmManager.setExact(
                         AlarmManager.RTC_WAKEUP,
-                        firstRun,
-                        interval,
+                        triggerAt,
                         pendingIntent
                 );
             }
+
+        } catch (SecurityException e) {
+
+            e.printStackTrace();
+
+            requestExactAlarmPermission();
 
         } catch (Exception e) {
 
@@ -440,14 +743,19 @@ public class MainActivity extends FragmentActivity {
 
                 + "m.appendChild(u);"
 
+                /*
+                 * تنظیم یادآوری
+                 */
                 + "var n=document.createElement('button');"
 
                 + "n.type='button';"
                 + "n.className='devMenuItem';"
-                + "n.textContent='🔔 فعال‌سازی یادآوری اقساط';"
+                + "n.textContent='🔔 تنظیم یادآوری اقساط';"
 
                 + "n.onclick=function(){"
-                + "AndroidBridge.enableNotifications();"
+                + "if(window.__openReminderSettings){"
+                + "window.__openReminderSettings();"
+                + "}"
                 + "m.classList.remove('open');"
                 + "};"
 
@@ -579,9 +887,6 @@ public class MainActivity extends FragmentActivity {
         );
     }
 
-    /*
-     * ذخیره پشتیبان
-     */
     private void createBackupFile() {
 
         Intent intent =
@@ -608,9 +913,6 @@ public class MainActivity extends FragmentActivity {
         );
     }
 
-    /*
-     * انتخاب فایل پشتیبان
-     */
     private void openBackupPicker() {
 
         Intent intent =
@@ -741,9 +1043,6 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
-    /*
-     * فعال کردن قفل
-     */
     private void setAppLock(boolean enabled) {
 
         securityPrefs.edit()
@@ -778,6 +1077,10 @@ public class MainActivity extends FragmentActivity {
                 )
                 .apply();
 
+        /*
+         * با تغییر اطلاعات اقساط،
+         * آلارم دوباره تنظیم می‌شود.
+         */
         scheduleNotificationAlarm();
     }
 
@@ -787,6 +1090,30 @@ public class MainActivity extends FragmentActivity {
     private void enableNotifications() {
 
         requestNotificationPermission();
+
+        /*
+         * اگر اجازه Alarm دقیق وجود ندارد،
+         * صفحه تنظیمات سیستم باز می‌شود.
+         */
+        if (!canScheduleExactAlarms()) {
+
+            requestExactAlarmPermission();
+
+            Toast.makeText(
+                    this,
+                    "لطفاً اجازه آلارم دقیق را فعال کنید.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            return;
+        }
+
+        notificationPrefs.edit()
+                .putBoolean(
+                        REMINDER_ENABLED,
+                        true
+                )
+                .apply();
 
         scheduleNotificationAlarm();
 
@@ -904,10 +1231,98 @@ public class MainActivity extends FragmentActivity {
         }
 
         /*
-         * نسخه اصلاح‌شده
-         *
-         * اطلاعات اقساط مستقیماً از localStorage
-         * خوانده می‌شود.
+         * این متد از HTML صدا زده می‌شود
+         * وقتی کاربر تنظیمات یادآوری را تغییر می‌دهد.
+         */
+        @JavascriptInterface
+        public void reminderSettingsChanged(
+                String settingsJson
+        ) {
+
+            runOnUiThread(
+                    () -> {
+
+                        try {
+
+                            org.json.JSONObject settings =
+                                    new org.json.JSONObject(
+                                            settingsJson
+                                    );
+
+                            boolean enabled =
+                                    settings.optBoolean(
+                                            "enabled",
+                                            true
+                                    );
+
+                            int daysBefore =
+                                    settings.optInt(
+                                            "daysBefore",
+                                            2
+                                    );
+
+                            String time =
+                                    settings.optString(
+                                            "time",
+                                            "16:00"
+                                    );
+
+                            if (
+                                    daysBefore != 1
+                                            &&
+                                    daysBefore != 2
+                            ) {
+
+                                daysBefore = 2;
+                            }
+
+                            if (
+                                    time == null
+                                            ||
+                                    time.trim().isEmpty()
+                            ) {
+
+                                time = "16:00";
+                            }
+
+                            notificationPrefs.edit()
+                                    .putBoolean(
+                                            REMINDER_ENABLED,
+                                            enabled
+                                    )
+                                    .putInt(
+                                            REMINDER_DAYS,
+                                            daysBefore
+                                    )
+                                    .putString(
+                                            REMINDER_TIME,
+                                            time
+                                    )
+                                    .apply();
+
+                            /*
+                             * مهم:
+                             *
+                             * آلارم قبلی لغو و آلارم جدید
+                             * دقیقاً طبق تنظیمات جدید ساخته می‌شود.
+                             */
+                            cancelNotificationAlarm();
+
+                            if (enabled) {
+
+                                scheduleNotificationAlarm();
+                            }
+
+                        } catch (Exception e) {
+
+                            e.printStackTrace();
+                        }
+                    }
+            );
+        }
+
+        /*
+         * دریافت اطلاعات اقساط از localStorage
          */
         @JavascriptInterface
         public void syncInstallments() {
@@ -927,7 +1342,9 @@ public class MainActivity extends FragmentActivity {
                                         ) {
 
                                             MainActivity.this
-                                                    .syncInstallments("[]");
+                                                    .syncInstallments(
+                                                            "[]"
+                                                    );
 
                                             return;
                                         }
@@ -947,7 +1364,8 @@ public class MainActivity extends FragmentActivity {
                                             ) {
 
                                                 clean =
-                                                        (String) parsed;
+                                                        (String)
+                                                                parsed;
                                             }
 
                                         } catch (Exception ignored) {
