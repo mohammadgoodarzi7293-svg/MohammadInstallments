@@ -15,55 +15,45 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 public class NotificationReceiver extends BroadcastReceiver {
 
-    private static final String CHANNEL_ID =
-            "installment_notifications";
-
+    private static final String CHANNEL_ID = "installment_notifications";
     private static final int NOTIFICATION_ID = 4810;
 
     @Override
-    public void onReceive(
-            Context context,
-            Intent intent
-    ) {
-
+    public void onReceive(Context context, Intent intent) {
         createNotificationChannel(context);
-
         checkInstallments(context);
     }
 
     private void checkInstallments(Context context) {
-
         try {
-
             android.content.SharedPreferences prefs =
                     context.getSharedPreferences(
                             "installment_notifications",
                             Context.MODE_PRIVATE
                     );
 
-            String json =
-                    prefs.getString(
-                            "installments",
-                            "[]"
-                    );
+            String json = prefs.getString("installments", "[]");
+            JSONArray installments = new JSONArray(json);
 
-            JSONArray installments =
-                    new JSONArray(json);
+            Calendar now = Calendar.getInstance();
 
-            long now =
-                    System.currentTimeMillis();
+            // دو روز بعد
+            Calendar target = (Calendar) now.clone();
+            target.add(Calendar.DAY_OF_YEAR, 2);
 
-            long fortyEightHours =
-                    48L * 60L * 60L * 1000L;
+            String targetDate =
+                    new SimpleDateFormat(
+                            "yyyy/MM/dd",
+                            Locale.US
+                    ).format(target.getTime());
 
-            for(int i = 0;
-                i < installments.length();
-                i++){
+            for (int i = 0; i < installments.length(); i++) {
 
                 JSONObject item =
                         installments.getJSONObject(i);
@@ -75,27 +65,22 @@ public class NotificationReceiver extends BroadcastReceiver {
                         );
 
                 JSONArray dates =
-                        item.optJSONArray(
-                                "dates"
-                        );
+                        item.optJSONArray("dates");
 
-                if(dates == null)
+                if (dates == null)
                     continue;
 
-                for(int j = 0;
-                    j < dates.length();
-                    j++){
+                for (int j = 0; j < dates.length(); j++) {
 
                     JSONObject dateObject =
                             dates.getJSONObject(j);
 
-                    boolean paid =
+                    if (
                             dateObject.optBoolean(
                                     "paid",
                                     false
-                            );
-
-                    if(paid)
+                            )
+                    )
                         continue;
 
                     String date =
@@ -104,88 +89,65 @@ public class NotificationReceiver extends BroadcastReceiver {
                                     ""
                             );
 
-                    if(date.isEmpty())
+                    if (date.isEmpty())
                         continue;
 
-                    long dueTime =
-                            parseDate(date);
+                    String normalizedDate =
+                            normalizeDate(date);
 
-                    if(dueTime <= 0)
+                    if (
+                            !targetDate.equals(
+                                    normalizedDate
+                            )
+                    )
                         continue;
 
-                    long difference =
-                            dueTime - now;
+                    String notificationKey =
+                            "notified_"
+                                    + name
+                                    + "_"
+                                    + normalizedDate;
 
-                    /*
-                     * اگر زمان سررسید بین ۴۸ ساعت آینده
-                     * و ۴۷ ساعت آینده باشد، اعلان بده.
-                     */
+                    if (
+                            !prefs.getBoolean(
+                                    notificationKey,
+                                    false
+                            )
+                    ) {
 
-                    if(
-                            difference <= fortyEightHours &&
-                            difference > fortySevenHours()
-                    ){
+                        showNotification(
+                                context,
+                                name,
+                                normalizedDate
+                        );
 
-                        String notificationKey =
-                                name + "_" + date;
-
-                        if(
-                                !prefs.getBoolean(
+                        prefs.edit()
+                                .putBoolean(
                                         notificationKey,
-                                        false
+                                        true
                                 )
-                        ){
-
-                            showNotification(
-                                    context,
-                                    name,
-                                    date
-                            );
-
-                            prefs.edit()
-                                    .putBoolean(
-                                            notificationKey,
-                                            true
-                                    )
-                                    .apply();
-                        }
-
+                                .apply();
                     }
-
                 }
-
             }
 
-        }catch(Exception e){
-
+        } catch (Exception e) {
             e.printStackTrace();
-
         }
-
     }
 
-    private long fortySevenHours(){
-
-        return 47L
-                * 60L
-                * 60L
-                * 1000L;
-    }
-
-    private long parseDate(String date){
+    private String normalizeDate(String date) {
 
         String[] formats = {
-
                 "yyyy/MM/dd",
                 "yyyy-MM-dd",
                 "yyyy/MM/dd HH:mm",
                 "yyyy-MM-dd HH:mm"
-
         };
 
-        for(String format : formats){
+        for (String format : formats) {
 
-            try{
+            try {
 
                 SimpleDateFormat sdf =
                         new SimpleDateFormat(
@@ -198,23 +160,29 @@ public class NotificationReceiver extends BroadcastReceiver {
                 Date parsed =
                         sdf.parse(date);
 
-                if(parsed != null)
-                    return parsed.getTime();
+                if (parsed != null) {
 
-            }catch(Exception ignored){
+                    return new SimpleDateFormat(
+                            "yyyy/MM/dd",
+                            Locale.US
+                    ).format(parsed);
+                }
 
+            } catch (Exception ignored) {
             }
-
         }
 
-        return 0;
+        return date.length() >= 10
+                ? date.substring(0, 10)
+                        .replace('-', '/')
+                : date;
     }
 
     private void showNotification(
             Context context,
             String installmentName,
             String dueDate
-    ){
+    ) {
 
         Intent intent =
                 new Intent(
@@ -223,7 +191,8 @@ public class NotificationReceiver extends BroadcastReceiver {
                 );
 
         intent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        |
                 Intent.FLAG_ACTIVITY_CLEAR_TOP
         );
 
@@ -232,7 +201,8 @@ public class NotificationReceiver extends BroadcastReceiver {
                         context,
                         NOTIFICATION_ID,
                         intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT |
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                                |
                         pendingIntentFlags()
                 );
 
@@ -252,20 +222,21 @@ public class NotificationReceiver extends BroadcastReceiver {
 
                 .setContentText(
                         "قسط «"
-                        + installmentName
-                        + "» تا ۴۸ ساعت دیگر سررسید می‌شود."
+                                + installmentName
+                                + "» دو روز دیگر سررسید می‌شود."
                 )
 
                 .setStyle(
                         new NotificationCompat.BigTextStyle()
                                 .bigText(
                                         "قسط «"
-                                        + installmentName
-                                        + "»\n"
-                                        + "تاریخ سررسید: "
-                                        + dueDate
-                                        + "\n\n"
-                                        + "لطفاً برای پرداخت قسط اقدام کنید."
+                                                + installmentName
+                                                + "»\n"
+                                                + "تاریخ سررسید: "
+                                                + dueDate
+                                                + "\n\n"
+                                                + "این یادآوری ۴۸ ساعت قبل، "
+                                                + "رأس ساعت ۱۶:۰۰ است."
                                 )
                 )
 
@@ -279,7 +250,7 @@ public class NotificationReceiver extends BroadcastReceiver {
                         pendingIntent
                 );
 
-        try{
+        try {
 
             NotificationManagerCompat
                     .from(context)
@@ -288,20 +259,21 @@ public class NotificationReceiver extends BroadcastReceiver {
                             builder.build()
                     );
 
-        }catch(SecurityException e){
+        } catch (SecurityException e) {
 
             e.printStackTrace();
-
         }
-
     }
 
-    private int pendingIntentFlags(){
+    private int pendingIntentFlags() {
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+        if (
+                Build.VERSION.SDK_INT
+                        >=
+                Build.VERSION_CODES.M
+        ) {
 
             return PendingIntent.FLAG_IMMUTABLE;
-
         }
 
         return 0;
@@ -309,12 +281,13 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     private void createNotificationChannel(
             Context context
-    ){
+    ) {
 
-        if(
-                Build.VERSION.SDK_INT >=
+        if (
+                Build.VERSION.SDK_INT
+                        >=
                 Build.VERSION_CODES.O
-        ){
+        ) {
 
             NotificationChannel channel =
                     new NotificationChannel(
@@ -332,15 +305,12 @@ public class NotificationReceiver extends BroadcastReceiver {
                             NotificationManager.class
                     );
 
-            if(manager != null){
+            if (manager != null) {
 
                 manager.createNotificationChannel(
                         channel
                 );
-
             }
-
         }
-
     }
 }
