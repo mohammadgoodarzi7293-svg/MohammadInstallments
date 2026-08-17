@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,6 +28,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 public class MainActivity extends FragmentActivity {
@@ -52,6 +55,9 @@ public class MainActivity extends FragmentActivity {
     private static final String INSTALLMENTS_KEY =
             "installments";
 
+    private static final String POSTED_NOTIFICATION_IDS =
+            "posted_notification_ids";
+
     private WebView webView;
 
     private String pendingBackupText = null;
@@ -75,10 +81,6 @@ public class MainActivity extends FragmentActivity {
 
         /*
          * تنظیمات پیش‌فرض یادآوری
-         *
-         * روشن
-         * ۲ روز قبل
-         * ساعت ۱۶:۰۰
          */
         if (!notificationPrefs.contains(REMINDER_ENABLED)) {
 
@@ -113,6 +115,11 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    /*
+     * =========================================================
+     * راه‌اندازی برنامه
+     * =========================================================
+     */
     private void initializeApp() {
 
         webView = new WebView(this);
@@ -147,11 +154,14 @@ public class MainActivity extends FragmentActivity {
                         requestNotificationPermission();
 
                         /*
-                         * اطلاعات فعلی اقساط را
-                         * برای سیستم اعلان ارسال می‌کنیم.
+                         * اطلاعات فعلی اقساط
+                         * از WebView گرفته می‌شود.
                          */
                         syncInstallmentsFromWebView();
 
+                        /*
+                         * آلارم روزانه ساخته می‌شود.
+                         */
                         scheduleNotificationAlarm();
                     }
                 }
@@ -291,7 +301,7 @@ public class MainActivity extends FragmentActivity {
                             "android.permission.POST_NOTIFICATIONS"
                     )
                             !=
-                    android.content.pm.PackageManager.PERMISSION_GRANTED
+                    PackageManager.PERMISSION_GRANTED
             ) {
 
                 requestPermissions(
@@ -332,7 +342,7 @@ public class MainActivity extends FragmentActivity {
 
     /*
      * =========================================================
-     * باز کردن صفحه اجازه Alarm دقیق
+     * درخواست اجازه Alarm دقیق
      * =========================================================
      */
     private void requestExactAlarmPermission() {
@@ -367,7 +377,7 @@ public class MainActivity extends FragmentActivity {
 
     /*
      * =========================================================
-     * لغو آلارم قبلی
+     * لغو Alarm قبلی
      * =========================================================
      */
     private void cancelNotificationAlarm() {
@@ -414,7 +424,7 @@ public class MainActivity extends FragmentActivity {
 
     /*
      * =========================================================
-     * تنظیم آلارم دقیق طبق تنظیمات کاربر
+     * ساخت Alarm روزانه
      * =========================================================
      */
     private void scheduleNotificationAlarm() {
@@ -444,29 +454,11 @@ public class MainActivity extends FragmentActivity {
                 return;
             }
 
-            /*
-             * Android 12+
-             */
             if (!canScheduleExactAlarms()) {
 
                 requestExactAlarmPermission();
 
                 return;
-            }
-
-            int daysBefore =
-                    notificationPrefs.getInt(
-                            REMINDER_DAYS,
-                            2
-                    );
-
-            if (
-                    daysBefore != 1
-                            &&
-                    daysBefore != 2
-            ) {
-
-                daysBefore = 2;
             }
 
             String time =
@@ -511,7 +503,7 @@ public class MainActivity extends FragmentActivity {
             }
 
             /*
-             * آلارم قبلی حذف شود.
+             * Alarm قبلی حذف می‌شود.
              */
             cancelNotificationAlarm();
 
@@ -540,7 +532,7 @@ public class MainActivity extends FragmentActivity {
 
             /*
              * اگر ساعت امروز گذشته باشد،
-             * آلارم برای فردا تنظیم می‌شود.
+             * فردا اجرا شود.
              */
             if (
                     calendar.getTimeInMillis()
@@ -553,9 +545,6 @@ public class MainActivity extends FragmentActivity {
                         1
                 );
             }
-
-            long triggerAt =
-                    calendar.getTimeInMillis();
 
             Intent intent =
                     new Intent(
@@ -572,6 +561,9 @@ public class MainActivity extends FragmentActivity {
                                     |
                             pendingIntentFlags()
                     );
+
+            long triggerAt =
+                    calendar.getTimeInMillis();
 
             if (
                     Build.VERSION.SDK_INT >=
@@ -616,6 +608,207 @@ public class MainActivity extends FragmentActivity {
         }
 
         return 0;
+    }
+
+    /*
+     * =========================================================
+     * پاک کردن سابقه اعلان‌ها
+     *
+     * این قسمت برای حل مشکل:
+     *
+     * قسط جدید
+     * تیک قسط
+     * ویرایش قسط
+     * حذف قسط
+     * =========================================================
+     */
+    private void clearNotificationHistory() {
+
+        try {
+
+            Set<String> keys =
+                    new HashSet<>();
+
+            for (
+                    java.util.Map.Entry<String, ?>
+                            entry :
+                    notificationPrefs.getAll().entrySet()
+            ) {
+
+                String key =
+                        entry.getKey();
+
+                /*
+                 * کلیدهای زیر مربوط به جلوگیری
+                 * از اعلان تکراری هستند.
+                 */
+                if (
+                        key.startsWith("notified_")
+                ) {
+
+                    keys.add(key);
+                }
+            }
+
+            SharedPreferences.Editor editor =
+                    notificationPrefs.edit();
+
+            for (String key : keys) {
+
+                editor.remove(key);
+            }
+
+            editor.apply();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * =========================================================
+     * ذخیره اطلاعات اقساط
+     * =========================================================
+     */
+    private void syncInstallments(String json) {
+
+        if (
+                json == null ||
+                json.trim().isEmpty()
+        ) {
+
+            json = "[]";
+        }
+
+        /*
+         * اطلاعات جدید ذخیره می‌شود.
+         */
+        notificationPrefs.edit()
+                .putString(
+                        INSTALLMENTS_KEY,
+                        json
+                )
+                .apply();
+
+        /*
+         * اعلان‌هایی که قبلاً نمایش داده شده‌اند
+         * حذف می‌شوند.
+         */
+        NotificationReceiver
+                .cancelAllPostedNotifications(this);
+
+        /*
+         * سابقه جلوگیری از اعلان تکراری
+         * نیز پاک می‌شود.
+         *
+         * این قسمت برای ویرایش قسط مهم است.
+         */
+        clearNotificationHistory();
+
+        /*
+         * Alarm قبلی حذف و Alarm جدید ساخته می‌شود.
+         */
+        scheduleNotificationAlarm();
+    }
+
+    /*
+     * =========================================================
+     * گرفتن اقساط از LocalStorage
+     * =========================================================
+     */
+    private void syncInstallmentsFromWebView() {
+
+        if (webView == null) {
+            return;
+        }
+
+        try {
+
+            webView.evaluateJavascript(
+                    "localStorage.getItem('mohammad_installments_v10')",
+                    value -> {
+
+                        if (
+                                value == null ||
+                                "null".equals(value)
+                        ) {
+
+                            syncInstallments("[]");
+
+                            return;
+                        }
+
+                        String clean =
+                                value;
+
+                        try {
+
+                            Object parsed =
+                                    new org.json.JSONTokener(
+                                            value
+                                    ).nextValue();
+
+                            if (
+                                    parsed instanceof String
+                            ) {
+
+                                clean =
+                                        (String)
+                                                parsed;
+                            }
+
+                        } catch (Exception ignored) {
+                        }
+
+                        syncInstallments(
+                                clean
+                        );
+                    }
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * =========================================================
+     * فعال کردن یادآوری
+     * =========================================================
+     */
+    private void enableNotifications() {
+
+        requestNotificationPermission();
+
+        if (!canScheduleExactAlarms()) {
+
+            requestExactAlarmPermission();
+
+            Toast.makeText(
+                    this,
+                    "لطفاً اجازه آلارم دقیق را فعال کنید.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            return;
+        }
+
+        notificationPrefs.edit()
+                .putBoolean(
+                        REMINDER_ENABLED,
+                        true
+                )
+                .apply();
+
+        scheduleNotificationAlarm();
+
+        Toast.makeText(
+                this,
+                "یادآوری اقساط فعال شد.",
+                Toast.LENGTH_SHORT
+        ).show();
     }
 
     /*
@@ -777,7 +970,7 @@ public class MainActivity extends FragmentActivity {
 
                 /*
                  * =====================================================
-                 * بازیابی Backup
+                 * Backup Import
                  * =====================================================
                  */
                 + "window.__nativeImportBackup=function(text){"
@@ -895,10 +1088,7 @@ public class MainActivity extends FragmentActivity {
 
                 /*
                  * =====================================================
-                 * همگام‌سازی خودکار
-                 *
-                 * هر بار saveData اجرا شود،
-                 * اطلاعات جدید برای Android ارسال می‌شود.
+                 * اتصال خودکار saveData به سیستم اعلان
                  * =====================================================
                  */
                 + "if(typeof window.saveData==='function'&&!window.__originalSaveData){"
@@ -935,68 +1125,7 @@ public class MainActivity extends FragmentActivity {
 
     /*
      * =========================================================
-     * گرفتن اطلاعات فعلی اقساط از WebView
-     * =========================================================
-     */
-    private void syncInstallmentsFromWebView() {
-
-        if (webView == null) {
-            return;
-        }
-
-        try {
-
-            webView.evaluateJavascript(
-                    "localStorage.getItem('mohammad_installments_v10')",
-                    value -> {
-
-                        if (
-                                value == null ||
-                                "null".equals(value)
-                        ) {
-
-                            syncInstallments("[]");
-
-                            return;
-                        }
-
-                        String clean =
-                                value;
-
-                        try {
-
-                            Object parsed =
-                                    new org.json.JSONTokener(
-                                            value
-                                    ).nextValue();
-
-                            if (
-                                    parsed instanceof String
-                            ) {
-
-                                clean =
-                                        (String)
-                                                parsed;
-                            }
-
-                        } catch (Exception ignored) {
-                        }
-
-                        syncInstallments(
-                                clean
-                        );
-                    }
-            );
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-    }
-
-    /*
-     * =========================================================
-     * ساخت فایل Backup
+     * ساخت Backup
      * =========================================================
      */
     private void createBackupFile() {
@@ -1173,7 +1302,7 @@ public class MainActivity extends FragmentActivity {
 
     /*
      * =========================================================
-     * فعال/غیرفعال کردن قفل
+     * قفل برنامه
      * =========================================================
      */
     private void setAppLock(boolean enabled) {
@@ -1190,94 +1319,6 @@ public class MainActivity extends FragmentActivity {
                 enabled
                         ? "قفل برنامه فعال شد."
                         : "قفل برنامه غیرفعال شد.",
-                Toast.LENGTH_SHORT
-        ).show();
-    }
-
-    /*
-     * =========================================================
-     * ذخیره اطلاعات اقساط برای NotificationReceiver
-     *
-     * این متد مهم‌ترین بخش اتصال
-     * برنامه به سیستم یادآوری است.
-     * =========================================================
-     */
-    private void syncInstallments(String json) {
-
-        if (
-                json == null ||
-                json.trim().isEmpty()
-        ) {
-
-            json = "[]";
-        }
-
-        /*
-         * اطلاعات جدید را ذخیره می‌کنیم.
-         */
-        notificationPrefs.edit()
-                .putString(
-                        INSTALLMENTS_KEY,
-                        json
-                )
-                .apply();
-
-        /*
-         * اعلان‌های قبلی را حذف می‌کنیم.
-         *
-         * بنابراین:
-         *
-         * تیک قسط
-         * ویرایش قسط
-         * تغییر تاریخ
-         * حذف قسط
-         *
-         * باعث باقی ماندن اعلان قدیمی نمی‌شود.
-         */
-        NotificationReceiver
-                .cancelAllPostedNotifications(this);
-
-        /*
-         * آلارم طبق تنظیمات فعلی
-         * دوباره ساخته می‌شود.
-         */
-        scheduleNotificationAlarm();
-    }
-
-    /*
-     * =========================================================
-     * فعال‌سازی Notification
-     * =========================================================
-     */
-    private void enableNotifications() {
-
-        requestNotificationPermission();
-
-        if (!canScheduleExactAlarms()) {
-
-            requestExactAlarmPermission();
-
-            Toast.makeText(
-                    this,
-                    "لطفاً اجازه آلارم دقیق را فعال کنید.",
-                    Toast.LENGTH_LONG
-            ).show();
-
-            return;
-        }
-
-        notificationPrefs.edit()
-                .putBoolean(
-                        REMINDER_ENABLED,
-                        true
-                )
-                .apply();
-
-        scheduleNotificationAlarm();
-
-        Toast.makeText(
-                this,
-                "یادآوری اقساط فعال شد.",
                 Toast.LENGTH_SHORT
         ).show();
     }
@@ -1451,9 +1492,6 @@ public class MainActivity extends FragmentActivity {
                                 time = "16:00";
                             }
 
-                            /*
-                             * تنظیمات جدید ذخیره می‌شود.
-                             */
                             notificationPrefs.edit()
                                     .putBoolean(
                                             REMINDER_ENABLED,
@@ -1478,13 +1516,18 @@ public class MainActivity extends FragmentActivity {
                                     );
 
                             /*
-                             * آلارم قبلی حذف شود.
+                             * سابقه اعلان‌ها پاک شود.
+                             */
+                            clearNotificationHistory();
+
+                            /*
+                             * Alarm قبلی حذف شود.
                              */
                             cancelNotificationAlarm();
 
                             /*
                              * اگر فعال است،
-                             * آلارم جدید ساخته شود.
+                             * Alarm جدید ساخته شود.
                              */
                             if (enabled) {
 
@@ -1501,7 +1544,7 @@ public class MainActivity extends FragmentActivity {
 
         /*
          * =====================================================
-         * دریافت اطلاعات اقساط از localStorage
+         * همگام‌سازی اقساط
          * =====================================================
          */
         @JavascriptInterface
