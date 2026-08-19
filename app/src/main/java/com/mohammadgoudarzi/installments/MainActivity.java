@@ -60,6 +60,13 @@ public class MainActivity extends FragmentActivity {
 
     private WebView webView;
 
+    /*
+     * =========================================================
+     * Premium Manager
+     * =========================================================
+     */
+    private PremiumManager premiumManager;
+
     private String pendingBackupText = null;
 
     private SharedPreferences securityPrefs;
@@ -73,6 +80,11 @@ public class MainActivity extends FragmentActivity {
                 "app_security",
                 MODE_PRIVATE
         );
+
+        /*
+         * PremiumManager
+         */
+        premiumManager = new PremiumManager(this);
 
         notificationPrefs = getSharedPreferences(
                 NOTIFICATION_PREFS,
@@ -502,9 +514,6 @@ public class MainActivity extends FragmentActivity {
                 minute = 0;
             }
 
-            /*
-             * Alarm قبلی حذف می‌شود.
-             */
             cancelNotificationAlarm();
 
             Calendar calendar =
@@ -530,10 +539,6 @@ public class MainActivity extends FragmentActivity {
                     0
             );
 
-            /*
-             * اگر ساعت امروز گذشته باشد،
-             * فردا اجرا شود.
-             */
             if (
                     calendar.getTimeInMillis()
                             <=
@@ -613,13 +618,6 @@ public class MainActivity extends FragmentActivity {
     /*
      * =========================================================
      * پاک کردن سابقه اعلان‌ها
-     *
-     * این قسمت برای حل مشکل:
-     *
-     * قسط جدید
-     * تیک قسط
-     * ویرایش قسط
-     * حذف قسط
      * =========================================================
      */
     private void clearNotificationHistory() {
@@ -638,10 +636,6 @@ public class MainActivity extends FragmentActivity {
                 String key =
                         entry.getKey();
 
-                /*
-                 * کلیدهای زیر مربوط به جلوگیری
-                 * از اعلان تکراری هستند.
-                 */
                 if (
                         key.startsWith("notified_")
                 ) {
@@ -681,9 +675,6 @@ public class MainActivity extends FragmentActivity {
             json = "[]";
         }
 
-        /*
-         * اطلاعات جدید ذخیره می‌شود.
-         */
         notificationPrefs.edit()
                 .putString(
                         INSTALLMENTS_KEY,
@@ -691,24 +682,11 @@ public class MainActivity extends FragmentActivity {
                 )
                 .apply();
 
-        /*
-         * اعلان‌هایی که قبلاً نمایش داده شده‌اند
-         * حذف می‌شوند.
-         */
         NotificationReceiver
                 .cancelAllPostedNotifications(this);
 
-        /*
-         * سابقه جلوگیری از اعلان تکراری
-         * نیز پاک می‌شود.
-         *
-         * این قسمت برای ویرایش قسط مهم است.
-         */
         clearNotificationHistory();
 
-        /*
-         * Alarm قبلی حذف و Alarm جدید ساخته می‌شود.
-         */
         scheduleNotificationAlarm();
     }
 
@@ -1001,6 +979,7 @@ public class MainActivity extends FragmentActivity {
                 + ":[];"
 
                 + "saveData();"
+
                 + "render();"
 
                 + "showToast('پشتیبان با موفقیت بازیابی شد.');"
@@ -1020,6 +999,7 @@ public class MainActivity extends FragmentActivity {
                 + ":[];"
 
                 + "saveData();"
+
                 + "render();"
 
                 + "AndroidBridge.syncInstallments();"
@@ -1507,28 +1487,15 @@ public class MainActivity extends FragmentActivity {
                                     )
                                     .apply();
 
-                            /*
-                             * اعلان‌های قبلی حذف شوند.
-                             */
                             NotificationReceiver
                                     .cancelAllPostedNotifications(
                                             MainActivity.this
                                     );
 
-                            /*
-                             * سابقه اعلان‌ها پاک شود.
-                             */
                             clearNotificationHistory();
 
-                            /*
-                             * Alarm قبلی حذف شود.
-                             */
                             cancelNotificationAlarm();
 
-                            /*
-                             * اگر فعال است،
-                             * Alarm جدید ساخته شود.
-                             */
                             if (enabled) {
 
                                 scheduleNotificationAlarm();
@@ -1553,6 +1520,191 @@ public class MainActivity extends FragmentActivity {
             runOnUiThread(
                     MainActivity.this::
                             syncInstallmentsFromWebView
+            );
+        }
+
+        /*
+         * =====================================================
+         * PREMIUM
+         * =====================================================
+         */
+
+        /*
+         * آیا Premium فعال است؟
+         *
+         * JavaScript:
+         *
+         * AndroidBridge.isPremium()
+         */
+        @JavascriptInterface
+        public boolean isPremium() {
+
+            return premiumManager != null
+                    &&
+                    premiumManager.isPremium();
+        }
+
+        /*
+         * تعداد قسط مجاز
+         *
+         * Free = 1
+         * Premium = نامحدود
+         */
+        @JavascriptInterface
+        public int getInstallmentLimit() {
+
+            if (premiumManager == null) {
+                return PremiumManager.FREE_INSTALLMENT_LIMIT;
+            }
+
+            return premiumManager
+                    .getInstallmentLimit();
+        }
+
+        /*
+         * تعداد چک مجاز
+         *
+         * Free = 1
+         * Premium = نامحدود
+         */
+        @JavascriptInterface
+        public int getCheckLimit() {
+
+            if (premiumManager == null) {
+                return PremiumManager.FREE_CHECK_LIMIT;
+            }
+
+            return premiumManager
+                    .getCheckLimit();
+        }
+
+        /*
+         * بررسی امکان افزودن قسط
+         *
+         * currentInstallmentCount:
+         * تعداد فعلی اقساط موجود
+         */
+        @JavascriptInterface
+        public boolean canAddInstallment(
+                int currentInstallmentCount
+        ) {
+
+            if (premiumManager == null) {
+                return false;
+            }
+
+            return premiumManager
+                    .canAddInstallment(
+                            currentInstallmentCount
+                    );
+        }
+
+        /*
+         * بررسی امکان افزودن چک
+         *
+         * currentCheckCount:
+         * تعداد فعلی چک‌ها
+         */
+        @JavascriptInterface
+        public boolean canAddCheck(
+                int currentCheckCount
+        ) {
+
+            if (premiumManager == null) {
+                return false;
+            }
+
+            return premiumManager
+                    .canAddCheck(
+                            currentCheckCount
+                    );
+        }
+
+        /*
+         * آیا سقف اقساط رایگان پر شده؟
+         */
+        @JavascriptInterface
+        public boolean installmentLimitReached(
+                int currentInstallmentCount
+        ) {
+
+            if (premiumManager == null) {
+                return true;
+            }
+
+            return premiumManager
+                    .installmentLimitReached(
+                            currentInstallmentCount
+                    );
+        }
+
+        /*
+         * آیا سقف چک رایگان پر شده؟
+         */
+        @JavascriptInterface
+        public boolean checkLimitReached(
+                int currentCheckCount
+        ) {
+
+            if (premiumManager == null) {
+                return true;
+            }
+
+            return premiumManager
+                    .checkLimitReached(
+                            currentCheckCount
+                    );
+        }
+
+        /*
+         * فعال کردن Premium
+         *
+         * فعلاً برای تست داخلی.
+         */
+        @JavascriptInterface
+        public void activatePremium() {
+
+            runOnUiThread(
+                    () -> {
+
+                        if (premiumManager != null) {
+
+                            premiumManager
+                                    .activatePremium();
+                        }
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Premium فعال شد.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+            );
+        }
+
+        /*
+         * غیرفعال کردن Premium
+         *
+         * فعلاً برای تست داخلی.
+         */
+        @JavascriptInterface
+        public void deactivatePremium() {
+
+            runOnUiThread(
+                    () -> {
+
+                        if (premiumManager != null) {
+
+                            premiumManager
+                                    .deactivatePremium();
+                        }
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Premium غیرفعال شد.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
             );
         }
 
