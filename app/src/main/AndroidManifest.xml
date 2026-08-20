@@ -32,6 +32,11 @@
 
         </activity>
 
+        <!-- صفحه مدیریت چک‌ها -->
+        <activity
+            android:name=".ChecksActivity"
+            android:exported="false" />
+
         <!-- دریافت Alarm -->
         <receiver
             android:name=".NotificationReceiver"
