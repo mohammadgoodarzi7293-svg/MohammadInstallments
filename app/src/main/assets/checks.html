@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>مدیریت چک‌ها</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    margin:0;
+    min-height:100%;
+    font-family:Tahoma,Arial,sans-serif;
+    background:#f3f6fa;
+    color:#17202a;
+}
+
+body{
+    padding-bottom:30px;
+}
+
+button,input,select{
+    font-family:inherit;
+}
+
+button{
+    border:0;
+    cursor:pointer;
+}
+
+.header{
+    background:linear-gradient(135deg,#0757a5,#2499e8);
+    color:#fff;
+    padding:20px 12px;
+    border-radius:0 0 26px 26px;
+}
+
+.header h1{
+    margin:0;
+    text-align:center;
+    font-size:22px;
+}
+
+.header p{
+    margin:7px 0 0;
+    text-align:center;
+    font-size:11px;
+    opacity:.9;
+}
+
+.summary{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    margin-top:14px;
+}
+
+.stat{
+    background:#fff;
+    color:#17202a;
+    border-radius:14px;
+    padding:10px 3px;
+    text-align:center;
+}
+
+.stat small{
+    display:block;
+    color:#64748b;
+    font-size:9px;
+    margin-bottom:5px;
+}
+
+.stat strong{
+    font-size:12px;
+}
+
+.container{
+    max-width:720px;
+    margin:auto;
+    padding:12px 10px;
+}
+
+.btn{
+    width:100%;
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:9px;
+    font-weight:bold;
+}
+
+.primary{
+    background:#1976d2;
+    color:#fff;
+}
+
+.secondary{
+    background:#fff;
+    color:#334155;
+}
+
+.limit{
+    display:none;
+    padding:10px;
+    margin-bottom:9px;
+    border-radius:11px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    font-size:10px;
+    line-height:1.9;
+}
+
+.limit.show{
+    display:block;
+}
+
+.card{
+    background:#fff;
+    border-radius:17px;
+    padding:13px;
+    margin-bottom:10px;
+    box-shadow:0 3px 15px rgba(0,0,0,.07);
+}
+
+.top{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+}
+
+.title{
+    font-weight:bold;
+    font-size:15px;
+}
+
+.meta{
+    color:#64748b;
+    font-size:10px;
+    line-height:2;
+    margin-top:4px;
+}
+
+.amount{
+    margin-top:9px;
+    padding:9px;
+    border-radius:11px;
+    background:#eff6ff;
+    color:#0757a5;
+    font-weight:bold;
+    font-size:14px;
+}
+
+.words{
+    font-size:10px;
+    color:#64748b;
+    margin-top:4px;
+    line-height:1.9;
+}
+
+.status{
+    display:inline-block;
+    padding:5px 8px;
+    border-radius:9px;
+    font-size:9px;
+}
+
+.issued{
+    background:#dbeafe;
+    color:#1d4ed8;
+}
+
+.cashed{
+    background:#dcfce7;
+    color:#15803d;
+}
+
+.returned{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.cancelled{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.actions{
+    display:flex;
+    gap:6px;
+    margin-top:9px;
+}
+
+.action{
+    flex:1;
+    padding:9px;
+    border-radius:10px;
+    background:#f1f5f9;
+}
+
+.danger{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.empty{
+    background:#fff;
+    border-radius:17px;
+    padding:35px 12px;
+    text-align:center;
+    color:#64748b;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    z-index:10;
+    display:none;
+    align-items:flex-end;
+    background:rgba(0,0,0,.55);
+}
+
+.modal.show{
+    display:flex;
+}
+
+.sheet{
+    width:100%;
+    max-width:650px;
+    max-height:94vh;
+    overflow:auto;
+    background:#fff;
+    border-radius:24px 24px 0 0;
+    padding:18px 15px 25px;
+}
+
+.sheet h2{
+    font-size:17px;
+    margin:0 0 10px;
+}
+
+.close{
+    float:left;
+    border-radius:50%;
+    width:36px;
+    height:36px;
+    background:#f1f5f9;
+    font-size:20px;
+}
+
+label{
+    display:block;
+    margin:10px 0 5px;
+    color:#475569;
+    font-size:10px;
+}
+
+.input{
+    width:100%;
+    padding:11px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    background:#fff;
+}
+
+.row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.actions2{
+    display:flex;
+    gap:8px;
+    margin-top:14px;
+}
+
+.actions2 button{
+    flex:1;
+    padding:12px;
+    border-radius:11px;
+    font-weight:bold;
+}
+
+.save{
+    background:#1976d2;
+    color:#fff;
+}
+
+.cancel{
+    background:#f1f5f9;
+    color:#334155;
+}
+
+.info{
+    margin-top:8px;
+    padding:9px;
+    border-radius:10px;
+    background:#f8fafc;
+    color:#64748b;
+    font-size:10px;
+    line-height:1.9;
+}
+
+@media(max-width:380px){
+    .row{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+<h1>مدیریت چک‌ها</h1>
+
+<p>
+ثبت، پیگیری و مدیریت وضعیت چک‌ها
+</p>
+
+<div class="summary">
+
+<div class="stat">
+<small>تعداد چک</small>
+<strong id="count">۰</strong>
+</div>
+
+<div class="stat">
+<small>مبلغ کل</small>
+<strong id="total">۰ تومان</strong>
+</div>
+
+<div class="stat">
+<small>سررسید نزدیک</small>
+<strong id="near">۰</strong>
+</div>
+
+</div>
+
+</header>
+
+<main class="container">
+
+<div id="limit" class="limit"></div>
+
+<button id="add" class="btn primary">
+＋ ثبت چک جدید
+</button>
+
+<button id="book" class="btn secondary">
+📒 ثبت دسته‌چک و تولید خودکار شماره‌ها
+</button>
+
+<div id="list"></div>
+
+</main>
+
+
+<!-- ثبت چک -->
+
+<div id="modal" class="modal">
+
+<div class="sheet">
+
+<button class="close" onclick="closeModal()">×</button>
+
+<h2 id="modalTitle">
+ثبت چک
+</h2>
+
+<label>
+شماره چک
+</label>
+
+<input
+id="number"
+class="input"
+inputmode="numeric"
+placeholder="شماره چک"
+>
+
+
+<div class="row">
+
+<div>
+
+<label>
+مبلغ (تومان)
+</label>
+
+<input
+id="amount"
+class="input"
+inputmode="numeric"
+placeholder="مثلاً ۵۰۰۰۰۰۰۰"
+>
+
+</div>
+
+<div>
+
+<label>
+تاریخ سررسید
+</label>
+
+<input
+id="date"
+class="input"
+type="date"
+>
+
+</div>
+
+</div>
+
+
+<label>
+در وجه
+</label>
+
+<input
+id="payee"
+class="input"
+placeholder="نام شخص یا شرکت"
+>
+
+
+<label>
+بابت
+</label>
+
+<input
+id="reason"
+class="input"
+placeholder="توضیح"
+>
+
+
+<label>
+وضعیت
+</label>
+
+<select id="status" class="input">
+
+<option value="issued">
+صادر شده
+</option>
+
+<option value="cashed">
+وصول شده
+</option>
+
+<option value="returned">
+برگشتی
+</option>
+
+<option value="cancelled">
+باطل شده
+</option>
+
+</select>
+
+
+<div id="words" class="info">
+مبلغ به حروف: —
+</div>
+
+
+<div class="actions2">
+
+<button
+class="cancel"
+onclick="closeModal()"
+>
+انصراف
+</button>
+
+<button
+class="save"
+onclick="saveCheck()"
+>
+ذخیره
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ثبت دسته چک -->
+
+<div id="bookModal" class="modal">
+
+<div class="sheet">
+
+<button
+class="close"
+onclick="closeBook()"
+>
+×
+</button>
+
+<h2>
+ثبت دسته‌چک
+</h2>
+
+
+<label>
+نام دسته‌چک
+</label>
+
+<input
+id="bookName"
+class="input"
+placeholder="مثلاً دسته‌چک بانک ملی"
+>
+
+
+<div class="row">
+
+<div>
+
+<label>
+شماره شروع
+</label>
+
+<input
+id="bookStart"
+class="input"
+inputmode="numeric"
+placeholder="1001"
+>
+
+</div>
+
+<div>
+
+<label>
+تعداد برگه
+</label>
+
+<input
+id="bookCount"
+class="input"
+inputmode="numeric"
+placeholder="10"
+>
+
+</div>
+
+</div>
+
+
+<label>
+پیش‌شماره اختیاری
+</label>
+
+<input
+id="bookPrefix"
+class="input"
+placeholder="مثلاً 77"
+>
+
+
+<div class="info">
+شماره‌های چک به صورت متوالی تولید می‌شوند.
+</div>
+
+
+<div class="actions2">
+
+<button
+class="cancel"
+onclick="closeBook()"
+>
+انصراف
+</button>
+
+<button
+class="save"
+onclick="generateBook()"
+>
+تولید شماره‌ها
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const CHECK_KEY =
+"mohammad_checks_v1";
+
+const BOOK_KEY =
+"mohammad_checkbooks_v1";
+
+let checks = [];
+
+let books = [];
+
+let editId = null;
+
+
+/* تبدیل اعداد فارسی */
+
+function digits(value){
+
+return String(value || "")
+.replace(/[۰-۹]/g,function(d){
+
+return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);
+
+})
+.replace(/[٬,]/g,"");
+
+}
+
+
+/* نمایش عدد فارسی */
+
+function fa(value){
+
+return Number(value || 0)
+.toLocaleString("fa-IR");
+
+}
+
+
+/* ذخیره */
+
+function load(){
+
+try{
+
+checks =
+JSON.parse(
+localStorage.getItem(CHECK_KEY) || "[]"
+);
+
+}catch(e){
+
+checks=[];
+
+}
+
+try{
+
+books =
+JSON.parse(
+localStorage.getItem(BOOK_KEY) || "[]"
+);
+
+}catch(e){
+
+books=[];
+
+}
+
+render();
+
+}
+
+
+/* ذخیره اطلاعات */
+
+function persist(){
+
+localStorage.setItem(
+CHECK_KEY,
+JSON.stringify(checks)
+);
+
+localStorage.setItem(
+BOOK_KEY,
+JSON.stringify(books)
+);
+
+render();
+
+}
+
+
+/* بررسی Premium */
+
+function isPremium(){
+
+try{
+
+if(
+window.AndroidBridge &&
+typeof AndroidBridge.isPremium === "function"
+){
+
+return AndroidBridge.isPremium();
+
+}
+
+}catch(e){}
+
+return false;
+
+}
+
+
+/* محدودیت رایگان */
+
+function canAdd(){
+
+if(isPremium()){
+
+return true;
+
+}
+
+try{
+
+if(
+window.AndroidBridge &&
+typeof AndroidBridge.canAddCheck === "function"
+){
+
+return AndroidBridge.canAddCheck(
+checks.length
+);
+
+}
+
+}catch(e){}
+
+return checks.length < 1;
+
+}
+
+
+/* ثبت چک */
+
+function add(){
+
+if(!canAdd()){
+
+const limit =
+document.getElementById("limit");
+
+limit.classList.add("show");
+
+limit.innerHTML =
+"نسخه رایگان فقط <b>۱ چک</b> را پشتیبانی می‌کند. برای ثبت چک‌های بیشتر، Premium را فعال کنید.";
+
+return;
+
+}
+
+editId=null;
+
+clearForm();
+
+document.getElementById(
+"modalTitle"
+).textContent="ثبت چک";
+
+document.getElementById(
+"modal"
+).classList.add("show");
+
+}
+
+
+/* پاک کردن فرم */
+
+function clearForm(){
+
+[
+"number",
+"amount",
+"date",
+"payee",
+"reason"
+].forEach(function(id){
+
+document.getElementById(id).value="";
+
+});
+
+document.getElementById(
+"status"
+).value="issued";
+
+updateWords();
+
+}
+
+
+/* بستن */
+
+function closeModal(){
+
+document.getElementById(
+"modal"
+).classList.remove("show");
+
+}
+
+
+/* ویرایش */
+
+function edit(id){
+
+const c =
+checks.find(function(x){
+
+return x.id===id;
+
+});
+
+if(!c)return;
+
+editId=id;
+
+document.getElementById(
+"modalTitle"
+).textContent="ویرایش چک";
+
+document.getElementById("number").value =
+c.number || "";
+
+document.getElementById("amount").value =
+c.amount || "";
+
+document.getElementById("date").value =
+c.date || "";
+
+document.getElementById("payee").value =
+c.payee || "";
+
+document.getElementById("reason").value =
+c.reason || "";
+
+document.getElementById("status").value =
+c.status || "issued";
+
+updateWords();
+
+document.getElementById(
+"modal"
+).classList.add("show");
+
+}
+
+
+/* ذخیره چک */
+
+function saveCheck(){
+
+const number =
+document.getElementById("number").value.trim();
+
+const amount =
+Number(
+digits(
+document.getElementById("amount").value
+)
+);
+
+const date =
+document.getElementById("date").value;
+
+if(
+!number ||
+!amount ||
+!date
+){
+
+alert(
+"شماره چک، مبلغ و تاریخ سررسید الزامی است."
+);
+
+return;
+
+}
+
+const item={
+
+id:
+editId ||
+Date.now().toString(),
+
+number:number,
+
+amount:amount,
+
+date:date,
+
+payee:
+document.getElementById("payee").value.trim(),
+
+reason:
+document.getElementById("reason").value.trim(),
+
+status:
+document.getElementById("status").value
+
+};
+
+
+if(editId){
+
+const index =
+checks.findIndex(function(x){
+
+return x.id===editId;
+
+});
+
+if(index>=0){
+
+checks[index]=item;
+
+}
+
+}else{
+
+checks.push(item);
+
+}
+
+
+persist();
+
+closeModal();
+
+}
+
+
+/* حذف */
+
+function removeCheck(id){
+
+if(
+confirm("این چک حذف شود؟")
+){
+
+checks =
+checks.filter(function(x){
+
+return x.id!==id;
+
+});
+
+persist();
+
+}
+
+}
+
+
+/* نمایش */
+
+function render(){
+
+let total=0;
+
+let near=0;
+
+const today =
+new Date();
+
+today.setHours(
+0,0,0,0
+);
+
+
+checks.forEach(function(c){
+
+total +=
+Number(c.amount || 0);
+
+const d =
+new Date(
+c.date+"T00:00:00"
+);
+
+const diff =
+(d-today)/86400000;
+
+if(
+c.status==="issued" &&
+diff>=0 &&
+diff<=7
+){
+
+near++;
+
+}
+
+});
+
+
+document.getElementById(
+"count"
+).textContent =
+fa(checks.length);
+
+
+document.getElementById(
+"total"
+).textContent =
+fa(total)+" تومان";
+
+
+document.getElementById(
+"near"
+).textContent =
+fa(near);
+
+
+const list =
+document.getElementById("list");
+
+
+if(!checks.length){
+
+list.innerHTML =
+'<div class="empty">هنوز چکی ثبت نشده است.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+checks.map(function(c){
+
+return `
+
+<div class="card">
+
+<div class="top">
+
+<div>
+
+<div class="title">
+
+چک شماره ${escapeHtml(c.number)}
+
+</div>
+
+<div class="meta">
+
+سررسید:
+${escapeHtml(c.date)}
+
+<br>
+
+در وجه:
+${escapeHtml(c.payee || "—")}
+
+<br>
+
+بابت:
+${escapeHtml(c.reason || "—")}
+
+</div>
+
+</div>
+
+<span class="status ${c.status}">
+
+${statusText(c.status)}
+
+</span>
+
+</div>
+
+
+<div class="amount">
+
+${fa(c.amount)} تومان
+
+<div class="words">
+
+${amountToWords(c.amount)}
+تومان
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+class="action"
+onclick="edit('${c.id}')"
+>
+ویرایش
+</button>
+
+<button
+class="action danger"
+onclick="removeCheck('${c.id}')"
+>
+حذف
+</button>
+
+</div>
+
+</div>
+
+`;
+
+}).join("");
+
+}
+
+
+/* وضعیت */
+
+function statusText(status){
+
+const map={
+
+issued:"صادر شده",
+
+cashed:"وصول شده",
+
+returned:"برگشتی",
+
+cancelled:"باطل شده"
+
+};
+
+return map[status] || "نامشخص";
+
+}
+
+
+/* امنیت نمایش متن */
+
+function escapeHtml(value){
+
+return String(value || "")
+.replace(/[&<>"']/g,function(c){
+
+return {
+
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
+
+}[c];
+
+});
+
+}
+
+
+/* مبلغ به حروف */
+
+const ones=[
+
+"",
+
+"یک",
+
+"دو",
+
+"سه",
+
+"چهار",
+
+"پنج",
+
+"شش",
+
+"هفت",
+
+"هشت",
+
+"نه",
+
+"ده",
+
+"یازده",
+
+"دوازده",
+
+"سیزده",
+
+"چهارده",
+
+"پانزده",
+
+"شانزده",
+
+"هفده",
+
+"هجده",
+
+"نوزده"
+
+];
+
+
+const tens=[
+
+"",
+
+"",
+
+"بیست",
+
+"سی",
+
+"چهل",
+
+"پنجاه",
+
+"شصت",
+
+"هفتاد",
+
+"هشتاد",
+
+"نود"
+
+];
+
+
+const hundreds=[
+
+"",
+
+"صد",
+
+"دویست",
+
+"سیصد",
+
+"چهارصد",
+
+"پانصد",
+
+"ششصد",
+
+"هفتصد",
+
+"هشتصد",
+
+"نهصد"
+
+];
+
+
+const scales=[
+
+"",
+
+"هزار",
+
+"میلیون",
+
+"میلیارد",
+
+"تریلیون"
+
+];
+
+
+function tri(n){
+
+let result=[];
+
+
+if(
+Math.floor(n/100)
+){
+
+result.push(
+hundreds[
+Math.floor(n/100)
+]
+);
+
+}
+
+
+n%=100;
+
+
+if(n){
+
+if(result.length){
+
+result.push(" و ");
+
+}
+
+
+if(n<20){
+
+result.push(
+ones[n]
+);
+
+}else{
+
+result.push(
+tens[
+Math.floor(n/10)
+]
+);
+
+if(n%10){
+
+result.push(
+" و "+
+ones[n%10]
+);
+
+}
+
+}
+
+}
+
+
+return result.join("");
+
+}
+
+
+function amountToWords(number){
+
+number =
+Math.floor(
+Number(number) || 0
+);
+
+if(number===0){
+
+return "صفر";
+
+}
+
+
+let result=[];
+
+let i=0;
+
+
+while(number>0){
+
+const part =
+number%1000;
+
+
+if(part){
+
+result.unshift(
+
+tri(part) +
+
+(
+scales[i]
+?
+" "+scales[i]
+:
+""
+)
+
+);
+
+}
+
+
+number =
+Math.floor(
+number/1000
+);
+
+i++;
+
+}
+
+
+return result.join(" و ");
+
+}
+
+
+/* پیش‌نمایش مبلغ */
+
+function updateWords(){
+
+const amount =
+Number(
+digits(
+document.getElementById(
+"amount"
+).value
+)
+);
+
+
+document.getElementById(
+"words"
+).textContent =
+"مبلغ به حروف: " +
+
+(
+amount
+?
+amountToWords(amount)+" تومان"
+:
+"—"
+);
+
+}
+
+
+/* دسته چک */
+
+function closeBook(){
+
+document.getElementById(
+"bookModal"
+).classList.remove("show");
+
+}
+
+
+function generateBook(){
+
+const name =
+document.getElementById(
+"bookName"
+).value.trim();
+
+
+const start =
+Number(
+digits(
+document.getElementById(
+"bookStart"
+).value
+)
+);
+
+
+const count =
+Number(
+digits(
+document.getElementById(
+"bookCount"
+).value
+)
+);
+
+
+const prefix =
+digits(
+document.getElementById(
+"bookPrefix"
+).value
+);
+
+
+if(
+!name ||
+!start ||
+count<1 ||
+count>100
+){
+
+alert(
+"نام، شماره شروع و تعداد معتبر وارد کنید. حداکثر ۱۰۰ برگه."
+);
+
+return;
+
+}
+
+
+const numbers=[];
+
+
+for(
+let i=0;
+i<count;
+i++
+){
+
+numbers.push(
+prefix+
+String(start+i)
+);
+
+}
+
+
+books.push({
+
+id:
+Date.now().toString(),
+
+name:name,
+
+start:start,
+
+count:count,
+
+prefix:prefix,
+
+numbers:numbers
+
+});
+
+
+persist();
+
+closeBook();
+
+
+alert(
+"شماره‌های دسته‌چک با موفقیت تولید شد:\n\n"+
+numbers.join("، ")
+);
+
+}
+
+
+/* رویدادها */
+
+document.getElementById(
+"add"
+).onclick=add;
+
+
+document.getElementById(
+"book"
+).onclick=function(){
+
+document.getElementById(
+"bookModal"
+).classList.add("show");
+
+};
+
+
+document.getElementById(
+"amount"
+).addEventListener(
+"input",
+updateWords
+);
+
+
+load();
+
+</script>
+
+</body>
+</html>
