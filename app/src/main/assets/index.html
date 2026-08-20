@@ -3162,7 +3162,78 @@ render();
         window.openReminderSettings;
 
 })();
+<!-- دکمه ورود به بخش چک‌ها -->
+<style>
+.checksButton{
+    width:100%;
+    padding:15px;
+    margin:0 0 11px;
+    border-radius:16px;
+    background:#0f9d58;
+    color:#fff;
+    font-size:15px;
+    font-weight:bold;
+    box-shadow:0 5px 15px rgba(15,157,88,.22);
+}
+</style>
 
+<script>
+(function(){
+
+    function addChecksButton(){
+
+        if(document.getElementById("checksButton")){
+            return;
+        }
+
+        var container =
+            document.querySelector(".container");
+
+        if(!container){
+            return;
+        }
+
+        var button =
+            document.createElement("button");
+
+        button.id="checksButton";
+        button.className="checksButton";
+        button.type="button";
+        button.textContent="🧾 مدیریت چک‌ها";
+
+        button.onclick=function(){
+
+            window.location.href="checks.html";
+
+        };
+
+        var firstChild =
+            container.firstElementChild;
+
+        if(firstChild){
+            container.insertBefore(
+                button,
+                firstChild
+            );
+        }else{
+            container.appendChild(button);
+        }
+    }
+
+    if(document.readyState==="loading"){
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            addChecksButton
+        );
+
+    }else{
+
+        addChecksButton();
+
+    }
+
+})();
 </script>
 </body>
 </html>
