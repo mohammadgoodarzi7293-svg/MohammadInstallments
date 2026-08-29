@@ -28,7 +28,7 @@ body{
     padding-bottom:85px;
 }
 
-button,input{
+button,input,select{
     font-family:inherit;
 }
 
@@ -126,6 +126,22 @@ button{
     margin-bottom:11px;
 }
 
+.checksButton{
+    width:100%;
+    padding:15px;
+    margin:0 0 11px;
+    border-radius:16px;
+    background:#0f9d58;
+    color:#fff;
+    font-size:15px;
+    font-weight:bold;
+    box-shadow:0 5px 15px rgba(15,157,88,.22);
+}
+
+.checksButton:active{
+    transform:scale(.99);
+}
+
 .card{
     background:#fff;
     border-radius:18px;
@@ -221,10 +237,6 @@ button{
     background:#22a447;
     border-radius:20px;
 }
-
-/* =========================
-   کشویی اقساط
-========================= */
 
 .installmentToggle{
     width:100%;
@@ -604,6 +616,16 @@ label{
     color:#334155;
 }
 
+.reminderStatus{
+    margin-top:10px;
+    padding:10px;
+    border-radius:10px;
+    background:#f0fdf4;
+    color:#166534;
+    font-size:10px;
+    line-height:1.8;
+}
+
 @media(max-width:380px){
 
     .header h1{
@@ -662,11 +684,16 @@ label{
 <main class="container">
 
 <div class="searchBox">
-<input id="search"
+<input
+id="search"
 class="search"
 type="text"
 placeholder="جستجوی بانک یا مورد...">
 </div>
+
+<button id="checksButton" class="checksButton" type="button">
+🧾 مدیریت چک‌ها
+</button>
 
 <button id="addButton" class="addButton">
 ＋ افزودن قسط جدید
@@ -692,13 +719,18 @@ placeholder="جستجوی بانک یا مورد...">
 🗑️ سطل زباله
 </button>
 
+<button id="reminderButton" class="bottomButton">
+🔔 یادآوری
+</button>
+
 <button id="resetButton" class="bottomButton danger">
 حذف همه
 </button>
 
 </div>
 
-<input id="fileInput"
+<input
+id="fileInput"
 type="file"
 accept=".json,application/json"
 style="display:none">
@@ -721,7 +753,8 @@ style="display:none">
 
 <label>نام بانک / مورد *</label>
 
-<input id="nameInput"
+<input
+id="nameInput"
 class="input"
 type="text"
 placeholder="مثلاً بانک رسالت">
@@ -732,7 +765,8 @@ placeholder="مثلاً بانک رسالت">
 
 <label>مبلغ هر قسط *</label>
 
-<input id="amountInput"
+<input
+id="amountInput"
 class="input"
 type="number"
 inputmode="numeric"
@@ -745,7 +779,8 @@ placeholder="مثلاً ۵۰۰۰۰۰۰">
 
 <label>تعداد اقساط</label>
 
-<input id="monthsInput"
+<input
+id="monthsInput"
 class="input"
 type="number"
 inputmode="numeric"
@@ -762,7 +797,8 @@ placeholder="مثلاً ۱۲">
 
 <label>تاریخ اولین قسط *</label>
 
-<input id="startDateInput"
+<input
+id="startDateInput"
 class="input"
 type="text"
 inputmode="numeric"
@@ -776,7 +812,8 @@ placeholder="1405/05/22">
 
 <label>تاریخ آخرین قسط</label>
 
-<input id="endDateInput"
+<input
+id="endDateInput"
 class="input"
 type="text"
 inputmode="numeric"
@@ -809,7 +846,8 @@ placeholder="خودکار">
 
 <label>توضیحات</label>
 
-<input id="noteInput"
+<input
+id="noteInput"
 class="input"
 type="text"
 placeholder="توضیحات اختیاری">
@@ -824,12 +862,14 @@ placeholder="توضیحات اختیاری">
 
 <div class="modalButtons">
 
-<button id="cancelButton"
+<button
+id="cancelButton"
 class="modalButton cancel">
 انصراف
 </button>
 
-<button id="saveButton"
+<button
+id="saveButton"
 class="modalButton save">
 ذخیره قسط
 </button>
@@ -845,26 +885,144 @@ class="modalButton save">
 <div class="sheet">
 
 <div class="sheetTitle">
+
 <h2>تأیید عملیات</h2>
 
-<button id="confirmClose"
-class="closeButton">
+<button id="confirmClose" class="closeButton">
 ×
 </button>
+
 </div>
 
 <div id="confirmText" class="confirmText"></div>
 
 <div class="confirmButtons">
 
-<button id="confirmNo"
-class="confirmNo">
+<button id="confirmNo" class="confirmNo">
 خیر
 </button>
 
-<button id="confirmYes"
-class="confirmYes">
+<button id="confirmYes" class="confirmYes">
 بله، انجام بده
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ===============================
+     تنظیمات یادآوری
+================================ -->
+
+<div id="reminderModal" class="modal">
+
+<div class="sheet">
+
+<div class="sheetTitle">
+
+<h2>🔔 تنظیم یادآوری اقساط</h2>
+
+<button
+type="button"
+class="closeButton"
+id="reminderCloseButton">
+×
+</button>
+
+</div>
+
+<div class="notice">
+یادآوری سررسید اقساط را می‌توانی روشن یا خاموش کنی،
+تعداد روزهای قبل و ساعت ارسال اعلان را خودت تعیین کنی.
+</div>
+
+<label>وضعیت یادآوری</label>
+
+<div style="
+display:flex;
+gap:8px;
+margin-top:6px;
+">
+
+<button
+id="reminderOnButton"
+type="button"
+style="
+flex:1;
+padding:13px;
+border-radius:12px;
+background:#dcfce7;
+color:#166534;
+font-weight:bold;
+">
+🔔 روشن
+</button>
+
+<button
+id="reminderOffButton"
+type="button"
+style="
+flex:1;
+padding:13px;
+border-radius:12px;
+background:#fee2e2;
+color:#991b1b;
+font-weight:bold;
+">
+🔕 خاموش
+</button>
+
+</div>
+
+<label for="reminderDays">
+زمان یادآوری
+</label>
+
+<select id="reminderDays" class="input">
+
+<option value="1">
+۱ روز قبل
+</option>
+
+<option value="2">
+۲ روز قبل
+</option>
+
+</select>
+
+<label for="reminderTime">
+ساعت ارسال یادآوری
+</label>
+
+<input
+id="reminderTime"
+class="input"
+type="time"
+value="16:00"
+dir="ltr">
+
+<div
+id="reminderPreview"
+class="autoInfo">
+یادآوری در حال تنظیم است.
+</div>
+
+<div class="modalButtons">
+
+<button
+type="button"
+id="reminderCancelButton"
+class="modalButton cancel">
+انصراف
+</button>
+
+<button
+type="button"
+id="reminderSaveButton"
+class="modalButton save">
+ذخیره تنظیمات
 </button>
 
 </div>
@@ -877,23 +1035,47 @@ class="confirmYes">
 
 <script>
 
-const STORAGE_KEY = "mohammad_installments_v10";
-const TRASH_KEY = "mohammad_installments_trash_v10";
+const STORAGE_KEY =
+    "mohammad_installments_v11";
+
+const TRASH_KEY =
+    "mohammad_installments_trash_v11";
+
+const REMINDER_KEY =
+    "mohammad_installments_reminder_settings";
 
 let installments = load(STORAGE_KEY);
+
 let trash = load(TRASH_KEY);
+
 let editingId = null;
+
 let confirmAction = null;
 
-const $ = id => document.getElementById(id);
+let reminderSettings = {
+    enabled:true,
+    daysBefore:2,
+    time:"16:00"
+};
+
+const $ = id =>
+    document.getElementById(id);
 
 function load(key){
 
     try{
-        const x = localStorage.getItem(key);
-        return x ? JSON.parse(x) : [];
+
+        const x =
+            localStorage.getItem(key);
+
+        return x
+            ? JSON.parse(x)
+            : [];
+
     }catch(e){
+
         return [];
+
     }
 
 }
@@ -915,22 +1097,32 @@ function saveData(){
 function faNumber(value){
 
     return String(value)
-    .replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
+    .replace(
+        /\d/g,
+        d=>"۰۱۲۳۴۵۶۷۸۹"[d]
+    );
 
 }
 
 function enNumber(value){
 
     return String(value || "")
-    .replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d))
-    .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
+    .replace(
+        /[۰-۹]/g,
+        d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)
+    )
+    .replace(
+        /[٠-٩]/g,
+        d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)
+    );
 
 }
 
 function money(value){
 
     return faNumber(
-        Number(value || 0).toLocaleString("en-US")
+        Number(value || 0)
+        .toLocaleString("en-US")
     ) + " تومان";
 
 }
@@ -938,13 +1130,24 @@ function money(value){
 function showToast(text){
 
     $("toast").textContent = text;
-    $("toast").classList.add("show");
 
-    clearTimeout(window.toastTimer);
+    $("toast")
+        .classList
+        .add("show");
 
-    window.toastTimer = setTimeout(()=>{
-        $("toast").classList.remove("show");
-    },2500);
+    clearTimeout(
+        window.toastTimer
+    );
+
+    window.toastTimer =
+        setTimeout(
+            ()=>{
+                $("toast")
+                    .classList
+                    .remove("show");
+            },
+            2500
+        );
 
 }
 
@@ -961,9 +1164,10 @@ function escapeHtml(text){
 
 function normalizeDateInput(input){
 
-    let value = enNumber(input.value)
-    .replace(/[^\d]/g,"")
-    .substring(0,8);
+    let value =
+        enNumber(input.value)
+        .replace(/[^\d]/g,"")
+        .substring(0,8);
 
     let result = "";
 
@@ -971,10 +1175,12 @@ function normalizeDateInput(input){
         result += value.substring(0,4);
 
     if(value.length >= 5)
-        result += "/" + value.substring(4,6);
+        result += "/" +
+            value.substring(4,6);
 
     if(value.length >= 7)
-        result += "/" + value.substring(6,8);
+        result += "/" +
+            value.substring(6,8);
 
     input.value = result;
 
@@ -982,11 +1188,17 @@ function normalizeDateInput(input){
 
 function validJalali(date){
 
-    if(!/^\d{4}\/\d{2}\/\d{2}$/.test(date))
+    if(
+        !/^\d{4}\/\d{2}\/\d{2}$/.test(date)
+    )
         return false;
 
-    const p = date.split("/").map(Number);
-    const y=p[0],m=p[1],d=p[2];
+    const p =
+        date.split("/").map(Number);
+
+    const y=p[0];
+    const m=p[1];
+    const d=p[2];
 
     if(m<1 || m>12 || d<1)
         return false;
@@ -1010,10 +1222,14 @@ function jalaliToGregorian(jy,jm,jd){
     let gy;
 
     if(jy>979){
+
         gy=1600;
         jy-=979;
+
     }else{
+
         gy=621;
+
     }
 
     let days =
@@ -1022,17 +1238,21 @@ function jalaliToGregorian(jy,jm,jd){
         Math.floor(((jy%33)+3)/4)+
         78+
         jd+
-        (jm<7
+        (
+            jm<7
             ?(jm-1)*31
-            :(jm-7)*30+186);
+            :(jm-7)*30+186
+        );
 
-    gy+=400*Math.floor(days/146097);
+    gy+=400*
+        Math.floor(days/146097);
 
     days%=146097;
 
     if(days>36524){
 
-        gy+=100*Math.floor(--days/36524);
+        gy+=100*
+            Math.floor(--days/36524);
 
         days%=36524;
 
@@ -1041,22 +1261,30 @@ function jalaliToGregorian(jy,jm,jd){
 
     }
 
-    gy+=4*Math.floor(days/1461);
+    gy+=4*
+        Math.floor(days/1461);
 
     days%=1461;
 
     if(days>365){
 
-        gy+=Math.floor((days-1)/365);
+        gy+=
+            Math.floor(
+                (days-1)/365
+            );
 
-        days=(days-1)%365;
+        days=
+            (days-1)%365;
 
     }
 
     let gd=days+1;
 
     const leap =
-        (gy%4===0 && gy%100!==0) ||
+        (
+            gy%4===0 &&
+            gy%100!==0
+        ) ||
         gy%400===0;
 
     const md=[
@@ -1084,97 +1312,11 @@ function jalaliToGregorian(jy,jm,jd){
 
     }
 
-    return [gy,gm,gd];
-
-}
-
-function gregorianToJalali(gy,gm,gd){
-
-    gy=Number(gy);
-    gm=Number(gm);
-    gd=Number(gd);
-
-    let jy;
-
-    if(gy>1600){
-
-        jy=979;
-        gy-=1600;
-
-    }else{
-
-        jy=0;
-        gy-=621;
-
-    }
-
-    const gy2=gm>2?gy+1:gy;
-
-    let days =
-        365*gy+
-        Math.floor((gy2+3)/4)-
-        Math.floor((gy2+99)/100)+
-        Math.floor((gy2+399)/400)-
-        80+
-        gd;
-
-    const md=[
-        0,31,28,31,30,31,30,
-        31,31,30,31,30,31
+    return [
+        gy,
+        gm,
+        gd
     ];
-
-    for(let i=1;i<gm;i++)
-        days+=md[i];
-
-    jy+=33*Math.floor(days/12053);
-
-    days%=12053;
-
-    jy+=4*Math.floor(days/1461);
-
-    days%=1461;
-
-    if(days>365){
-
-        jy+=Math.floor((days-1)/365);
-
-        days=(days-1)%365;
-
-    }
-
-    const jm =
-        days<186
-        ?1+Math.floor(days/31)
-        :7+Math.floor((days-186)/30);
-
-    const jd =
-        1+
-        (
-            days<186
-            ?days%31
-            :(days-186)%30
-        );
-
-    return [jy,jm,jd];
-
-}
-
-function jalaliToDate(text){
-
-    if(!validJalali(text))
-        return null;
-
-    const p=text.split("/").map(Number);
-
-    const g=jalaliToGregorian(
-        p[0],p[1],p[2]
-    );
-
-    return new Date(
-        g[0],
-        g[1]-1,
-        g[2]
-    );
 
 }
 
@@ -1186,11 +1328,17 @@ function daysInJalaliMonth(year,month){
     if(month<=11)
         return 30;
 
-    for(let d=30;d>=29;d--){
+    for(
+        let d=30;
+        d>=29;
+        d--
+    ){
 
-        if(validJalali(
-            `${year}/${String(month).padStart(2,"0")}/${d}`
-        ))
+        if(
+            validJalali(
+                `${year}/${String(month).padStart(2,"0")}/${d}`
+            )
+        )
             return d;
 
     }
@@ -1204,20 +1352,25 @@ function addJalaliMonths(text,count){
     if(!validJalali(text))
         return "";
 
-    const p=text.split("/").map(Number);
+    const p =
+        text.split("/").map(Number);
 
     let y=p[0];
     let m=p[1];
     let d=p[2];
 
-    const total=
+    const total =
         y*12+(m-1)+Number(count);
 
     y=Math.floor(total/12);
+
     m=total%12+1;
 
-    const max=
-        daysInJalaliMonth(y,m);
+    const max =
+        daysInJalaliMonth(
+            y,
+            m
+        );
 
     d=Math.min(d,max);
 
@@ -1231,20 +1384,24 @@ function addJalaliMonths(text,count){
 
 function calculateEndDate(){
 
-    const start=
-        $("startDateInput").value.trim();
+    const start =
+        $("startDateInput")
+        .value
+        .trim();
 
-    const months=
-        Number(enNumber(
-            $("monthsInput").value
-        ));
+    const months =
+        Number(
+            enNumber(
+                $("monthsInput").value
+            )
+        );
 
     if(
         validJalali(start) &&
         months>=1
     ){
 
-        $("endDateInput").value=
+        $("endDateInput").value =
             addJalaliMonths(
                 start,
                 months-1
@@ -1256,11 +1413,15 @@ function calculateEndDate(){
 
 function calculateMonths(){
 
-    const start=
-        $("startDateInput").value.trim();
+    const start =
+        $("startDateInput")
+        .value
+        .trim();
 
-    const end=
-        $("endDateInput").value.trim();
+    const end =
+        $("endDateInput")
+        .value
+        .trim();
 
     if(
         !validJalali(start) ||
@@ -1268,17 +1429,20 @@ function calculateMonths(){
     )
         return;
 
-    const a=start.split("/").map(Number);
-    const b=end.split("/").map(Number);
+    const a =
+        start.split("/").map(Number);
 
-    let months=
+    const b =
+        end.split("/").map(Number);
+
+    const months =
         (b[0]-a[0])*12+
         (b[1]-a[1])+1;
 
     if(months<1)
         return;
 
-    const check=
+    const check =
         addJalaliMonths(
             start,
             months-1
@@ -1291,7 +1455,8 @@ function calculateMonths(){
 
 function addFeeRow(amount="",date=""){
 
-    const row=document.createElement("div");
+    const row =
+        document.createElement("div");
 
     row.className="feeRow";
 
@@ -1322,42 +1487,63 @@ function addFeeRow(amount="",date=""){
 
     `;
 
-    row.querySelector(".feeRemove")
-    .onclick=()=>row.remove();
+    row.querySelector(
+        ".feeRemove"
+    ).onclick =
+        ()=>row.remove();
 
-    row.querySelector(".feeDate")
-    .addEventListener("input",function(){
-        normalizeDateInput(this);
-    });
+    row.querySelector(
+        ".feeDate"
+    ).addEventListener(
+        "input",
+        function(){
+            normalizeDateInput(this);
+        }
+    );
 
-    $("feesList").appendChild(row);
+    $("feesList")
+        .appendChild(row);
 
 }
 
 function readFees(){
 
     return [
-        ...document.querySelectorAll("#feesList .feeRow")
-    ].map(row=>{
+        ...document.querySelectorAll(
+            "#feesList .feeRow"
+        )
+    ]
+    .map(row=>{
 
-        const amount=
+        const amount =
             Number(
                 enNumber(
-                    row.querySelector(".feeAmount").value
+                    row.querySelector(
+                        ".feeAmount"
+                    ).value
                 )
-            )||0;
+            ) || 0;
 
-        const date=
-            row.querySelector(".feeDate").value.trim();
+        const date =
+            row.querySelector(
+                ".feeDate"
+            ).value.trim();
 
         return {
-            id:Date.now()+"_"+Math.random(),
+            id:
+                Date.now()+
+                "_"+
+                Math.random(),
+
             amount,
+
             date,
+
             paid:false
         };
 
-    }).filter(x=>
+    })
+    .filter(x=>
         x.amount>0 &&
         validJalali(x.date)
     );
@@ -1367,10 +1553,19 @@ function readFees(){
 function clearErrors(){
 
     document
-    .querySelectorAll(".input.error")
-    .forEach(x=>x.classList.remove("error"));
+        .querySelectorAll(
+            ".input.error"
+        )
+        .forEach(
+            x=>x.classList.remove(
+                "error"
+            )
+        );
 
-    $("errorBox").classList.remove("visible");
+    $("errorBox")
+        .classList
+        .remove("visible");
+
     $("errorBox").innerHTML="";
 
 }
@@ -1380,14 +1575,22 @@ function showErrors(errors,fields){
     clearErrors();
 
     fields.forEach(id=>{
+
         if($(id))
-            $(id).classList.add("error");
+            $(id)
+                .classList
+                .add("error");
+
     });
 
-    $("errorBox").innerHTML=
-        errors.map(x=>"• "+x).join("<br>");
+    $("errorBox").innerHTML =
+        errors
+        .map(x=>"• "+x)
+        .join("<br>");
 
-    $("errorBox").classList.add("visible");
+    $("errorBox")
+        .classList
+        .add("visible");
 
 }
 
@@ -1396,24 +1599,34 @@ function validateForm(){
     const errors=[];
     const fields=[];
 
-    const name=
-        $("nameInput").value.trim();
+    const name =
+        $("nameInput")
+        .value
+        .trim();
 
-    const amount=
-        Number(enNumber(
-            $("amountInput").value
-        ));
+    const amount =
+        Number(
+            enNumber(
+                $("amountInput").value
+            )
+        );
 
-    const months=
-        Number(enNumber(
-            $("monthsInput").value
-        ));
+    const months =
+        Number(
+            enNumber(
+                $("monthsInput").value
+            )
+        );
 
-    const start=
-        $("startDateInput").value.trim();
+    const start =
+        $("startDateInput")
+        .value
+        .trim();
 
-    const end=
-        $("endDateInput").value.trim();
+    const end =
+        $("endDateInput")
+        .value
+        .trim();
 
     if(!name){
 
@@ -1421,7 +1634,9 @@ function validateForm(){
             "نام بانک یا مورد را وارد نکردی."
         );
 
-        fields.push("nameInput");
+        fields.push(
+            "nameInput"
+        );
 
     }
 
@@ -1431,7 +1646,9 @@ function validateForm(){
             "مبلغ هر قسط را وارد نکردی."
         );
 
-        fields.push("amountInput");
+        fields.push(
+            "amountInput"
+        );
 
     }
 
@@ -1441,15 +1658,21 @@ function validateForm(){
             "تاریخ اولین قسط را وارد نکردی."
         );
 
-        fields.push("startDateInput");
+        fields.push(
+            "startDateInput"
+        );
 
-    }else if(!validJalali(start)){
+    }else if(
+        !validJalali(start)
+    ){
 
         errors.push(
             "تاریخ اولین قسط صحیح نیست؛ مثلاً 1405/05/22."
         );
 
-        fields.push("startDateInput");
+        fields.push(
+            "startDateInput"
+        );
 
     }
 
@@ -1459,7 +1682,10 @@ function validateForm(){
             "تعداد اقساط یا تاریخ آخرین قسط را وارد کن."
         );
 
-        fields.push("monthsInput","endDateInput");
+        fields.push(
+            "monthsInput",
+            "endDateInput"
+        );
 
     }
 
@@ -1469,17 +1695,24 @@ function validateForm(){
             "تعداد اقساط باید حداقل ۱ باشد."
         );
 
-        fields.push("monthsInput");
+        fields.push(
+            "monthsInput"
+        );
 
     }
 
-    if(end && !validJalali(end)){
+    if(
+        end &&
+        !validJalali(end)
+    ){
 
         errors.push(
             "تاریخ آخرین قسط صحیح نیست."
         );
 
-        fields.push("endDateInput");
+        fields.push(
+            "endDateInput"
+        );
 
     }
 
@@ -1489,7 +1722,7 @@ function validateForm(){
         validJalali(end)
     ){
 
-        const expected=
+        const expected =
             addJalaliMonths(
                 start,
                 months-1
@@ -1510,24 +1743,31 @@ function validateForm(){
 
     }
 
-    const feeRows=
+    const feeRows =
         document.querySelectorAll(
             "#feesList .feeRow"
         );
 
     feeRows.forEach(row=>{
 
-        const amount=
+        const amount =
             Number(
                 enNumber(
-                    row.querySelector(".feeAmount").value
+                    row.querySelector(
+                        ".feeAmount"
+                    ).value
                 )
-            )||0;
+            ) || 0;
 
-        const date=
-            row.querySelector(".feeDate").value.trim();
+        const date =
+            row.querySelector(
+                ".feeDate"
+            ).value.trim();
 
-        if(amount>0 && !validJalali(date)){
+        if(
+            amount>0 &&
+            !validJalali(date)
+        ){
 
             errors.push(
                 "تاریخ یکی از کارمزدهای سالانه صحیح نیست."
@@ -1539,7 +1779,10 @@ function validateForm(){
 
     if(errors.length){
 
-        showErrors(errors,fields);
+        showErrors(
+            errors,
+            fields
+        );
 
         return false;
 
@@ -1551,54 +1794,61 @@ function validateForm(){
 
 function openModal(item=null){
 
-    editingId=
-        item ? item.id : null;
+    editingId =
+        item
+        ?item.id
+        :null;
 
     clearErrors();
 
-    $("modalTitle").textContent=
+    $("modalTitle").textContent =
         item
         ?"ویرایش قسط"
         :"افزودن قسط جدید";
 
-    $("nameInput").value=
-        item?.name||"";
+    $("nameInput").value =
+        item?.name || "";
 
-    $("amountInput").value=
-        item?.amount||"";
+    $("amountInput").value =
+        item?.amount || "";
 
-    $("monthsInput").value=
-        item?.months||"";
+    $("monthsInput").value =
+        item?.months || "";
 
-    $("startDateInput").value=
-        item?.startDate||"";
+    $("startDateInput").value =
+        item?.startDate || "";
 
-    $("endDateInput").value=
-        item?.endDate||"";
+    $("endDateInput").value =
+        item?.endDate || "";
 
-    $("noteInput").value=
-        item?.note||"";
+    $("noteInput").value =
+        item?.note || "";
 
     $("feesList").innerHTML="";
 
     if(item?.fees?.length){
 
-        item.fees.forEach(f=>
-            addFeeRow(
-                f.amount,
-                f.date
-            )
+        item.fees.forEach(
+            f=>
+                addFeeRow(
+                    f.amount,
+                    f.date
+                )
         );
 
     }
 
-    $("modal").classList.add("visible");
+    $("modal")
+        .classList
+        .add("visible");
 
 }
 
 function closeModal(){
 
-    $("modal").classList.remove("visible");
+    $("modal")
+        .classList
+        .remove("visible");
 
     editingId=null;
 
@@ -1608,13 +1858,17 @@ function closeModal(){
 
 function saveInstallment(){
 
-    const start=
-        $("startDateInput").value.trim();
+    const start =
+        $("startDateInput")
+        .value
+        .trim();
 
-    const end=
-        $("endDateInput").value.trim();
+    const end =
+        $("endDateInput")
+        .value
+        .trim();
 
-    const months=
+    const months =
         Number(
             enNumber(
                 $("monthsInput").value
@@ -1626,7 +1880,7 @@ function saveInstallment(){
         months>=1
     ){
 
-        $("endDateInput").value=
+        $("endDateInput").value =
             addJalaliMonths(
                 start,
                 months-1
@@ -1644,28 +1898,38 @@ function saveInstallment(){
     if(!validateForm())
         return;
 
-    const old=
+    const old =
         editingId
         ?installments.find(
-            x=>String(x.id)===String(editingId)
+            x=>
+                String(x.id)===
+                String(editingId)
         )
         :null;
 
-    const oldPaid=
+    const oldPaid =
         new Map(
-            (old?.dates||[]).map(
-                d=>[d.date,d.paid]
+            (old?.dates||[])
+            .map(
+                d=>[
+                    d.date,
+                    d.paid
+                ]
             )
         );
 
-    const oldFeePaid=
+    const oldFeePaid =
         new Map(
-            (old?.fees||[]).map(
-                f=>[f.date,f.paid]
+            (old?.fees||[])
+            .map(
+                f=>[
+                    f.date,
+                    f.paid
+                ]
             )
         );
 
-    const count=
+    const count =
         Number(
             enNumber(
                 $("monthsInput").value
@@ -1674,9 +1938,13 @@ function saveInstallment(){
 
     const dates=[];
 
-    for(let i=0;i<count;i++){
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
 
-        const date=
+        const date =
             addJalaliMonths(
                 start,
                 i
@@ -1687,30 +1955,35 @@ function saveInstallment(){
             date,
 
             paid:
-                oldPaid.get(date)||false
+                oldPaid.get(date) ||
+                false
 
         });
 
     }
 
-    const fees=
-        readFees().map(f=>({
+    const fees =
+        readFees()
+        .map(f=>({
 
             ...f,
 
             paid:
-                oldFeePaid.get(f.date)||false
+                oldFeePaid.get(f.date) ||
+                false
 
         }));
 
     const item={
 
         id:
-            editingId||
+            editingId ||
             Date.now().toString(),
 
         name:
-            $("nameInput").value.trim(),
+            $("nameInput")
+            .value
+            .trim(),
 
         amount:
             Number(
@@ -1724,26 +1997,32 @@ function saveInstallment(){
         startDate:start,
 
         endDate:
-            $("endDateInput").value.trim(),
+            $("endDateInput")
+            .value
+            .trim(),
 
         dates,
 
         fees,
 
         note:
-            $("noteInput").value.trim(),
+            $("noteInput")
+            .value
+            .trim(),
 
         createdAt:
-            old?.createdAt||
+            old?.createdAt ||
             Date.now()
 
     };
 
     if(editingId){
 
-        const index=
+        const index =
             installments.findIndex(
-                x=>String(x.id)===String(editingId)
+                x=>
+                    String(x.id)===
+                    String(editingId)
             );
 
         if(index>=0)
@@ -1777,15 +2056,20 @@ function paidCount(item){
 
 function togglePaidById(id,index){
 
-    const item=
+    const item =
         installments.find(
-            x=>String(x.id)===String(id)
+            x=>
+                String(x.id)===
+                String(id)
         );
 
     if(!item)
         return;
 
-    if(index>0 && !item.dates[index-1].paid){
+    if(
+        index>0 &&
+        !item.dates[index-1].paid
+    ){
 
         showToast(
             "ابتدا باید قسط قبلی را تیک بزنی."
@@ -1795,7 +2079,7 @@ function togglePaidById(id,index){
 
     }
 
-    item.dates[index].paid=
+    item.dates[index].paid =
         !item.dates[index].paid;
 
     saveData();
@@ -1808,14 +2092,16 @@ function feeForDate(item,date){
 
     let total=0;
 
-    (item.fees||[]).forEach(f=>{
+    (item.fees||[])
+    .forEach(f=>{
 
         if(
             f.date===date &&
             !f.paid
         ){
 
-            total+=Number(f.amount||0);
+            total +=
+                Number(f.amount||0);
 
         }
 
@@ -1829,16 +2115,21 @@ function itemRemaining(item){
 
     let total=0;
 
-    (item.dates||[]).forEach(d=>{
+    (item.dates||[])
+    .forEach(d=>{
 
         if(!d.paid){
 
-            total+=Number(item.amount||0);
+            total +=
+                Number(
+                    item.amount||0
+                );
 
-            total+=feeForDate(
-                item,
-                d.date
-            );
+            total +=
+                feeForDate(
+                    item,
+                    d.date
+                );
 
         }
 
@@ -1852,7 +2143,8 @@ function globalRemaining(){
 
     return installments.reduce(
         (sum,item)=>
-            sum+itemRemaining(item),
+            sum+
+            itemRemaining(item),
         0
     );
 
@@ -1860,18 +2152,24 @@ function globalRemaining(){
 
 function moveToTrash(id){
 
-    const index=
+    const index =
         installments.findIndex(
-            x=>String(x.id)===String(id)
+            x=>
+                String(x.id)===
+                String(id)
         );
 
     if(index<0)
         return;
 
-    const item=
-        installments.splice(index,1)[0];
+    const item =
+        installments.splice(
+            index,
+            1
+        )[0];
 
-    item.deletedAt=Date.now();
+    item.deletedAt =
+        Date.now();
 
     trash.unshift(item);
 
@@ -1887,16 +2185,21 @@ function moveToTrash(id){
 
 function restoreItem(id){
 
-    const index=
+    const index =
         trash.findIndex(
-            x=>String(x.id)===String(id)
+            x=>
+                String(x.id)===
+                String(id)
         );
 
     if(index<0)
         return;
 
-    const item=
-        trash.splice(index,1)[0];
+    const item =
+        trash.splice(
+            index,
+            1
+        )[0];
 
     delete item.deletedAt;
 
@@ -1914,9 +2217,11 @@ function restoreItem(id){
 
 function permanentlyDelete(id){
 
-    const item=
+    const item =
         trash.find(
-            x=>String(x.id)===String(id)
+            x=>
+                String(x.id)===
+                String(id)
         );
 
     if(!item)
@@ -1926,12 +2231,15 @@ function permanentlyDelete(id){
         `«${item.name}» برای همیشه حذف شود؟ این عملیات قابل بازگشت نیست.`,
         ()=>{
 
-            trash=
+            trash =
                 trash.filter(
-                    x=>String(x.id)!==String(id)
+                    x=>
+                        String(x.id)!==
+                        String(id)
                 );
 
             saveData();
+
             render();
 
             showToast(
@@ -1962,6 +2270,7 @@ function clearTrash(){
             trash=[];
 
             saveData();
+
             render();
 
             showToast(
@@ -1989,18 +2298,21 @@ function deleteAll(){
         "آیا مطمئنی می‌خواهی همه اقساط حذف شوند؟ همه موارد ابتدا به سطل زباله منتقل می‌شوند و بعداً قابل بازگردانی هستند.",
         ()=>{
 
-            installments.forEach(item=>{
+            installments.forEach(
+                item=>{
 
-                item.deletedAt=
-                    Date.now();
+                    item.deletedAt =
+                        Date.now();
 
-                trash.unshift(item);
+                    trash.unshift(item);
 
-            });
+                }
+            );
 
             installments=[];
 
             saveData();
+
             render();
 
             showToast(
@@ -2014,58 +2326,76 @@ function deleteAll(){
 
 function render(){
 
-    const search=
-        $("search").value
+    const search =
+        $("search")
+        .value
         .trim()
         .toLowerCase();
 
-    const filtered=
-        installments.filter(item=>
-            String(item.name||"")
-            .toLowerCase()
-            .includes(search)||
-            String(item.note||"")
-            .toLowerCase()
-            .includes(search)
+    const filtered =
+        installments.filter(
+            item=>
+                String(
+                    item.name||""
+                )
+                .toLowerCase()
+                .includes(search) ||
+                String(
+                    item.note||""
+                )
+                .toLowerCase()
+                .includes(search)
         );
 
-    $("count").textContent=
+    $("count").textContent =
         faNumber(
             installments.length
         );
 
-    $("total").textContent=
+    $("total").textContent =
         money(
             globalRemaining()
         );
 
     let remaining=0;
 
-    installments.forEach(item=>{
+    installments.forEach(
+        item=>{
 
-        remaining+=
-            (item.dates||[])
-            .filter(d=>!d.paid)
-            .length;
+            remaining +=
+                (item.dates||[])
+                .filter(
+                    d=>!d.paid
+                )
+                .length;
 
-    });
+        }
+    );
 
-    $("remaining").textContent=
+    $("remaining").textContent =
         faNumber(remaining);
 
     if(!filtered.length){
 
         $("list").innerHTML=`
+
             <div class="empty">
+
                 هنوز قسطی ثبت نشده است.
+
                 <br><br>
-                از دکمه «افزودن قسط جدید» شروع کن.
+
+                از دکمه
+                «افزودن قسط جدید»
+                شروع کن.
+
             </div>
+
         `;
 
     }else{
 
-        $("list").innerHTML=
+        $("list").innerHTML =
             filtered
             .map(renderCard)
             .join("");
@@ -2078,19 +2408,19 @@ function render(){
 
 function renderCard(item){
 
-    const dates=
+    const dates =
         item.dates||[];
 
-    const paid=
+    const paid =
         paidCount(item);
 
-    const remainingCount=
+    const remainingCount =
         dates.length-paid;
 
-    const balance=
+    const balance =
         itemRemaining(item);
 
-    const percent=
+    const percent =
         dates.length
         ?Math.round(
             paid/dates.length*100
@@ -2099,51 +2429,64 @@ function renderCard(item){
 
     let monthsHtml="";
 
-    dates.forEach((d,i)=>{
+    dates.forEach(
+        (d,i)=>{
 
-        const locked=
-            i>0 &&
-            !dates[i-1].paid;
+            const locked =
+                i>0 &&
+                !dates[i-1].paid;
 
-        const fee=
-            feeForDate(item,d.date);
+            const fee =
+                feeForDate(
+                    item,
+                    d.date
+                );
 
-        monthsHtml+=`
+            monthsHtml += `
 
-            <button
-                class="month
-                ${d.paid?"paid":""}
-                ${locked?"locked":""}
-                ${fee?"fee":""}"
-                ${locked?"disabled":""}
-                onclick="event.stopPropagation();togglePaidById('${item.id}',${i})">
+                <button
+                    class="month
+                    ${d.paid?"paid":""}
+                    ${locked?"locked":""}
+                    ${fee?"fee":""}"
+                    ${locked?"disabled":""}
+                    onclick="
+                    event.stopPropagation();
+                    togglePaidById(
+                        '${item.id}',
+                        ${i}
+                    )">
 
-                <span class="monthDate">
-                    ${d.date}
-                </span>
+                    <span class="monthDate">
+                        ${d.date}
+                    </span>
 
-                <span class="monthMark">
+                    <span class="monthMark">
+                        ${
+                            d.paid
+                            ?"✓"
+                            :locked
+                            ?"🔒"
+                            :i+1
+                        }
+                    </span>
+
                     ${
-                        d.paid
-                        ?"✓"
-                        :locked
-                        ?"🔒"
-                        :i+1
+                        fee
+                        ?`
+                        <span class="feeText">
+                            + ${money(fee)}
+                        </span>
+                        `
+                        :""
                     }
-                </span>
 
-                ${
-                    fee
-                    ?`<span class="feeText">
-                        + ${money(fee)}
-                      </span>`
-                    :""
-                }
+                </button>
 
-            </button>
-        `;
+            `;
 
-    });
+        }
+    );
 
     return `
 
@@ -2151,7 +2494,10 @@ function renderCard(item){
 
         <div
             class="cardTop"
-            onclick="toggleInstallments('${item.id}')"
+            onclick="
+            toggleInstallments(
+                '${item.id}'
+            )"
             style="cursor:pointer">
 
             <div>
@@ -2187,17 +2533,24 @@ function renderCard(item){
 
             <div
                 class="actions"
-                onclick="event.stopPropagation()">
+                onclick="
+                event.stopPropagation()">
 
                 <button
                     class="smallButton"
-                    onclick="editById('${item.id}')">
+                    onclick="
+                    editById(
+                        '${item.id}'
+                    )">
                     ✏️
                 </button>
 
                 <button
                     class="smallButton delete"
-                    onclick="moveById('${item.id}')">
+                    onclick="
+                    moveById(
+                        '${item.id}'
+                    )">
                     🗑️
                 </button>
 
@@ -2207,7 +2560,10 @@ function renderCard(item){
 
         <div
             class="balance"
-            onclick="toggleInstallments('${item.id}')"
+            onclick="
+            toggleInstallments(
+                '${item.id}'
+            )"
             style="cursor:pointer">
 
             <div class="balanceTitle">
@@ -2225,10 +2581,12 @@ function renderCard(item){
             <div class="progressText">
 
                 <span>
+
                     پرداخت شده:
                     ${faNumber(paid)}
                     از
                     ${faNumber(dates.length)}
+
                 </span>
 
                 <span>
@@ -2238,7 +2596,13 @@ function renderCard(item){
             </div>
 
             <div class="progress">
-                <i style="width:${percent}%"></i>
+
+                <i
+                    style="
+                    width:${percent}%
+                    ">
+                </i>
+
             </div>
 
         </div>
@@ -2251,14 +2615,21 @@ function renderCard(item){
 
             ${
                 item.fees?.length
-                ?`<br>کارمزدهای سالانه ثبت‌شده:
-                   ${faNumber(item.fees.length)} مورد`
+                ?`
+                <br>
+                کارمزدهای سالانه ثبت‌شده:
+                ${faNumber(item.fees.length)}
+                مورد
+                `
                 :""
             }
 
             ${
                 item.note
-                ?`<br>${escapeHtml(item.note)}`
+                ?`
+                <br>
+                ${escapeHtml(item.note)}
+                `
                 :""
             }
 
@@ -2267,7 +2638,10 @@ function renderCard(item){
         <button
             id="toggle-${item.id}"
             class="installmentToggle"
-            onclick="toggleInstallments('${item.id}')">
+            onclick="
+            toggleInstallments(
+                '${item.id}'
+            )">
 
             <span>
                 📋 مشاهده اقساط
@@ -2284,7 +2658,9 @@ function renderCard(item){
             class="installmentPanel">
 
             <div class="months">
+
                 ${monthsHtml}
+
             </div>
 
         </div>
@@ -2297,12 +2673,12 @@ function renderCard(item){
 
 function toggleInstallments(id){
 
-    const panel=
+    const panel =
         document.getElementById(
             "panel-"+id
         );
 
-    const button=
+    const button =
         document.getElementById(
             "toggle-"+id
         );
@@ -2310,8 +2686,10 @@ function toggleInstallments(id){
     if(!panel || !button)
         return;
 
-    const isOpen=
-        panel.classList.contains("open");
+    const isOpen =
+        panel.classList.contains(
+            "open"
+        );
 
     panel.classList.toggle(
         "open",
@@ -2323,12 +2701,14 @@ function toggleInstallments(id){
         !isOpen
     );
 
-    const text=
-        button.querySelector("span:first-child");
+    const text =
+        button.querySelector(
+            "span:first-child"
+        );
 
     if(text){
 
-        text.textContent=
+        text.textContent =
             !isOpen
             ?"📋 بستن اقساط"
             :"📋 مشاهده اقساط";
@@ -2341,7 +2721,8 @@ function renderTrash(){
 
     if(!trash.length){
 
-        $("trashArea").innerHTML="";
+        $("trashArea")
+            .innerHTML="";
 
         return;
 
@@ -2356,62 +2737,79 @@ function renderTrash(){
             </strong>
 
             <span>
-                ${faNumber(trash.length)} مورد
+                ${faNumber(trash.length)}
+                مورد
             </span>
 
         </div>
 
-        ${trash.map(item=>`
+        ${
+            trash.map(
+                item=>`
 
-            <div class="card trashCard">
+                <div class="card trashCard">
 
-                <div class="cardTop">
+                    <div class="cardTop">
 
-                    <div>
+                        <div>
 
-                        <div class="cardName">
-                            ${escapeHtml(item.name)}
+                            <div class="cardName">
+                                ${escapeHtml(item.name)}
+                            </div>
+
+                            <div class="cardInfo">
+
+                                ${money(item.amount)}
+                                ×
+                                ${faNumber(item.months)}
+                                قسط
+
+                            </div>
+
                         </div>
 
-                        <div class="cardInfo">
-                            ${money(item.amount)}
-                            ×
-                            ${faNumber(item.months)}
-                            قسط
+                        <div class="actions">
+
+                            <button
+                                class="smallButton restore"
+                                onclick="
+                                restoreById(
+                                    '${item.id}'
+                                )">
+                                ↩️
+                            </button>
+
+                            <button
+                                class="smallButton delete"
+                                onclick="
+                                deleteForeverById(
+                                    '${item.id}'
+                                )">
+                                ❌
+                            </button>
+
                         </div>
-
-                    </div>
-
-                    <div class="actions">
-
-                        <button
-                            class="smallButton restore"
-                            onclick="restoreById('${item.id}')">
-                            ↩️
-                        </button>
-
-                        <button
-                            class="smallButton delete"
-                            onclick="deleteForeverById('${item.id}')">
-                            ❌
-                        </button>
 
                     </div>
 
                 </div>
 
-            </div>
-
-        `).join("")}
+                `
+            ).join("")
+        }
 
         <button
             class="addButton"
-            style="background:#dc2626;margin-top:3px"
-            onclick="clearTrash()">
+            style="
+            background:#dc2626;
+            margin-top:3px"
+            onclick="
+            clearTrash()">
 
             🗑️ پاک‌سازی کامل سطل زباله
 
         </button>
+
     `;
 
 }
@@ -2420,9 +2818,10 @@ async function exportData(){
 
     const backup={
 
-        app:"MohammadInstallments",
+        app:
+            "MohammadInstallments",
 
-        version:10,
+        version:11,
 
         exportedAt:
             new Date().toISOString(),
@@ -2433,39 +2832,46 @@ async function exportData(){
 
     };
 
-    const text=
+    const text =
         JSON.stringify(
             backup,
             null,
             2
         );
 
-    const filename=
+    const filename =
         "MohammadInstallments-backup.json";
 
-    if(window.showSaveFilePicker){
+    if(
+        window.showSaveFilePicker
+    ){
 
         try{
 
-            const handle=
+            const handle =
                 await window.showSaveFilePicker({
 
-                    suggestedName:filename,
+                    suggestedName:
+                        filename,
 
                     types:[{
+
                         description:
                             "پشتیبان مدیریت اقساط",
 
                         accept:{
+
                             "application/json":[
                                 ".json"
                             ]
+
                         }
+
                     }]
 
                 });
 
-            const writable=
+            const writable =
                 await handle.createWritable();
 
             await writable.write(text);
@@ -2480,30 +2886,38 @@ async function exportData(){
 
         }catch(e){
 
-            if(e.name==="AbortError")
+            if(
+                e.name==="AbortError"
+            )
                 return;
 
         }
 
     }
 
-    const blob=
+    const blob =
         new Blob(
             [text],
-            {type:"application/json"}
+            {
+                type:
+                    "application/json"
+            }
         );
 
-    const url=
+    const url =
         URL.createObjectURL(blob);
 
-    const a=
+    const a =
         document.createElement("a");
 
     a.href=url;
+
     a.download=filename;
 
     document.body.appendChild(a);
+
     a.click();
+
     a.remove();
 
     setTimeout(
@@ -2525,7 +2939,9 @@ function importData(file){
     if(
         file.type &&
         file.type!=="application/json" &&
-        !file.name.toLowerCase().endsWith(".json")
+        !file.name
+            .toLowerCase()
+            .endsWith(".json")
     ){
 
         alert(
@@ -2536,65 +2952,68 @@ function importData(file){
 
     }
 
-    const reader=
+    const reader =
         new FileReader();
 
-    reader.onload=function(){
+    reader.onload =
+        function(){
 
-        try{
+            try{
 
-            const backup=
-                JSON.parse(
-                    reader.result
+                const backup =
+                    JSON.parse(
+                        reader.result
+                    );
+
+                if(
+                    !backup ||
+                    backup.app!==
+                    "MohammadInstallments" ||
+                    !Array.isArray(
+                        backup.installments
+                    )
+                ){
+
+                    throw new Error(
+                        "invalid"
+                    );
+
+                }
+
+                askConfirm(
+                    "اطلاعات فعلی با اطلاعات موجود در فایل پشتیبان جایگزین شود؟",
+                    ()=>{
+
+                        installments =
+                            backup.installments;
+
+                        trash =
+                            Array.isArray(
+                                backup.trash
+                            )
+                            ?backup.trash
+                            :[];
+
+                        saveData();
+
+                        render();
+
+                        showToast(
+                            "پشتیبان با موفقیت بازیابی شد."
+                        );
+
+                    }
                 );
 
-            if(
-                !backup||
-                backup.app!=="MohammadInstallments"||
-                !Array.isArray(
-                    backup.installments
-                )
-            ){
+            }catch(e){
 
-                throw new Error(
-                    "invalid"
+                alert(
+                    "این فایل یک پشتیبان معتبر مدیریت اقساط نیست."
                 );
 
             }
 
-            askConfirm(
-                "اطلاعات فعلی با اطلاعات موجود در فایل پشتیبان جایگزین شود؟",
-                ()=>{
-
-                    installments=
-                        backup.installments;
-
-                    trash=
-                        Array.isArray(
-                            backup.trash
-                        )
-                        ?backup.trash
-                        :[];
-
-                    saveData();
-                    render();
-
-                    showToast(
-                        "پشتیبان با موفقیت بازیابی شد."
-                    );
-
-                }
-            );
-
-        }catch(e){
-
-            alert(
-                "این فایل یک پشتیبان معتبر مدیریت اقساط نیست."
-            );
-
-        }
-
-    };
+        };
 
     reader.readAsText(file);
 
@@ -2602,21 +3021,22 @@ function importData(file){
 
 function askConfirm(text,action){
 
-    $("confirmText").textContent=text;
+    $("confirmText")
+        .textContent=text;
 
     confirmAction=action;
 
     $("confirmModal")
-    .classList
-    .add("visible");
+        .classList
+        .add("visible");
 
 }
 
 function closeConfirm(){
 
     $("confirmModal")
-    .classList
-    .remove("visible");
+        .classList
+        .remove("visible");
 
     confirmAction=null;
 
@@ -2624,9 +3044,11 @@ function closeConfirm(){
 
 function editById(id){
 
-    const item=
+    const item =
         installments.find(
-            x=>String(x.id)===String(id)
+            x=>
+                String(x.id)===
+                String(id)
         );
 
     if(item)
@@ -2635,30 +3057,285 @@ function editById(id){
 }
 
 function moveById(id){
+
     moveToTrash(id);
+
 }
 
 function restoreById(id){
+
     restoreItem(id);
+
 }
 
 function deleteForeverById(id){
+
     permanentlyDelete(id);
+
 }
 
-$("addButton").onclick=
+/* =================================
+   یادآوری
+================================= */
+
+function loadReminderSettings(){
+
+    try{
+
+        const saved =
+            localStorage.getItem(
+                REMINDER_KEY
+            );
+
+        if(saved){
+
+            const parsed =
+                JSON.parse(saved);
+
+            reminderSettings =
+                Object.assign(
+                    reminderSettings,
+                    parsed
+                );
+
+        }
+
+    }catch(e){
+
+        console.log(
+            "خطا در خواندن تنظیمات یادآوری",
+            e
+        );
+
+    }
+
+}
+
+function updateReminderButtons(){
+
+    const on =
+        $("reminderOnButton");
+
+    const off =
+        $("reminderOffButton");
+
+    if(!on || !off)
+        return;
+
+    if(reminderSettings.enabled){
+
+        on.style.background =
+            "#22c55e";
+
+        on.style.color =
+            "#ffffff";
+
+        off.style.background =
+            "#f1f5f9";
+
+        off.style.color =
+            "#64748b";
+
+    }else{
+
+        on.style.background =
+            "#f1f5f9";
+
+        on.style.color =
+            "#64748b";
+
+        off.style.background =
+            "#ef4444";
+
+        off.style.color =
+            "#ffffff";
+
+    }
+
+}
+
+function updateReminderPreview(){
+
+    const preview =
+        $("reminderPreview");
+
+    if(!preview)
+        return;
+
+    if(
+        !reminderSettings.enabled
+    ){
+
+        preview.innerHTML =
+            "🔕 یادآوری اقساط خاموش است.";
+
+        return;
+
+    }
+
+    const daysText =
+        reminderSettings.daysBefore===1
+        ?"۱ روز قبل"
+        :"۲ روز قبل";
+
+    preview.innerHTML =
+        "🔔 یادآوری روشن است.<br>"+
+        "اعلان <strong>"+
+        daysText+
+        "</strong> در ساعت <strong>"+
+        reminderSettings.time+
+        "</strong> ارسال می‌شود.";
+
+}
+
+function openReminderSettings(){
+
+    loadReminderSettings();
+
+    $("reminderDays").value =
+        String(
+            reminderSettings.daysBefore
+        );
+
+    $("reminderTime").value =
+        reminderSettings.time ||
+        "16:00";
+
+    updateReminderButtons();
+
+    updateReminderPreview();
+
+    $("reminderModal")
+        .classList
+        .add("visible");
+
+}
+
+function closeReminderSettings(){
+
+    $("reminderModal")
+        .classList
+        .remove("visible");
+
+}
+
+function setReminderEnabled(enabled){
+
+    reminderSettings.enabled =
+        Boolean(enabled);
+
+    updateReminderButtons();
+
+    updateReminderPreview();
+
+}
+
+function saveReminderSettings(){
+
+    const days =
+        parseInt(
+            $("reminderDays").value,
+            10
+        );
+
+    const time =
+        $("reminderTime").value;
+
+    if(
+        days!==1 &&
+        days!==2
+    ){
+
+        alert(
+            "تعداد روز یادآوری معتبر نیست."
+        );
+
+        return;
+
+    }
+
+    if(!time){
+
+        alert(
+            "لطفاً ساعت یادآوری را وارد کنید."
+        );
+
+        return;
+
+    }
+
+    reminderSettings.daysBefore =
+        days;
+
+    reminderSettings.time =
+        time;
+
+    localStorage.setItem(
+        REMINDER_KEY,
+        JSON.stringify(
+            reminderSettings
+        )
+    );
+
+    /*
+     * ارسال تنظیمات به Android Native
+     */
+    if(
+        window.AndroidBridge &&
+        typeof
+        window.AndroidBridge
+            .reminderSettingsChanged
+        ===
+        "function"
+    ){
+
+        try{
+
+            window.AndroidBridge
+                .reminderSettingsChanged(
+                    JSON.stringify(
+                        reminderSettings
+                    )
+                );
+
+        }catch(e){
+
+            console.log(
+                "خطا در AndroidBridge",
+                e
+            );
+
+        }
+
+    }
+
+    updateReminderPreview();
+
+    closeReminderSettings();
+
+    showToast(
+        "تنظیمات یادآوری با موفقیت ذخیره شد."
+    );
+
+}
+
+/* =================================
+   رویدادها
+================================= */
+
+$("addButton").onclick =
     ()=>openModal();
 
-$("closeButton").onclick=
+$("closeButton").onclick =
     closeModal;
 
-$("cancelButton").onclick=
+$("cancelButton").onclick =
     closeModal;
 
-$("saveButton").onclick=
+$("saveButton").onclick =
     saveInstallment;
 
-$("addFeeButton").onclick=
+$("addFeeButton").onclick =
     ()=>addFeeRow();
 
 $("search").addEventListener(
@@ -2666,10 +3343,10 @@ $("search").addEventListener(
     render
 );
 
-$("exportButton").onclick=
+$("exportButton").onclick =
     exportData;
 
-$("importButton").onclick=
+$("importButton").onclick =
     ()=>{
 
         $("fileInput").value="";
@@ -2683,17 +3360,21 @@ $("fileInput").addEventListener(
     function(){
 
         if(this.files[0])
-            importData(this.files[0]);
+            importData(
+                this.files[0]
+            );
 
         this.value="";
 
     }
 );
 
-$("trashButton").onclick=
+$("trashButton").onclick =
     ()=>{
 
-        if(!$("trashArea").innerHTML){
+        if(
+            !$("trashArea").innerHTML
+        ){
 
             showToast(
                 "سطل زباله خالی است."
@@ -2704,25 +3385,51 @@ $("trashButton").onclick=
         }
 
         $("trashArea")
-        .scrollIntoView({
-            behavior:"smooth"
-        });
+            .scrollIntoView({
+                behavior:"smooth"
+            });
 
     };
 
-$("resetButton").onclick=
+$("resetButton").onclick =
     deleteAll;
 
-$("confirmNo").onclick=
+$("checksButton").onclick =
+    function(){
+
+        window.location.href =
+            "checks.html";
+
+    };
+
+$("reminderButton").onclick =
+    openReminderSettings;
+
+$("reminderCloseButton").onclick =
+    closeReminderSettings;
+
+$("reminderCancelButton").onclick =
+    closeReminderSettings;
+
+$("reminderOnButton").onclick =
+    ()=>setReminderEnabled(true);
+
+$("reminderOffButton").onclick =
+    ()=>setReminderEnabled(false);
+
+$("reminderSaveButton").onclick =
+    saveReminderSettings;
+
+$("confirmNo").onclick =
     closeConfirm;
 
-$("confirmClose").onclick=
+$("confirmClose").onclick =
     closeConfirm;
 
-$("confirmYes").onclick=
+$("confirmYes").onclick =
     ()=>{
 
-        const action=
+        const action =
             confirmAction;
 
         closeConfirm();
@@ -2732,7 +3439,8 @@ $("confirmYes").onclick=
 
     };
 
-$("startDateInput").addEventListener(
+$("startDateInput")
+.addEventListener(
     "input",
     function(){
 
@@ -2743,7 +3451,8 @@ $("startDateInput").addEventListener(
     }
 );
 
-$("endDateInput").addEventListener(
+$("endDateInput")
+.addEventListener(
     "input",
     function(){
 
@@ -2754,7 +3463,8 @@ $("endDateInput").addEventListener(
     }
 );
 
-$("monthsInput").addEventListener(
+$("monthsInput")
+.addEventListener(
     "input",
     calculateEndDate
 );
@@ -2763,477 +3473,85 @@ $("modal").addEventListener(
     "click",
     function(e){
 
-        if(e.target===$("modal"))
+        if(
+            e.target===
+            $("modal")
+        )
             closeModal();
 
     }
 );
 
-$("confirmModal").addEventListener(
+$("confirmModal")
+.addEventListener(
     "click",
     function(e){
 
-        if(e.target===$("confirmModal"))
+        if(
+            e.target===
+            $("confirmModal")
+        )
             closeConfirm();
 
     }
 );
 
-render();
-
-</script>
-<!-- تنظیمات یادآوری اقساط -->
-<div id="reminderModal" class="modal">
-
-    <div class="sheet">
-
-        <div class="sheetTitle">
-            <h2>🔔 تنظیم یادآوری اقساط</h2>
-
-            <button
-                type="button"
-                class="closeButton"
-                onclick="closeReminderSettings()">
-                ×
-            </button>
-        </div>
-
-        <div class="notice">
-            یادآوری سررسید اقساط را می‌توانی روشن یا خاموش کنی،
-            تعداد روزهای قبل و ساعت ارسال اعلان را خودت تعیین کنی.
-        </div>
-
-        <label>وضعیت یادآوری</label>
-
-        <div style="
-            display:flex;
-            gap:8px;
-            margin-top:6px;
-        ">
-
-            <button
-                id="reminderOnButton"
-                type="button"
-                onclick="setReminderEnabled(true)"
-                style="
-                    flex:1;
-                    padding:13px;
-                    border-radius:12px;
-                    background:#dcfce7;
-                    color:#166534;
-                    font-weight:bold;
-                ">
-                🔔 روشن
-            </button>
-
-            <button
-                id="reminderOffButton"
-                type="button"
-                onclick="setReminderEnabled(false)"
-                style="
-                    flex:1;
-                    padding:13px;
-                    border-radius:12px;
-                    background:#fee2e2;
-                    color:#991b1b;
-                    font-weight:bold;
-                ">
-                🔕 خاموش
-            </button>
-
-        </div>
-
-        <label for="reminderDays">
-            زمان یادآوری
-        </label>
-
-        <select
-            id="reminderDays"
-            class="input">
-
-            <option value="1">
-                ۱ روز قبل
-            </option>
-
-            <option value="2">
-                ۲ روز قبل
-            </option>
-
-        </select>
-
-        <label for="reminderTime">
-            ساعت ارسال یادآوری
-        </label>
-
-        <input
-            id="reminderTime"
-            class="input"
-            type="time"
-            value="16:00"
-            dir="ltr">
-
-        <div
-            id="reminderPreview"
-            class="autoInfo">
-            یادآوری در حال تنظیم است.
-        </div>
-
-        <div class="modalButtons">
-
-            <button
-                type="button"
-                class="modalButton cancel"
-                onclick="closeReminderSettings()">
-                انصراف
-            </button>
-
-            <button
-                type="button"
-                class="modalButton save"
-                onclick="saveReminderSettings()">
-                ذخیره تنظیمات
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-
-<script>
-
-(function(){
-
-    const REMINDER_KEY =
-        "mohammad_installments_reminder_settings";
-
-    let reminderSettings = {
-        enabled: true,
-        daysBefore: 2,
-        time: "16:00"
-    };
-
-    function loadReminderSettings(){
-
-        try{
-
-            const saved =
-                localStorage.getItem(
-                    REMINDER_KEY
-                );
-
-            if(saved){
-
-                const parsed =
-                    JSON.parse(saved);
-
-                reminderSettings =
-                    Object.assign(
-                        reminderSettings,
-                        parsed
-                    );
-            }
-
-        }catch(e){
-
-            console.log(
-                "خطا در خواندن تنظیمات یادآوری",
-                e
-            );
-        }
-    }
-
-    function updateReminderPreview(){
-
-        const preview =
-            document.getElementById(
-                "reminderPreview"
-            );
-
-        if(!preview)
-            return;
-
-        if(!reminderSettings.enabled){
-
-            preview.innerHTML =
-                "🔕 یادآوری اقساط خاموش است.";
-
-            return;
-        }
-
-        const daysText =
-            reminderSettings.daysBefore === 1
-                ? "۱ روز قبل"
-                : "۲ روز قبل";
-
-        preview.innerHTML =
-            "🔔 یادآوری روشن است.<br>" +
-            "اعلان <strong>" +
-            daysText +
-            "</strong> در ساعت <strong>" +
-            reminderSettings.time +
-            "</strong> ارسال می‌شود.";
-    }
-
-    window.openReminderSettings =
-        function(){
-
-            loadReminderSettings();
-
-            document.getElementById(
-                "reminderDays"
-            ).value =
-                String(
-                    reminderSettings.daysBefore
-                );
-
-            document.getElementById(
-                "reminderTime"
-            ).value =
-                reminderSettings.time || "16:00";
-
-            updateReminderButtons();
-
-            updateReminderPreview();
-
-            document.getElementById(
-                "reminderModal"
-            ).classList.add("visible");
-        };
-
-    window.closeReminderSettings =
-        function(){
-
-            document.getElementById(
-                "reminderModal"
-            ).classList.remove("visible");
-        };
-
-    window.setReminderEnabled =
-        function(enabled){
-
-            reminderSettings.enabled =
-                enabled;
-
-            updateReminderButtons();
-
-            updateReminderPreview();
-        };
-
-    function updateReminderButtons(){
-
-        const on =
-            document.getElementById(
-                "reminderOnButton"
-            );
-
-        const off =
-            document.getElementById(
-                "reminderOffButton"
-            );
-
-        if(!on || !off)
-            return;
-
-        if(reminderSettings.enabled){
-
-            on.style.background =
-                "#22c55e";
-
-            on.style.color =
-                "#ffffff";
-
-            off.style.background =
-                "#f1f5f9";
-
-            off.style.color =
-                "#64748b";
-
-        }else{
-
-            on.style.background =
-                "#f1f5f9";
-
-            on.style.color =
-                "#64748b";
-
-            off.style.background =
-                "#ef4444";
-
-            off.style.color =
-                "#ffffff";
-        }
-    }
-
-    window.saveReminderSettings =
-        function(){
-
-            const days =
-                parseInt(
-                    document.getElementById(
-                        "reminderDays"
-                    ).value,
-                    10
-                );
-
-            const time =
-                document.getElementById(
-                    "reminderTime"
-                ).value;
-
-            if(days !== 1 && days !== 2){
-
-                alert(
-                    "تعداد روز یادآوری معتبر نیست."
-                );
-
-                return;
-            }
-
-            if(!time){
-
-                alert(
-                    "لطفاً ساعت یادآوری را وارد کنید."
-                );
-
-                return;
-            }
-
-            reminderSettings.daysBefore =
-                days;
-
-            reminderSettings.time =
-                time;
-
-            localStorage.setItem(
-                REMINDER_KEY,
-                JSON.stringify(
-                    reminderSettings
-                )
-            );
-
-            /*
-             * اطلاع دادن به بخش Native
-             * برای لغو آلارم‌های قبلی
-             * و ساخت آلارم‌های جدید
-             */
-            if(
-                window.AndroidBridge &&
-                AndroidBridge.reminderSettingsChanged
-            ){
-
-                AndroidBridge
-                    .reminderSettingsChanged(
-                        JSON.stringify(
-                            reminderSettings
-                        )
-                    );
-            }
-
-            updateReminderPreview();
-
+$("reminderModal")
+.addEventListener(
+    "click",
+    function(e){
+
+        if(
+            e.target===
+            $("reminderModal")
+        )
             closeReminderSettings();
 
-            if(typeof showToast === "function"){
-
-                showToast(
-                    "تنظیمات یادآوری با موفقیت ذخیره شد."
-                );
-
-            }else{
-
-                alert(
-                    "تنظیمات یادآوری ذخیره شد."
-                );
-            }
-        };
-
-    /*
-     * هنگام باز شدن صفحه،
-     * تنظیمات قبلی را بخوان.
-     */
-    loadReminderSettings();
-
-    /*
-     * این تابع را برای منوی Native
-     * قابل دسترس می‌کنیم.
-     */
-    window.__openReminderSettings =
-        window.openReminderSettings;
-
-})();
-<!-- دکمه ورود به بخش چک‌ها -->
-<style>
-.checksButton{
-    width:100%;
-    padding:15px;
-    margin:0 0 11px;
-    border-radius:16px;
-    background:#0f9d58;
-    color:#fff;
-    font-size:15px;
-    font-weight:bold;
-    box-shadow:0 5px 15px rgba(15,157,88,.22);
-}
-</style>
-
-<script>
-(function(){
-
-    function addChecksButton(){
-
-        if(document.getElementById("checksButton")){
-            return;
-        }
-
-        var container =
-            document.querySelector(".container");
-
-        if(!container){
-            return;
-        }
-
-        var button =
-            document.createElement("button");
-
-        button.id="checksButton";
-        button.className="checksButton";
-        button.type="button";
-        button.textContent="🧾 مدیریت چک‌ها";
-
-        button.onclick=function(){
-
-            window.location.href="checks.html";
-
-        };
-
-        var firstChild =
-            container.firstElementChild;
-
-        if(firstChild){
-            container.insertBefore(
-                button,
-                firstChild
-            );
-        }else{
-            container.appendChild(button);
-        }
     }
+);
 
-    if(document.readyState==="loading"){
+/* =================================
+   شروع برنامه
+================================= */
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            addChecksButton
-        );
+loadReminderSettings();
 
-    }else{
+render();
 
-        addChecksButton();
+window.openReminderSettings =
+    openReminderSettings;
 
-    }
+window.closeReminderSettings =
+    closeReminderSettings;
 
-})();
+window.setReminderEnabled =
+    setReminderEnabled;
+
+window.saveReminderSettings =
+    saveReminderSettings;
+
+window.togglePaidById =
+    togglePaidById;
+
+window.toggleInstallments =
+    toggleInstallments;
+
+window.editById =
+    editById;
+
+window.moveById =
+    moveById;
+
+window.restoreById =
+    restoreById;
+
+window.deleteForeverById =
+    deleteForeverById;
+
+window.clearTrash =
+    clearTrash;
+
 </script>
+
 </body>
 </html>
