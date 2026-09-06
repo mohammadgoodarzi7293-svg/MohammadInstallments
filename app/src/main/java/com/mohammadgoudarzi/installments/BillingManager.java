@@ -13,6 +13,7 @@ import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryPurchasesParams;
 
 import java.util.Collections;
 import java.util.List;
@@ -132,9 +133,13 @@ public class BillingManager {
                         return;
                     }
 
+                    /*
+                     * در نسخه فعلی Billing Library
+                     * آرگومان دوم callback خودش List<ProductDetails>
+                     * است و نیازی به getProductDetailsList ندارد.
+                     */
                     List<ProductDetails> products =
-                            productDetailsResult
-                                    .getProductDetailsList();
+                            productDetailsResult;
 
                     if (
                             products == null ||
@@ -253,11 +258,13 @@ public class BillingManager {
             Purchase purchase
     ) {
 
+        /*
+         * اگر قبلاً تأیید شده باشد،
+         * مستقیماً Premium را فعال می‌کنیم.
+         */
         if (purchase.isAcknowledged()) {
 
-            premiumManager.activate(
-                    purchase.getPurchaseToken()
-            );
+            premiumManager.activatePremium();
 
             return;
         }
@@ -280,9 +287,7 @@ public class BillingManager {
                             BillingClient.BillingResponseCode.OK
                     ) {
 
-                        premiumManager.activate(
-                                purchase.getPurchaseToken()
-                        );
+                        premiumManager.activatePremium();
                     }
                 }
         );
@@ -301,7 +306,7 @@ public class BillingManager {
         }
 
         billingClient.queryPurchasesAsync(
-                BillingClient.QueryPurchasesParams
+                QueryPurchasesParams
                         .newBuilder()
                         .setProductType(
                                 BillingClient.ProductType.INAPP
