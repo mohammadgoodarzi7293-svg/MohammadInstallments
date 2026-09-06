@@ -1,708 +1,972 @@
-<!DOCTYPE html><html lang="fa" dir="rtl">
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>مدیریت چک‌ها</title><style>
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+
+<title>مدیریت چک‌ها</title>
+
+<style>
+
 *{
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
+box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
 }
 
 html,body{
-    margin:0;
-    padding:0;
-    min-height:100%;
-    font-family:Tahoma,Arial,sans-serif;
-    background:#f3f6fa;
-    color:#17202a;
+margin:0;
+padding:0;
+min-height:100%;
+font-family:Tahoma,Arial,sans-serif;
+background:#f3f6fa;
+color:#17202a;
 }
 
 body{
-    padding-bottom:30px;
+padding-bottom:30px;
 }
 
 button,input,select{
-    font-family:inherit;
+font-family:inherit;
 }
 
 button{
-    border:0;
-    cursor:pointer;
+border:0;
+cursor:pointer;
 }
 
 .header{
-    background:linear-gradient(135deg,#0757a5,#2499e8);
-    color:#fff;
-    padding:20px 12px;
-    border-radius:0 0 26px 26px;
-    box-shadow:0 5px 18px rgba(0,0,0,.12);
+background:linear-gradient(135deg,#0757a5,#2499e8);
+color:#fff;
+padding:20px 12px;
+border-radius:0 0 26px 26px;
+box-shadow:0 5px 18px rgba(0,0,0,.12);
 }
 
 .header h1{
-    margin:0;
-    text-align:center;
-    font-size:22px;
+margin:0;
+text-align:center;
+font-size:22px;
 }
 
 .header p{
-    margin:7px 0 0;
-    text-align:center;
-    font-size:11px;
-    opacity:.9;
+margin:7px 0 0;
+text-align:center;
+font-size:11px;
+opacity:.9;
 }
 
 .summary{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:7px;
-    margin-top:14px;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:7px;
+margin-top:14px;
 }
 
 .stat{
-    background:#fff;
-    color:#17202a;
-    border-radius:14px;
-    padding:10px 3px;
-    text-align:center;
-    box-shadow:0 3px 12px rgba(0,0,0,.08);
+background:#fff;
+color:#17202a;
+border-radius:14px;
+padding:10px 3px;
+text-align:center;
+box-shadow:0 3px 12px rgba(0,0,0,.08);
 }
 
 .stat small{
-    display:block;
-    color:#64748b;
-    font-size:9px;
-    margin-bottom:5px;
+display:block;
+color:#64748b;
+font-size:9px;
+margin-bottom:5px;
 }
 
 .stat strong{
-    font-size:12px;
+font-size:12px;
 }
 
 .container{
-    width:100%;
-    max-width:720px;
-    margin:auto;
-    padding:12px 10px 30px;
+width:100%;
+max-width:720px;
+margin:auto;
+padding:12px 10px 30px;
 }
 
 .searchBox{
-    background:#fff;
-    padding:5px;
-    border-radius:15px;
-    box-shadow:0 3px 13px rgba(0,0,0,.06);
-    margin-bottom:9px;
+background:#fff;
+padding:5px;
+border-radius:15px;
+box-shadow:0 3px 13px rgba(0,0,0,.06);
+margin-bottom:9px;
 }
 
 .search{
-    width:100%;
-    border:0;
-    outline:0;
-    background:#f4f6f8;
-    border-radius:11px;
-    padding:13px;
-    font-size:13px;
+width:100%;
+border:0;
+outline:0;
+background:#f4f6f8;
+border-radius:11px;
+padding:13px;
+font-size:13px;
 }
 
 .btn{
-    width:100%;
-    border-radius:14px;
-    padding:14px;
-    margin-bottom:9px;
-    font-weight:bold;
-    font-size:13px;
+width:100%;
+border-radius:14px;
+padding:14px;
+margin-bottom:9px;
+font-weight:bold;
+font-size:13px;
 }
 
 .primary{
-    background:#1976d2;
-    color:#fff;
-    box-shadow:0 5px 15px rgba(25,118,210,.22);
+background:#1976d2;
+color:#fff;
 }
 
 .secondary{
-    background:#fff;
-    color:#334155;
-    box-shadow:0 3px 13px rgba(0,0,0,.06);
+background:#fff;
+color:#334155;
 }
 
 .limit{
-    display:none;
-    padding:10px;
-    margin-bottom:9px;
-    border-radius:11px;
-    background:#fff7ed;
-    border:1px solid #fed7aa;
-    color:#9a3412;
-    font-size:10px;
-    line-height:1.9;
+display:none;
+padding:10px;
+margin-bottom:9px;
+border-radius:11px;
+background:#fff7ed;
+border:1px solid #fed7aa;
+color:#9a3412;
+font-size:10px;
+line-height:1.9;
 }
 
 .limit.show{
-    display:block;
+display:block;
 }
 
 .card{
-    background:#fff;
-    border-radius:17px;
-    padding:13px;
-    margin-bottom:10px;
-    box-shadow:0 3px 15px rgba(0,0,0,.07);
+background:#fff;
+border-radius:17px;
+padding:13px;
+margin-bottom:10px;
+box-shadow:0 3px 15px rgba(0,0,0,.07);
 }
 
 .top{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:8px;
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:8px;
 }
 
 .title{
-    font-weight:bold;
-    font-size:15px;
+font-weight:bold;
+font-size:15px;
 }
 
 .meta{
-    color:#64748b;
-    font-size:10px;
-    line-height:2;
-    margin-top:4px;
+color:#64748b;
+font-size:10px;
+line-height:2;
+margin-top:4px;
 }
 
 .amount{
-    margin-top:9px;
-    padding:10px;
-    border-radius:11px;
-    background:#eff6ff;
-    color:#0757a5;
-    font-weight:bold;
-    font-size:14px;
-}
-
-.toman{
-    margin-top:3px;
-    color:#64748b;
-    font-size:9px;
-    font-weight:normal;
+margin-top:9px;
+padding:10px;
+border-radius:11px;
+background:#eff6ff;
+color:#0757a5;
+font-weight:bold;
+font-size:14px;
 }
 
 .words{
-    font-size:10px;
-    color:#64748b;
-    margin-top:4px;
-    line-height:1.9;
-    font-weight:normal;
+font-size:10px;
+color:#64748b;
+margin-top:4px;
+line-height:1.9;
+font-weight:normal;
+}
+
+.toman{
+margin-top:4px;
+font-size:9px;
+color:#64748b;
+font-weight:normal;
 }
 
 .status{
-    display:inline-block;
-    padding:5px 8px;
-    border-radius:9px;
-    font-size:9px;
-    white-space:nowrap;
+display:inline-block;
+padding:5px 8px;
+border-radius:9px;
+font-size:9px;
+white-space:nowrap;
 }
 
 .issued{
-    background:#dbeafe;
-    color:#1d4ed8;
+background:#dbeafe;
+color:#1d4ed8;
 }
 
 .cashed{
-    background:#dcfce7;
-    color:#15803d;
+background:#dcfce7;
+color:#15803d;
 }
 
 .returned{
-    background:#fee2e2;
-    color:#b91c1c;
+background:#fee2e2;
+color:#b91c1c;
 }
 
 .cancelled{
-    background:#fef3c7;
-    color:#92400e;
+background:#fef3c7;
+color:#92400e;
 }
 
 .overdue{
-    margin-top:8px;
-    display:inline-block;
-    padding:5px 8px;
-    border-radius:8px;
-    background:#fee2e2;
-    color:#b91c1c;
-    font-size:9px;
-    font-weight:bold;
+margin-top:8px;
+display:inline-block;
+padding:5px 8px;
+border-radius:8px;
+background:#fee2e2;
+color:#b91c1c;
+font-size:9px;
+font-weight:bold;
+}
+
+.reminderBadge{
+margin-top:8px;
+display:inline-block;
+padding:5px 8px;
+border-radius:8px;
+background:#f0fdf4;
+color:#15803d;
+font-size:9px;
 }
 
 .actions{
-    display:flex;
-    gap:6px;
-    margin-top:9px;
+display:flex;
+gap:6px;
+margin-top:9px;
 }
 
 .action{
-    flex:1;
-    padding:9px;
-    border-radius:10px;
-    background:#f1f5f9;
-    color:#334155;
-    font-size:10px;
+flex:1;
+padding:9px;
+border-radius:10px;
+background:#f1f5f9;
+color:#334155;
+font-size:10px;
 }
 
 .danger{
-    background:#fee2e2;
-    color:#991b1b;
+background:#fee2e2;
+color:#991b1b;
 }
 
 .empty{
-    background:#fff;
-    border-radius:17px;
-    padding:35px 12px;
-    text-align:center;
-    color:#64748b;
+background:#fff;
+border-radius:17px;
+padding:35px 12px;
+text-align:center;
+color:#64748b;
 }
 
 .bookCard{
-    border:1px solid #dbeafe;
+background:#fff;
+border-radius:17px;
+padding:13px;
+margin-bottom:10px;
+box-shadow:0 3px 15px rgba(0,0,0,.07);
+border:1px solid #dbeafe;
 }
 
 .bookHeader{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:8px;
+display:flex;
+justify-content:space-between;
+gap:8px;
 }
 
 .bookTitle{
-    font-size:14px;
-    font-weight:bold;
+font-weight:bold;
+font-size:14px;
 }
 
 .bookMeta{
-    margin-top:4px;
-    color:#64748b;
-    font-size:9px;
-    line-height:1.9;
+font-size:9px;
+color:#64748b;
+line-height:2;
+margin-top:4px;
 }
 
 .bookNumbers{
-    margin-top:10px;
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:5px;
-    max-height:180px;
-    overflow:auto;
-    padding:2px;
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:5px;
+max-height:180px;
+overflow:auto;
+margin-top:10px;
 }
 
 .bookNumber{
-    padding:8px 3px;
-    border-radius:8px;
-    background:#f1f5f9;
-    color:#334155;
-    font-size:9px;
-    text-align:center;
-    direction:ltr;
+padding:8px 3px;
+border-radius:8px;
+background:#f1f5f9;
+font-size:9px;
+text-align:center;
+direction:ltr;
 }
 
 .bookNumber.used{
-    background:#dcfce7;
-    color:#166534;
+background:#dcfce7;
+color:#166534;
 }
 
 .sectionTitle{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin:17px 2px 9px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin:17px 2px 9px;
 }
 
 .sectionTitle strong{
-    font-size:14px;
+font-size:14px;
 }
 
 .sectionTitle span{
-    color:#64748b;
-    font-size:9px;
+font-size:9px;
+color:#64748b;
 }
 
 .modal{
-    position:fixed;
-    inset:0;
-    z-index:100;
-    display:none;
-    align-items:flex-end;
-    justify-content:center;
-    background:rgba(0,0,0,.55);
+position:fixed;
+inset:0;
+z-index:100;
+display:none;
+align-items:flex-end;
+justify-content:center;
+background:rgba(0,0,0,.55);
 }
 
 .modal.show{
-    display:flex;
+display:flex;
 }
 
 .sheet{
-    width:100%;
-    max-width:650px;
-    max-height:94vh;
-    overflow:auto;
-    background:#fff;
-    border-radius:24px 24px 0 0;
-    padding:18px 15px calc(25px + env(safe-area-inset-bottom));
+width:100%;
+max-width:650px;
+max-height:94vh;
+overflow:auto;
+background:#fff;
+border-radius:24px 24px 0 0;
+padding:18px 15px calc(25px + env(safe-area-inset-bottom));
 }
 
 .sheetTitle{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:9px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:9px;
 }
 
 .sheetTitle h2{
-    margin:0;
-    font-size:17px;
+margin:0;
+font-size:17px;
 }
 
 .close{
-    width:36px;
-    height:36px;
-    border-radius:50%;
-    background:#f1f5f9;
-    font-size:20px;
+width:36px;
+height:36px;
+border-radius:50%;
+background:#f1f5f9;
+font-size:20px;
 }
 
 label{
-    display:block;
-    margin:10px 0 5px;
-    color:#475569;
-    font-size:10px;
+display:block;
+margin:10px 0 5px;
+color:#475569;
+font-size:10px;
 }
 
 .input{
-    width:100%;
-    padding:11px;
-    border:1px solid #cbd5e1;
-    border-radius:10px;
-    background:#fff;
-    outline:none;
-    font-size:13px;
+width:100%;
+padding:11px;
+border:1px solid #cbd5e1;
+border-radius:10px;
+background:#fff;
+outline:none;
+font-size:13px;
 }
 
 .input:focus{
-    border-color:#1976d2;
-    box-shadow:0 0 0 3px rgba(25,118,210,.1);
+border-color:#1976d2;
+box-shadow:0 0 0 3px rgba(25,118,210,.1);
 }
 
 .row{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
 }
 
 .actions2{
-    display:flex;
-    gap:8px;
-    margin-top:14px;
+display:flex;
+gap:8px;
+margin-top:14px;
 }
 
 .actions2 button{
-    flex:1;
-    padding:12px;
-    border-radius:11px;
-    font-weight:bold;
+flex:1;
+padding:12px;
+border-radius:11px;
+font-weight:bold;
 }
 
 .save{
-    background:#1976d2;
-    color:#fff;
+background:#1976d2;
+color:#fff;
 }
 
 .cancel{
-    background:#f1f5f9;
-    color:#334155;
+background:#f1f5f9;
+color:#334155;
 }
 
 .info{
-    margin-top:8px;
-    padding:9px;
-    border-radius:10px;
-    background:#f8fafc;
-    color:#64748b;
-    font-size:10px;
-    line-height:1.9;
+margin-top:8px;
+padding:9px;
+border-radius:10px;
+background:#f8fafc;
+color:#64748b;
+font-size:10px;
+line-height:1.9;
+}
+
+.reminderBox{
+margin-top:12px;
+padding:12px;
+border-radius:13px;
+background:#f8fafc;
+border:1px solid #e2e8f0;
+}
+
+.reminderTitle{
+font-weight:bold;
+font-size:12px;
+margin-bottom:8px;
+color:#334155;
+}
+
+.reminderToggle{
+display:flex;
+align-items:center;
+gap:8px;
+font-size:11px;
+color:#334155;
+}
+
+.reminderToggle input{
+width:18px;
+height:18px;
 }
 
 .numberSelect{
-    display:flex;
-    gap:6px;
+display:flex;
+gap:6px;
 }
 
 .numberSelect .input{
-    flex:1;
+flex:1;
 }
 
 .pickNumber{
-    width:105px;
-    border-radius:10px;
-    background:#e0f2fe;
-    color:#075985;
-    font-size:10px;
-    font-weight:bold;
-}
-
-.checkBookSelect{
-    margin-top:7px;
+width:110px;
+border-radius:10px;
+background:#e0f2fe;
+color:#075985;
+font-size:10px;
+font-weight:bold;
 }
 
 .toast{
-    position:fixed;
-    left:12px;
-    right:12px;
-    bottom:18px;
-    z-index:200;
-    display:none;
-    padding:12px;
-    border-radius:12px;
-    background:#17202a;
-    color:#fff;
-    text-align:center;
-    font-size:11px;
+position:fixed;
+left:12px;
+right:12px;
+bottom:18px;
+z-index:200;
+display:none;
+padding:12px;
+border-radius:12px;
+background:#17202a;
+color:#fff;
+text-align:center;
+font-size:11px;
 }
 
 .toast.show{
-    display:block;
+display:block;
 }
 
 @media(max-width:380px){
 
-    .row{
-        grid-template-columns:1fr;
-    }
-
-    .bookNumbers{
-        grid-template-columns:repeat(3,1fr);
-    }
-
-    .pickNumber{
-        width:90px;
-    }
+.row{
+grid-template-columns:1fr;
 }
-</style></head><body><header class="header"><h1>مدیریت چک‌ها</h1><p>
-ثبت، پیگیری و مدیریت چک‌ها و دسته‌چک‌ها
-</p><div class="summary"><div class="stat">
+
+.bookNumbers{
+grid-template-columns:repeat(3,1fr);
+}
+
+.pickNumber{
+width:90px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header class="header">
+
+<h1>مدیریت چک‌ها</h1>
+
+<p>
+ثبت، پیگیری و یادآوری هوشمند چک‌ها
+</p>
+
+<div class="summary">
+
+<div class="stat">
 <small>تعداد چک</small>
 <strong id="count">۰</strong>
-</div><div class="stat">
+</div>
+
+<div class="stat">
 <small>مبلغ کل</small>
 <strong id="total">۰ ریال</strong>
-</div><div class="stat">
+</div>
+
+<div class="stat">
 <small>سررسید نزدیک</small>
 <strong id="near">۰</strong>
-</div></div></header><main class="container"><div class="searchBox">
+</div>
+
+</div>
+
+</header>
+
+<main class="container">
+
+<div class="searchBox">
+
 <input
 id="search"
 class="search"
-type="text"
-placeholder="جستجوی شماره، بانک، در وجه یا بابت..."
+placeholder="جستجوی شماره، در وجه یا بابت..."
 >
-</div><div id="limit" class="limit"></div><button id="add" class="btn primary">
+
+</div>
+
+<div id="limit" class="limit"></div>
+
+<button id="add" class="btn primary">
 ＋ ثبت چک جدید
-</button><button id="book" class="btn secondary">
+</button>
+
+<button id="book" class="btn secondary">
 📒 ثبت دسته‌چک
-</button><div id="list"></div><div id="booksArea"></div></main><!-- =========================
-     ثبت / ویرایش چک
-========================= --><div id="modal" class="modal"><div class="sheet"><div class="sheetTitle"><h2 id="modalTitle">
+</button>
+
+<div id="list"></div>
+
+<div id="booksArea"></div>
+
+</main>
+
+
+<!-- ثبت / ویرایش چک -->
+
+<div id="modal" class="modal">
+
+<div class="sheet">
+
+<div class="sheetTitle">
+
+<h2 id="modalTitle">
 ثبت چک
-</h2><button
-class="close"
-onclick="closeModal()">
+</h2>
+
+<button class="close" onclick="closeModal()">
 ×
 </button>
 
-</div><label>
+</div>
+
+
+<label>
 شماره چک *
-</label><div class="numberSelect"><input
+</label>
+
+<div class="numberSelect">
+
+<input
 id="number"
 class="input"
 inputmode="numeric"
 placeholder="شماره چک"
-
-«»
+>
 
 <button
 type="button"
 class="pickNumber"
-onclick="pickFromBook()">
+onclick="pickFromBook()"
+>
 📒 انتخاب از دسته‌چک
 </button>
 
-</div><div id="selectedBookInfo" class="info" style="display:none"></div><div class="row"><div><label>
+</div>
+
+<div
+id="selectedBookInfo"
+class="info"
+style="display:none"
+></div>
+
+
+<div class="row">
+
+<div>
+
+<label>
 مبلغ به ریال *
-</label><input
+</label>
+
+<input
 id="amount"
 class="input"
 inputmode="numeric"
 placeholder="مثلاً ۵۰۰۰۰۰۰۰۰"
+>
 
-«»
+</div>
 
-</div><div><label>
+<div>
+
+<label>
 تاریخ سررسید *
-</label><input
+</label>
+
+<input
 id="date"
 class="input"
 type="date"
+>
 
-«»
+</div>
 
-</div></div><label>
+</div>
+
+
+<label>
 در وجه
-</label><input
+</label>
+
+<input
 id="payee"
 class="input"
 placeholder="نام شخص یا شرکت"
+>
 
-«»
 
 <label>
 بابت
-</label><input
+</label>
+
+<input
 id="reason"
 class="input"
 placeholder="توضیح"
+>
 
-«»
 
 <label>
 وضعیت چک
-</label><select id="status" class="input"><option value="issued">
+</label>
+
+<select id="status" class="input">
+
+<option value="issued">
 پرداخت نشده
-</option><option value="cashed">
+</option>
+
+<option value="cashed">
 وصول شده
-</option><option value="returned">
+</option>
+
+<option value="returned">
 برگشت خورده
-</option><option value="cancelled">
+</option>
+
+<option value="cancelled">
 لغو شده
-</option></select><div id="words" class="info">
+</option>
+
+</select>
+
+
+<div class="reminderBox">
+
+<div class="reminderTitle">
+🔔 یادآوری این چک
+</div>
+
+<label class="reminderToggle">
+
+<input
+type="checkbox"
+id="reminderEnabled"
+checked
+>
+
+فعال کردن یادآوری
+
+</label>
+
+
+<div class="row">
+
+<div>
+
+<label>
+چند روز قبل؟
+</label>
+
+<select
+id="reminderDays"
+class="input"
+>
+
+<option value="1">
+۱ روز قبل
+</option>
+
+<option value="2">
+۲ روز قبل
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label>
+ساعت یادآوری
+</label>
+
+<input
+id="reminderTime"
+class="input"
+type="time"
+value="09:00"
+>
+
+</div>
+
+</div>
+
+<div class="info">
+
+مثلاً اگر سررسید چک ۲۰ شهریور باشد و
+«۲ روز قبل» و ساعت ۹:۰۰ انتخاب شود،
+اعلان در ۱۸ شهریور ساعت ۹ نمایش داده می‌شود.
+
+</div>
+
+</div>
+
+
+<div id="words" class="info">
 مبلغ به حروف: —
-</div><div id="tomanPreview" class="info">
+</div>
+
+<div id="tomanPreview" class="info">
 معادل تقریبی به تومان: —
-</div><div class="actions2"><button
+</div>
+
+
+<div class="actions2">
+
+<button
 class="cancel"
-onclick="closeModal()">
+onclick="closeModal()"
+>
 انصراف
 </button>
 
 <button
 class="save"
-onclick="saveCheck()">
+onclick="saveCheck()"
+>
 ذخیره چک
 </button>
 
-</div></div></div><!-- =========================
-     ثبت دسته چک
-========================= --><div id="bookModal" class="modal"><div class="sheet"><div class="sheetTitle"><h2>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ثبت دسته چک -->
+
+<div id="bookModal" class="modal">
+
+<div class="sheet">
+
+<div class="sheetTitle">
+
+<h2>
 📒 ثبت دسته‌چک
-</h2><button
+</h2>
+
+<button
 class="close"
-onclick="closeBook()">
+onclick="closeBook()"
+>
 ×
 </button>
 
-</div><label>
+</div>
+
+
+<label>
 نام بانک / دسته‌چک *
-</label><input
+</label>
+
+<input
 id="bookName"
 class="input"
-placeholder="مثلاً بانک ملی - شعبه مرکزی"
+placeholder="مثلاً بانک ملی"
+>
 
-«»
 
 <label>
 نام شعبه
-</label><input
+</label>
+
+<input
 id="bookBranch"
 class="input"
 placeholder="مثلاً شعبه مرکزی"
+>
 
-«»
 
-<div class="row"><div><label>
+<div class="row">
+
+<div>
+
+<label>
 شماره شروع *
-</label><input
+</label>
+
+<input
 id="bookStart"
 class="input"
 inputmode="numeric"
 placeholder="1001"
+>
 
-«»
+</div>
 
-</div><div><label>
+<div>
+
+<label>
 شماره پایان *
-</label><input
+</label>
+
+<input
 id="bookEnd"
 class="input"
 inputmode="numeric"
 placeholder="1250"
+>
 
-«»
+</div>
 
-</div></div><label>
+</div>
+
+
+<label>
 پیش‌شماره اختیاری
-</label><input
+</label>
+
+<input
 id="bookPrefix"
 class="input"
-inputmode="numeric"
 placeholder="مثلاً 77"
+>
 
-«»
 
-<div id="bookPreview" class="info">
-تعداد برگه: —
-</div><div class="actions2"><button
+<div class="info">
+تمام شماره‌ها از شماره شروع تا شماره پایان به صورت خودکار ساخته می‌شوند.
+</div>
+
+
+<div class="actions2">
+
+<button
 class="cancel"
-onclick="closeBook()">
+onclick="closeBook()"
+>
 انصراف
 </button>
 
 <button
 class="save"
-onclick="generateBook()">
+onclick="generateBook()"
+>
 تولید دسته‌چک
 </button>
 
-</div></div></div><!-- =========================
-     انتخاب شماره از دسته چک
-========================= --><div id="pickModal" class="modal"><div class="sheet"><div class="sheetTitle"><h2>
-📒 انتخاب شماره چک
-</h2><button
-class="close"
-onclick="closePick()">
-×
-</button>
+</div>
 
-</div><div id="pickList"></div></div></div><div id="toast" class="toast"></div><script>
+</div>
 
-/* =====================================================
-   کلیدهای ذخیره‌سازی
-===================================================== */
+</div>
+
+
+<div id="toast" class="toast"></div>
+
+
+<script>
 
 const CHECK_KEY =
-"mohammad_checks_v2";
+"mohammad_checks_v1";
 
 const BOOK_KEY =
-"mohammad_checkbooks_v2";
+"mohammad_checkbooks_v1";
 
 
-/* =====================================================
-   اطلاعات
-===================================================== */
+let checks = [];
 
-let checks=[];
+let books = [];
 
-let books=[];
-
-let editId=null;
+let editId = null;
 
 
-/* =====================================================
-   تبدیل اعداد فارسی / عربی به انگلیسی
-===================================================== */
+/* =========================
+   اعداد
+========================= */
 
 function digits(value){
 
@@ -712,19 +976,10 @@ return String(value || "")
 return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);
 
 })
-.replace(/[٠-٩]/g,function(d){
-
-return "٠١٢٣٤٥٦٧٨٩".indexOf(d);
-
-})
 .replace(/[٬,]/g,"");
 
 }
 
-
-/* =====================================================
-   عدد فارسی
-===================================================== */
 
 function fa(value){
 
@@ -734,58 +989,9 @@ return Number(value || 0)
 }
 
 
-/* =====================================================
-   نمایش Toast
-===================================================== */
-
-function toast(text){
-
-const el=
-document.getElementById("toast");
-
-el.textContent=text;
-
-el.classList.add("show");
-
-clearTimeout(window.__toastTimer);
-
-window.__toastTimer=
-setTimeout(function(){
-
-el.classList.remove("show");
-
-},2500);
-
-}
-
-
-/* =====================================================
-   امنیت نمایش متن
-===================================================== */
-
-function escapeHtml(value){
-
-return String(value || "")
-.replace(/[&<>"']/g,function(c){
-
-return {
-
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#39;"
-
-}[c];
-
-});
-
-}
-
-
-/* =====================================================
+/* =========================
    Premium
-===================================================== */
+========================= */
 
 function isPremium(){
 
@@ -793,10 +999,10 @@ try{
 
 if(
 window.AndroidBridge &&
-typeof AndroidBridge.isPremium==="function"
+typeof AndroidBridge.isPremium === "function"
 ){
 
-return !!AndroidBridge.isPremium();
+return AndroidBridge.isPremium();
 
 }
 
@@ -807,23 +1013,20 @@ return false;
 }
 
 
-/* =====================================================
-   محدودیت نسخه رایگان
-===================================================== */
-
 function canAdd(){
 
-if(isPremium())
+if(isPremium()){
 return true;
+}
 
 try{
 
 if(
 window.AndroidBridge &&
-typeof AndroidBridge.canAddCheck==="function"
+typeof AndroidBridge.canAddCheck === "function"
 ){
 
-return !!AndroidBridge.canAddCheck(
+return AndroidBridge.canAddCheck(
 checks.length
 );
 
@@ -831,32 +1034,26 @@ checks.length
 
 }catch(e){}
 
-return checks.length<1;
+return checks.length < 1;
 
 }
 
 
-/* =====================================================
-   بارگذاری
-===================================================== */
+/* =========================
+   ذخیره
+========================= */
 
 function load(){
 
 try{
 
-const old=
-localStorage.getItem(
-CHECK_KEY
+checks =
+JSON.parse(
+localStorage.getItem(CHECK_KEY) || "[]"
 );
 
-if(old){
-
-checks=
-JSON.parse(old);
-
-if(!Array.isArray(checks))
+if(!Array.isArray(checks)){
 checks=[];
-
 }
 
 }catch(e){
@@ -868,19 +1065,13 @@ checks=[];
 
 try{
 
-const old=
-localStorage.getItem(
-BOOK_KEY
+books =
+JSON.parse(
+localStorage.getItem(BOOK_KEY) || "[]"
 );
 
-if(old){
-
-books=
-JSON.parse(old);
-
-if(!Array.isArray(books))
+if(!Array.isArray(books)){
 books=[];
-
 }
 
 }catch(e){
@@ -891,12 +1082,12 @@ books=[];
 
 render();
 
+renderBooks();
+
+syncAndroid();
+
 }
 
-
-/* =====================================================
-   ذخیره
-===================================================== */
 
 function persist(){
 
@@ -910,49 +1101,38 @@ BOOK_KEY,
 JSON.stringify(books)
 );
 
+syncAndroid();
+
 render();
 
-}
-
-
-/* =====================================================
-   باز کردن فرم ثبت
-===================================================== */
-
-function add(){
-
-if(!canAdd()){
-
-const limit=
-document.getElementById("limit");
-
-limit.classList.add("show");
-
-limit.innerHTML=
-"نسخه رایگان فقط <b>۱ چک</b> را پشتیبانی می‌کند. امکانات دیگر برنامه همچنان قابل استفاده هستند.";
-
-return;
-
-}
-
-editId=null;
-
-clearForm();
-
-document.getElementById(
-"modalTitle"
-).textContent="ثبت چک";
-
-document.getElementById(
-"modal"
-).classList.add("show");
+renderBooks();
 
 }
 
 
-/* =====================================================
-   پاک کردن فرم
-===================================================== */
+function syncAndroid(){
+
+try{
+
+if(
+window.AndroidBridge &&
+typeof AndroidBridge.syncChecks === "function"
+){
+
+AndroidBridge.syncChecks(
+JSON.stringify(checks)
+);
+
+}
+
+}catch(e){}
+
+}
+
+
+/* =========================
+   فرم
+========================= */
 
 function clearForm(){
 
@@ -968,148 +1148,158 @@ document.getElementById(id).value="";
 
 });
 
-document.getElementById(
-"status"
-).value="issued";
 
-document.getElementById(
-"selectedBookInfo"
-).style.display="none";
+document.getElementById("status").value =
+"issued";
 
-document.getElementById(
-"selectedBookInfo"
-).textContent="";
+document.getElementById("reminderEnabled").checked =
+true;
+
+document.getElementById("reminderDays").value =
+"1";
+
+document.getElementById("reminderTime").value =
+"09:00";
+
+document.getElementById("selectedBookInfo").style.display =
+"none";
 
 updateWords();
 
 }
 
 
-/* =====================================================
-   بستن فرم
-===================================================== */
+function add(){
 
-function closeModal(){
+if(!canAdd()){
 
-document.getElementById(
-"modal"
-).classList.remove("show");
+const limit =
+document.getElementById("limit");
+
+limit.classList.add("show");
+
+limit.innerHTML =
+"نسخه رایگان فقط <b>۱ چک</b> را پشتیبانی می‌کند. برای ثبت چک بیشتر، Premium لازم است.";
+
+return;
+
+}
 
 editId=null;
+
+clearForm();
+
+document.getElementById("modalTitle").textContent =
+"ثبت چک";
+
+document.getElementById("modal").classList.add("show");
 
 }
 
 
-/* =====================================================
-   ویرایش
-===================================================== */
-
 function edit(id){
 
-const c=
+const c =
 checks.find(function(x){
 
 return String(x.id)===String(id);
 
 });
 
-if(!c)
-return;
+if(!c)return;
 
 editId=id;
 
-document.getElementById(
-"modalTitle"
-).textContent="ویرایش چک";
+document.getElementById("modalTitle").textContent =
+"ویرایش چک";
 
-document.getElementById("number").value=
+document.getElementById("number").value =
 c.number || "";
 
-document.getElementById("amount").value=
+document.getElementById("amount").value =
 c.amount || "";
 
-document.getElementById("date").value=
+document.getElementById("date").value =
 c.date || "";
 
-document.getElementById("payee").value=
+document.getElementById("payee").value =
 c.payee || "";
 
-document.getElementById("reason").value=
+document.getElementById("reason").value =
 c.reason || "";
 
-document.getElementById("status").value=
+document.getElementById("status").value =
 c.status || "issued";
+
+
+document.getElementById("reminderEnabled").checked =
+c.reminderEnabled !== false;
+
+document.getElementById("reminderDays").value =
+String(c.reminderDays || 1);
+
+document.getElementById("reminderTime").value =
+c.reminderTime || "09:00";
+
 
 if(c.bookId){
 
-const book=
-books.find(function(b){
+const b =
+books.find(function(x){
 
-return String(b.id)===String(c.bookId);
+return String(x.id)===String(c.bookId);
 
 });
 
-if(book){
+if(b){
 
-const info=
-document.getElementById(
-"selectedBookInfo"
-);
-
-info.style.display="block";
-
-info.textContent=
-"📒 دسته‌چک: "+
-book.name+
-" | شعبه: "+
-(book.branch || "—");
+showSelectedBook(b);
 
 }
 
+}else{
+
+document.getElementById("selectedBookInfo").style.display =
+"none";
+
 }
+
 
 updateWords();
 
-document.getElementById(
-"modal"
-).classList.add("show");
+document.getElementById("modal").classList.add("show");
 
 }
 
 
-/* =====================================================
+function closeModal(){
+
+document.getElementById("modal").classList.remove("show");
+
+}
+
+
+/* =========================
    ذخیره چک
-===================================================== */
+========================= */
 
 function saveCheck(){
 
-const number=
-document.getElementById(
-"number"
-).value.trim();
+const number =
+document.getElementById("number").value.trim();
 
-
-const amount=
+const amount =
 Number(
 digits(
-document.getElementById(
-"amount"
-).value
+document.getElementById("amount").value
 )
 );
 
-
-const date=
-document.getElementById(
-"date"
-).value;
+const date =
+document.getElementById("date").value;
 
 
-if(
-!number ||
-!amount ||
-!date
-){
+if(!number || !amount || !date){
 
 alert(
 "شماره چک، مبلغ و تاریخ سررسید الزامی است."
@@ -1120,38 +1310,7 @@ return;
 }
 
 
-/* جلوگیری از شماره تکراری */
-
-const duplicate=
-checks.some(function(c){
-
-return String(c.number)===String(number) &&
-String(c.id)!==String(editId);
-
-});
-
-if(duplicate){
-
-alert(
-"این شماره چک قبلاً ثبت شده است."
-);
-
-return;
-
-}
-
-
-const old=
-editId
-?checks.find(function(x){
-
-return String(x.id)===String(editId);
-
-})
-:null;
-
-
-const item={
+const item = {
 
 id:
 editId ||
@@ -1164,86 +1323,100 @@ amount:amount,
 date:date,
 
 payee:
-document.getElementById(
-"payee"
-).value.trim(),
+document.getElementById("payee").value.trim(),
 
 reason:
-document.getElementById(
-"reason"
-).value.trim(),
+document.getElementById("reason").value.trim(),
 
 status:
-document.getElementById(
-"status"
-).value,
+document.getElementById("status").value,
 
-bookId:
-old?.bookId || null,
+reminderEnabled:
+document.getElementById("reminderEnabled").checked,
 
-createdAt:
-old?.createdAt || Date.now()
+reminderDays:
+Number(
+document.getElementById("reminderDays").value
+) || 1,
+
+reminderTime:
+document.getElementById("reminderTime").value ||
+"09:00"
 
 };
 
 
+const selectedBook =
+window.selectedBookId || null;
+
+if(selectedBook){
+
+item.bookId=selectedBook;
+
+}else if(editId){
+
+const old =
+checks.find(function(x){
+
+return String(x.id)===String(editId);
+
+});
+
+if(old && old.bookId){
+
+item.bookId=old.bookId;
+
+}
+
+}
+
+
 if(editId){
 
-const index=
+const index =
 checks.findIndex(function(x){
 
 return String(x.id)===String(editId);
 
 });
 
-if(index>=0)
+if(index>=0){
+
 checks[index]=item;
-
-}else{
-
-checks.unshift(item);
 
 }
 
+}else{
+
+checks.push(item);
+
+}
+
+
+window.selectedBookId=null;
 
 persist();
 
 closeModal();
 
-toast(
-editId
-?"چک با موفقیت ویرایش شد."
-:"چک با موفقیت ثبت شد."
+showToast(
+"چک با موفقیت ذخیره شد."
 );
 
 }
 
 
-/* =====================================================
-   حذف چک
-===================================================== */
+/* =========================
+   حذف
+========================= */
 
 function removeCheck(id){
 
-const c=
-checks.find(function(x){
-
-return String(x.id)===String(id);
-
-});
-
-if(!c)
+if(!confirm("این چک حذف شود؟")){
 return;
+}
 
-if(
-confirm(
-"چک شماره "+
-c.number+
-" حذف شود؟"
-)
-){
-
-checks=
+checks =
 checks.filter(function(x){
 
 return String(x.id)!==String(id);
@@ -1252,63 +1425,16 @@ return String(x.id)!==String(id);
 
 persist();
 
-toast(
-"چک حذف شد."
+showToast(
+"چک حذف شد و یادآوری آن نیز حذف شد."
 );
 
 }
 
-}
 
-
-/* =====================================================
-   وضعیت
-===================================================== */
-
-function statusText(status){
-
-const map={
-
-issued:"پرداخت نشده",
-
-cashed:"وصول شده",
-
-returned:"برگشت خورده",
-
-cancelled:"لغو شده"
-
-};
-
-return map[status] || "نامشخص";
-
-}
-
-
-/* =====================================================
-   وضعیت سررسید
-===================================================== */
-
-function isOverdue(c){
-
-if(c.status!=="issued")
-return false;
-
-if(!c.date)
-return false;
-
-const d=
-new Date(
-c.date+"T23:59:59"
-);
-
-return d.getTime()<Date.now();
-
-}
-
-
-/* =====================================================
-   Render چک‌ها
-===================================================== */
+/* =========================
+   نمایش
+========================= */
 
 function render(){
 
@@ -1316,40 +1442,31 @@ let total=0;
 
 let near=0;
 
-const today=
+const today =
 new Date();
 
-today.setHours(
-0,0,0,0
-);
+today.setHours(0,0,0,0);
 
 
 checks.forEach(function(c){
 
-total+=
-Number(c.amount || 0);
-
+total += Number(c.amount || 0);
 
 if(
 c.status==="issued" &&
 c.date
 ){
 
-const d=
-new Date(
-c.date+"T00:00:00"
+const d =
+new Date(c.date+"T00:00:00");
+
+const diff =
+Math.round(
+(d-today)/86400000
 );
 
-const diff=
-(d-today)/86400000;
-
-if(
-diff>=0 &&
-diff<=7
-){
-
+if(diff>=0 && diff<=7){
 near++;
-
 }
 
 }
@@ -1357,102 +1474,75 @@ near++;
 });
 
 
-document.getElementById(
-"count"
-).textContent=
+document.getElementById("count").textContent =
 fa(checks.length);
 
-
-document.getElementById(
-"total"
-).textContent=
+document.getElementById("total").textContent =
 fa(total)+" ریال";
 
-
-document.getElementById(
-"near"
-).textContent=
+document.getElementById("near").textContent =
 fa(near);
 
 
-renderChecks();
-
-renderBooks();
-
-}
-
-
-/* =====================================================
-   نمایش لیست چک‌ها
-===================================================== */
-
-function renderChecks(){
-
-const search=
-document.getElementById(
-"search"
-).value
-.trim()
-.toLowerCase();
-
-
-const filtered=
-checks.filter(function(c){
-
-return (
-
-String(c.number||"")
-.toLowerCase()
-.includes(search)
-
-||
-
-String(c.payee||"")
-.toLowerCase()
-.includes(search)
-
-||
-
-String(c.reason||"")
-.toLowerCase()
-.includes(search)
-
-||
-
-String(c.bank||"")
-.toLowerCase()
-.includes(search)
-
-);
-
-});
-
-
-const list=
+const list =
 document.getElementById("list");
 
 
-if(!filtered.length){
+if(!checks.length){
 
-list.innerHTML=
-'<div class="empty">چکی برای نمایش وجود ندارد.</div>';
+list.innerHTML =
+'<div class="empty">هنوز چکی ثبت نشده است.</div>';
 
 return;
 
 }
 
 
-list.innerHTML=
+const query =
+(document.getElementById("search").value || "")
+.trim()
+.toLowerCase();
+
+
+const filtered =
+checks.filter(function(c){
+
+if(!query)return true;
+
+const text =
+[
+c.number,
+c.payee,
+c.reason,
+c.date
+]
+.join(" ")
+.toLowerCase();
+
+return text.indexOf(query)>=0;
+
+});
+
+
+if(!filtered.length){
+
+list.innerHTML =
+'<div class="empty">موردی پیدا نشد.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
 filtered.map(function(c){
 
-const overdue=
+const overdue =
 isOverdue(c);
 
-
-const toman=
-Math.floor(
-Number(c.amount||0)/10
-);
+const reminder =
+c.reminderEnabled !== false &&
+c.status==="issued";
 
 
 return `
@@ -1469,8 +1559,8 @@ return `
 
 <div class="meta">
 
-تاریخ سررسید:
-${escapeHtml(c.date)}
+سررسید:
+${escapeHtml(formatDate(c.date))}
 
 <br>
 
@@ -1493,11 +1583,15 @@ ${statusText(c.status)}
 </div>
 
 
-${
-overdue
-?
-'<div class="overdue">🔴 معوق — سررسید گذشته و هنوز پرداخت نشده</div>'
-:""
+${overdue ? '<span class="overdue">🔴 معوق</span>' : ''}
+
+
+${reminder ?
+`<span class="reminderBadge">
+🔔 یادآوری ${c.reminderDays===2 ? "۲ روز" : "۱ روز"} قبل - ${escapeHtml(c.reminderTime || "09:00")}
+</span>`
+:
+''
 }
 
 
@@ -1506,13 +1600,12 @@ overdue
 ${fa(c.amount)} ریال
 
 <div class="toman">
-معادل ${fa(toman)} تومان
+معادل ${fa(Math.floor(Number(c.amount||0)/10))} تومان
 </div>
 
 <div class="words">
 
-${amountToWords(c.amount)}
-ریال
+${amountToWords(c.amount)} ریال
 
 </div>
 
@@ -1523,14 +1616,16 @@ ${amountToWords(c.amount)}
 
 <button
 class="action"
-onclick="edit('${escapeHtml(c.id)}')">
-✏️ ویرایش
+onclick="edit('${escapeHtml(c.id)}')"
+>
+ویرایش
 </button>
 
 <button
 class="action danger"
-onclick="removeCheck('${escapeHtml(c.id)}')">
-🗑️ حذف
+onclick="removeCheck('${escapeHtml(c.id)}')"
+>
+حذف
 </button>
 
 </div>
@@ -1544,119 +1639,151 @@ onclick="removeCheck('${escapeHtml(c.id)}')">
 }
 
 
-/* =====================================================
+/* =========================
+   تاریخ
+========================= */
+
+function formatDate(date){
+
+if(!date)return "—";
+
+const parts =
+String(date).split("-");
+
+if(parts.length!==3)return date;
+
+return parts[2]+" / "+parts[1]+" / "+parts[0];
+
+}
+
+
+function isOverdue(c){
+
+if(
+!c.date ||
+c.status!=="issued"
+)return false;
+
+const d =
+new Date(c.date+"T00:00:00");
+
+const today =
+new Date();
+
+today.setHours(0,0,0,0);
+
+return d<today;
+
+}
+
+
+/* =========================
+   وضعیت
+========================= */
+
+function statusText(status){
+
+const map={
+
+issued:"پرداخت نشده",
+
+cashed:"وصول شده",
+
+returned:"برگشت خورده",
+
+cancelled:"لغو شده"
+
+};
+
+return map[status] || "نامشخص";
+
+}
+
+
+/* =========================
+   امنیت
+========================= */
+
+function escapeHtml(value){
+
+return String(value || "")
+.replace(/[&<>"']/g,function(c){
+
+return {
+
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
+
+}[c];
+
+});
+
+}
+
+
+/* =========================
    مبلغ به حروف
-===================================================== */
+========================= */
 
 const ones=[
-
 "",
-
 "یک",
-
 "دو",
-
 "سه",
-
 "چهار",
-
 "پنج",
-
 "شش",
-
 "هفت",
-
 "هشت",
-
 "نه",
-
 "ده",
-
 "یازده",
-
 "دوازده",
-
 "سیزده",
-
 "چهارده",
-
 "پانزده",
-
 "شانزده",
-
 "هفده",
-
 "هجده",
-
 "نوزده"
-
 ];
-
 
 const tens=[
-
 "",
-
 "",
-
 "بیست",
-
 "سی",
-
 "چهل",
-
 "پنجاه",
-
 "شصت",
-
 "هفتاد",
-
 "هشتاد",
-
 "نود"
-
 ];
-
 
 const hundreds=[
-
 "",
-
 "صد",
-
 "دویست",
-
 "سیصد",
-
 "چهارصد",
-
 "پانصد",
-
 "ششصد",
-
 "هفتصد",
-
 "هشتصد",
-
 "نهصد"
-
 ];
 
-
 const scales=[
-
 "",
-
 "هزار",
-
 "میلیون",
-
 "میلیارد",
-
 "تریلیون",
-
 "کوادریلیون"
-
 ];
 
 
@@ -1664,48 +1791,36 @@ function tri(n){
 
 let result=[];
 
-
-if(
-Math.floor(n/100)
-){
+if(Math.floor(n/100)){
 
 result.push(
-hundreds[
-Math.floor(n/100)
-]
+hundreds[Math.floor(n/100)]
 );
 
 }
 
-
 n%=100;
-
 
 if(n){
 
-if(result.length)
+if(result.length){
 result.push(" و ");
-
+}
 
 if(n<20){
 
-result.push(
-ones[n]
-);
+result.push(ones[n]);
 
 }else{
 
 result.push(
-tens[
-Math.floor(n/10)
-]
+tens[Math.floor(n/10)]
 );
 
 if(n%10){
 
 result.push(
-" و "+
-ones[n%10]
+" و "+ones[n%10]
 );
 
 }
@@ -1713,7 +1828,6 @@ ones[n%10]
 }
 
 }
-
 
 return result.join("");
 
@@ -1722,234 +1836,123 @@ return result.join("");
 
 function amountToWords(number){
 
-number=
-Math.floor(
-Number(number)||0
-);
+number =
+Math.floor(Number(number)||0);
 
-
-if(number===0)
+if(number===0){
 return "صفر";
-
+}
 
 let result=[];
 
 let i=0;
 
-
 while(number>0){
 
-const part=
+const part =
 number%1000;
-
 
 if(part){
 
 result.unshift(
-
 tri(part)+
-(
-scales[i]
-?
-" "+scales[i]
-:""
-)
-
+(scales[i] ? " "+scales[i] : "")
 );
 
 }
 
-
-number=
-Math.floor(
-number/1000
-);
+number =
+Math.floor(number/1000);
 
 i++;
 
 }
-
 
 return result.join(" و ");
 
 }
 
 
-/* =====================================================
-   پیش‌نمایش مبلغ
-===================================================== */
-
 function updateWords(){
 
-const amount=
+const amount =
 Number(
 digits(
-document.getElementById(
-"amount"
-).value
+document.getElementById("amount").value
 )
 );
 
-
-document.getElementById(
-"words"
-).textContent=
+document.getElementById("words").textContent =
 "مبلغ به حروف: "+
 (
 amount
 ?
 amountToWords(amount)+" ریال"
-:"—"
+:
+"—"
 );
 
-
-document.getElementById(
-"tomanPreview"
-).textContent=
+document.getElementById("tomanPreview").textContent =
 "معادل تقریبی به تومان: "+
 (
 amount
 ?
 fa(Math.floor(amount/10))+" تومان"
-:"—"
+:
+"—"
 );
 
 }
 
 
-/* =====================================================
-   دسته‌چک
-===================================================== */
+/* =========================
+   دسته چک
+========================= */
 
 function closeBook(){
 
-document.getElementById(
-"bookModal"
-).classList.remove("show");
+document.getElementById("bookModal").classList.remove("show");
 
 }
 
-
-/* =====================================================
-   پیش‌نمایش تعداد برگه
-===================================================== */
-
-function updateBookPreview(){
-
-const start=
-Number(
-digits(
-document.getElementById(
-"bookStart"
-).value
-)
-);
-
-
-const end=
-Number(
-digits(
-document.getElementById(
-"bookEnd"
-).value
-)
-);
-
-
-const preview=
-document.getElementById(
-"bookPreview"
-);
-
-
-if(
-start>0 &&
-end>=start
-){
-
-const count=
-end-start+1;
-
-preview.textContent=
-"تعداد برگه: "+
-fa(count)+
-" برگ";
-
-}else{
-
-preview.textContent=
-"تعداد برگه: —";
-
-}
-
-}
-
-
-/* =====================================================
-   تولید دسته چک
-===================================================== */
 
 function generateBook(){
 
-const name=
-document.getElementById(
-"bookName"
-).value.trim();
+const name =
+document.getElementById("bookName").value.trim();
 
+const branch =
+document.getElementById("bookBranch").value.trim();
 
-const branch=
-document.getElementById(
-"bookBranch"
-).value.trim();
-
-
-const start=
+const start =
 Number(
 digits(
-document.getElementById(
-"bookStart"
-).value
+document.getElementById("bookStart").value
 )
 );
 
-
-const end=
+const end =
 Number(
 digits(
-document.getElementById(
-"bookEnd"
-).value
+document.getElementById("bookEnd").value
 )
 );
 
-
-const prefix=
+const prefix =
 digits(
-document.getElementById(
-"bookPrefix"
-).value
+document.getElementById("bookPrefix").value
 );
-
-
-if(!name){
-
-alert(
-"نام بانک یا دسته‌چک را وارد کنید."
-);
-
-return;
-
-}
 
 
 if(
+!name ||
 !start ||
 !end ||
 end<start
 ){
 
 alert(
-"شماره شروع و پایان صحیح وارد کنید."
+"نام بانک، شماره شروع و شماره پایان را صحیح وارد کنید."
 );
 
 return;
@@ -1957,19 +1960,14 @@ return;
 }
 
 
-const count=
+const count =
 end-start+1;
 
 
-/*
- * محدودیت مصنوعی ۱۰۰ برگ حذف شده است.
- * Premium بعداً در لایه Native کنترل خواهد شد.
- */
-
-if(count>100000){
+if(count>10000){
 
 alert(
-"تعداد برگ واردشده غیرمنطقی است."
+"تعداد برگه‌ها بیش از حد مجاز است."
 );
 
 return;
@@ -1979,42 +1977,15 @@ return;
 
 const numbers=[];
 
-
 for(
-let i=0;
-i<count;
+let i=start;
+i<=end;
 i++
 ){
 
 numbers.push(
-prefix+
-String(start+i)
+prefix+String(i)
 );
-
-}
-
-
-/* جلوگیری از دسته چک تکراری */
-
-const duplicate=
-books.some(function(b){
-
-return (
-b.prefix===prefix &&
-b.start===start &&
-b.end===end
-);
-
-});
-
-
-if(duplicate){
-
-alert(
-"این دسته‌چک قبلاً ثبت شده است."
-);
-
-return;
 
 }
 
@@ -2036,9 +2007,7 @@ count:count,
 
 prefix:prefix,
 
-numbers:numbers,
-
-createdAt:Date.now()
+numbers:numbers
 
 });
 
@@ -2047,26 +2016,19 @@ persist();
 
 closeBook();
 
-toast(
+alert(
 "دسته‌چک با "+
 fa(count)+
-" برگ ساخته شد."
+" برگ ایجاد شد."
 );
 
 }
 
 
-/* =====================================================
-   نمایش دسته چک‌ها
-===================================================== */
-
 function renderBooks(){
 
-const area=
-document.getElementById(
-"booksArea"
-);
-
+const area =
+document.getElementById("booksArea");
 
 if(!books.length){
 
@@ -2077,31 +2039,26 @@ return;
 }
 
 
-area.innerHTML=
-
+area.innerHTML =
 `
 
 <div class="sectionTitle">
 
-<strong>
-📒 دسته‌چک‌ها
-</strong>
+<strong>📒 دسته‌چک‌ها</strong>
 
-<span>
-${fa(books.length)} دسته
-</span>
+<span>${fa(books.length)} دسته</span>
 
 </div>
 
-`+
+`
++
+books.map(function(b){
 
-books.map(function(book){
-
-const used=
+const used =
 checks
 .filter(function(c){
 
-return String(c.bookId)===String(book.id);
+return String(c.bookId)===String(b.id);
 
 })
 .map(function(c){
@@ -2111,67 +2068,53 @@ return String(c.number);
 });
 
 
-const numbers=
-(book.numbers||[])
-.slice(0,5000);
-
-
 return `
 
-<div class="card bookCard">
+<div class="bookCard">
 
 <div class="bookHeader">
 
 <div>
 
 <div class="bookTitle">
-
-${escapeHtml(book.name)}
-
+${escapeHtml(b.name)}
 </div>
 
 <div class="bookMeta">
 
 شعبه:
-${escapeHtml(book.branch || "—")}
+${escapeHtml(b.branch || "—")}
 
 <br>
 
-از شماره:
-${escapeHtml(book.prefix+book.start)}
-
-تا:
-${escapeHtml(book.prefix+book.end)}
+از ${escapeHtml(b.prefix+String(b.start))}
+تا ${escapeHtml(b.prefix+String(b.end))}
 
 <br>
 
 تعداد:
-${fa(book.count)}
-برگ
+${fa(b.count)} برگ
 
 </div>
 
 </div>
 
 </div>
-
 
 <div class="bookNumbers">
 
-${numbers.map(function(number){
+${b.numbers.map(function(n){
 
-const isUsed=
-used.includes(String(number));
+const isUsed =
+used.indexOf(String(n))>=0;
 
 return `
 
-<div
-class="bookNumber ${isUsed?"used":""}"
-onclick="selectBookNumber('${escapeHtml(number)}','${escapeHtml(book.id)}')">
+<div class="bookNumber ${isUsed ? "used" : ""}">
 
-${escapeHtml(number)}
+${escapeHtml(n)}
 
-${isUsed?" ✓":""}
+${isUsed ? " ✓" : ""}
 
 </div>
 
@@ -2190,16 +2133,29 @@ ${isUsed?" ✓":""}
 }
 
 
-/* =====================================================
-   انتخاب شماره از دسته چک
-===================================================== */
+function showSelectedBook(book){
+
+window.selectedBookId=book.id;
+
+const info =
+document.getElementById("selectedBookInfo");
+
+info.style.display="block";
+
+info.innerHTML =
+"📒 دسته‌چک انتخاب‌شده: <b>"+
+escapeHtml(book.name)+
+"</b>";
+
+}
+
 
 function pickFromBook(){
 
 if(!books.length){
 
 alert(
-"ابتدا حداقل یک دسته‌چک ثبت کنید."
+"ابتدا یک دسته‌چک ثبت کنید."
 );
 
 return;
@@ -2207,265 +2163,141 @@ return;
 }
 
 
-const list=
-document.getElementById(
-"pickList"
-);
+let text =
+"شماره موردنظر را از بین دسته‌چک‌ها وارد کنید.\n\n";
 
+books.forEach(function(b,index){
 
-list.innerHTML=
-books.map(function(book){
-
-const available=
-(book.numbers||[])
-.filter(function(number){
-
-return !checks.some(function(c){
-
-return String(c.number)===String(number);
-
-});
-
-})
-.slice(0,5000);
-
-
-return `
-
-<div class="card">
-
-<div class="title">
-
-${escapeHtml(book.name)}
-
-</div>
-
-<div class="meta">
-
-شعبه:
-${escapeHtml(book.branch || "—")}
-
-<br>
-
-شماره‌ها:
-${escapeHtml(book.prefix+book.start)}
-تا
-${escapeHtml(book.prefix+book.end)}
-
-</div>
-
-<div class="bookNumbers">
-
-${
-available.length
-?
-available.map(function(number){
-
-return `
-
-<button
-class="bookNumber"
-onclick="selectBookNumber('${escapeHtml(number)}','${escapeHtml(book.id)}')">
-
-${escapeHtml(number)}
-
-</button>
-
-`;
-
-}).join("")
-:
-'<div class="info">تمام شماره‌های این دسته‌چک قبلاً استفاده شده‌اند.</div>'
-}
-
-</div>
-
-</div>
-
-`;
-
-}).join("");
-
-
-document.getElementById(
-"pickModal"
-).classList.add("show");
-
-}
-
-
-/* =====================================================
-   انتخاب شماره
-===================================================== */
-
-function selectBookNumber(number,bookId){
-
-document.getElementById(
-"number"
-).value=number;
-
-
-const book=
-books.find(function(b){
-
-return String(b.id)===String(bookId);
+text +=
+(index+1)+
+". "+
+b.name+
+" - "+
+b.prefix+
+b.start+
+" تا "+
+b.prefix+
+b.end+
+"\n";
 
 });
 
 
-if(book){
-
-const info=
-document.getElementById(
-"selectedBookInfo"
+const value =
+prompt(
+text+
+"\nشماره چک:"
 );
 
-info.style.display="block";
+if(!value)return;
 
-info.textContent=
-"📒 دسته‌چک: "+
-book.name+
-" | شعبه: "+
-(book.branch || "—");
+const number =
+digits(value).trim();
+
+
+for(let i=0;i<books.length;i++){
+
+const b=books[i];
+
+const index =
+b.numbers.indexOf(number);
+
+if(index>=0){
+
+document.getElementById("number").value =
+number;
+
+showSelectedBook(b);
+
+return;
+
+}
 
 }
 
 
-closePick();
-
-toast(
-"شماره چک انتخاب شد."
+alert(
+"این شماره در هیچ‌کدام از دسته‌چک‌های ثبت‌شده پیدا نشد."
 );
 
 }
 
 
-/* =====================================================
-   بستن انتخاب
-===================================================== */
+/* =========================
+   Toast
+========================= */
 
-function closePick(){
+function showToast(text){
 
-document.getElementById(
-"pickModal"
-).classList.remove("show");
+const toast =
+document.getElementById("toast");
+
+toast.textContent=text;
+
+toast.classList.add("show");
+
+setTimeout(function(){
+
+toast.classList.remove("show");
+
+},2500);
 
 }
 
 
-/* =====================================================
+/* =========================
    رویدادها
-===================================================== */
+========================= */
 
-document.getElementById(
-"add"
-).onclick=add;
+document.getElementById("add").onclick =
+add;
 
 
-document.getElementById(
-"book"
-).onclick=function(){
+document.getElementById("book").onclick =
+function(){
 
-document.getElementById(
-"bookModal"
-).classList.add("show");
+document.getElementById("bookModal")
+.classList.add("show");
 
 };
 
 
-document.getElementById(
-"amount"
-).addEventListener(
+document.getElementById("amount")
+.addEventListener(
 "input",
 updateWords
 );
 
 
-document.getElementById(
-"bookStart"
-).addEventListener(
-"input",
-updateBookPreview
-);
-
-
-document.getElementById(
-"bookEnd"
-).addEventListener(
-"input",
-updateBookPreview
-);
-
-
-document.getElementById(
-"search"
-).addEventListener(
+document.getElementById("search")
+.addEventListener(
 "input",
 render
 );
 
 
-/* بستن مودال با کلیک بیرون */
-
-document.getElementById(
-"modal"
-).addEventListener(
-"click",
-function(e){
+document.getElementById("status")
+.addEventListener(
+"change",
+function(){
 
 if(
-e.target===
-document.getElementById("modal")
+this.value!=="issued"
 ){
 
-closeModal();
+document.getElementById(
+"reminderEnabled"
+).checked=false;
 
 }
 
-});
-
-
-document.getElementById(
-"bookModal"
-).addEventListener(
-"click",
-function(e){
-
-if(
-e.target===
-document.getElementById("bookModal")
-){
-
-closeBook();
-
 }
+);
 
-});
-
-
-document.getElementById(
-"pickModal"
-).addEventListener(
-"click",
-function(e){
-
-if(
-e.target===
-document.getElementById("pickModal")
-){
-
-closePick();
-
-}
-
-});
-
-
-/* =====================================================
-   شروع
-===================================================== */
 
 load();
 
-</script></body>
+</script>
+
+</body>
 </html>
