@@ -17,8 +17,11 @@ import androidx.core.app.NotificationManagerCompat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 public class NotificationReceiver extends BroadcastReceiver {
@@ -32,6 +35,9 @@ public class NotificationReceiver extends BroadcastReceiver {
     private static final String INSTALLMENTS_KEY =
             "installments";
 
+    private static final String CHECKS_KEY =
+            "checks_json";
+
     private static final String REMINDER_ENABLED =
             "reminder_enabled";
 
@@ -41,17 +47,18 @@ public class NotificationReceiver extends BroadcastReceiver {
     private static final String REMINDER_TIME =
             "reminder_time";
 
-    /*
-     * شناسه اعلان‌هایی که قبلاً نمایش داده شده‌اند.
-     *
-     * با این لیست می‌توانیم وقتی کاربر
-     * قسط را تیک زد یا ویرایش کرد،
-     * اعلان قبلی را هم حذف کنیم.
-     */
     private static final String POSTED_NOTIFICATION_IDS =
             "posted_notification_ids";
 
-    private static final int ALARM_REQUEST_CODE = 7001;
+    private static final String CHECK_ALARM_PREFIX =
+            "check_alarm_";
+
+    private static final int ALARM_REQUEST_CODE =
+            7001;
+
+    private static final int CHECK_REQUEST_BASE =
+            810000;
+
 
     @Override
     public void onReceive(
@@ -61,258 +68,99 @@ public class NotificationReceiver extends BroadcastReceiver {
 
         createNotificationChannel(context);
 
+        if (intent == null) {
+            scheduleNextAlarm(context);
+            return;
+        }
+
+        String type =
+                intent.getStringExtra("type");
+
         /*
-         * اگر یادآوری خاموش باشد،
-         * هیچ کاری انجام نده.
+         * اعلان اختصاصی چک
          */
-        SharedPreferences prefs =
-                context.getSharedPreferences(
-                        PREFS_NAME,
-                        Context.MODE_PRIVATE
-                );
+        if ("check".equals(type)) {
 
-        boolean enabled =
-                prefs.getBoolean(
-                        REMINDER_ENABLED,
-                        true
-                );
+            showCheckNotification(
+                    context,
+                    intent
+            );
 
-        if (!enabled) {
-            cancelAlarm(context);
             return;
         }
 
         /*
-         * بررسی تمام اقساط.
+         * اعلان قبلی اقساط
          */
         checkInstallments(context);
 
         /*
-         * چون AlarmManager آلارم را
-         * یک‌بار مصرف اجرا می‌کند،
-         * آلارم روز بعد را دوباره می‌سازیم.
+         * بعد از اجرای آلارم روزانه
+         * آلارم بعدی ساخته می‌شود.
          */
         scheduleNextAlarm(context);
     }
 
-    /*
-     * =========================================================
-     * بررسی اقساط
-     * =========================================================
-     */
-    private void checkInstallments(
-            Context context
+
+    /* =========================================================
+       CH CHECK REMINDERS
+       ========================================================= */
+
+    public static void syncCheckReminders(
+            Context context,
+            String json
     ) {
+
+        Context app =
+                context.getApplicationContext();
+
+        createNotificationChannel(app);
+
+        if (
+                json == null ||
+                json.trim().isEmpty()
+        ) {
+
+            json = "[]";
+        }
+
+        SharedPreferences prefs =
+                app.getSharedPreferences(
+                        PREFS_NAME,
+                        Context.MODE_PRIVATE
+                );
+
+        prefs.edit()
+                .putString(
+                        CHECKS_KEY,
+                        json
+                )
+                .apply();
+
+        cancelAllCheckAlarms(app);
 
         try {
 
-            SharedPreferences prefs =
-                    context.getSharedPreferences(
-                            PREFS_NAME,
-                            Context.MODE_PRIVATE
-                    );
-
-            boolean enabled =
-                    prefs.getBoolean(
-                            REMINDER_ENABLED,
-                            true
-                    );
-
-            if (!enabled) {
-                return;
-            }
-
-            /*
-             * 1 = یک روز / 24 ساعت قبل
-             * 2 = دو روز قبل
-             *
-             * امکانات قبلی حفظ شده‌اند.
-             */
-            int daysBefore =
-                    prefs.getInt(
-                            REMINDER_DAYS,
-                            1
-                    );
-
-            if (
-                    daysBefore != 1
-                            &&
-                    daysBefore != 2
-            ) {
-
-                daysBefore = 1;
-            }
-
-            String json =
-                    prefs.getString(
-                            INSTALLMENTS_KEY,
-                            "[]"
-                    );
-
-            JSONArray installments =
+            JSONArray checks =
                     new JSONArray(json);
-
-            /*
-             * تاریخ هدف را پیدا می‌کنیم.
-             *
-             * اگر daysBefore = 1 باشد:
-             *
-             * امروز 10
-             * قسط 11
-             *
-             * یعنی اعلان 24 ساعت قبل.
-             */
-            Calendar target =
-                    Calendar.getInstance();
-
-            target.add(
-                    Calendar.DAY_OF_YEAR,
-                    daysBefore
-            );
-
-            int[] jalaliTarget =
-                    gregorianToJalali(
-                            target.get(Calendar.YEAR),
-                            target.get(Calendar.MONTH) + 1,
-                            target.get(Calendar.DAY_OF_MONTH)
-                    );
-
-            String targetDate =
-                    formatJalaliDate(
-                            jalaliTarget[0],
-                            jalaliTarget[1],
-                            jalaliTarget[2]
-                    );
 
             for (
                     int i = 0;
-                    i < installments.length();
+                    i < checks.length();
                     i++
             ) {
 
-                JSONObject item =
-                        installments.getJSONObject(i);
+                JSONObject check =
+                        checks.optJSONObject(i);
 
-                String name =
-                        item.optString(
-                                "name",
-                                "قسط"
-                        );
-
-                String itemId =
-                        item.optString(
-                                "id",
-                                String.valueOf(i)
-                        );
-
-                JSONArray dates =
-                        item.optJSONArray(
-                                "dates"
-                        );
-
-                if (dates == null) {
+                if (check == null) {
                     continue;
                 }
 
-                for (
-                        int j = 0;
-                        j < dates.length();
-                        j++
-                ) {
-
-                    JSONObject dateObject =
-                            dates.getJSONObject(j);
-
-                    /*
-                     * قسط پرداخت شده:
-                     *
-                     * اعلان نباید نمایش داده شود.
-                     */
-                    if (
-                            dateObject.optBoolean(
-                                    "paid",
-                                    false
-                            )
-                    ) {
-                        continue;
-                    }
-
-                    String date =
-                            dateObject.optString(
-                                    "date",
-                                    ""
-                            );
-
-                    if (date.isEmpty()) {
-                        continue;
-                    }
-
-                    String normalizedDate =
-                            normalizeJalaliDate(
-                                    date
-                            );
-
-                    /*
-                     * آیا تاریخ این قسط
-                     * همان تاریخ هدف است؟
-                     */
-                    if (
-                            !targetDate.equals(
-                                    normalizedDate
-                            )
-                    ) {
-                        continue;
-                    }
-
-                    /*
-                     * کلید اختصاصی برای جلوگیری
-                     * از اعلان تکراری.
-                     */
-                    String notificationKey =
-                            "notified_"
-                                    + itemId
-                                    + "_"
-                                    + normalizedDate
-                                    + "_"
-                                    + j
-                                    + "_"
-                                    + daysBefore;
-
-                    if (
-                            prefs.getBoolean(
-                                    notificationKey,
-                                    false
-                            )
-                    ) {
-                        continue;
-                    }
-
-                    int notificationId =
-                            createNotificationId(
-                                    itemId,
-                                    j,
-                                    normalizedDate
-                            );
-
-                    showNotification(
-                            context,
-                            name,
-                            normalizedDate,
-                            daysBefore,
-                            notificationId
-                    );
-
-                    /*
-                     * ثبت می‌کنیم که این اعلان
-                     * نمایش داده شده است.
-                     */
-                    prefs.edit()
-                            .putBoolean(
-                                    notificationKey,
-                                    true
-                            )
-                            .apply();
-                }
+                scheduleCheck(
+                        app,
+                        check
+                );
             }
 
         } catch (Exception e) {
@@ -321,135 +169,633 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
     }
 
-    /*
-     * =========================================================
-     * نمایش اعلان
-     * =========================================================
-     */
-    private void showNotification(
+
+    private static void scheduleCheck(
             Context context,
-            String installmentName,
-            String dueDate,
-            int daysBefore,
-            int notificationId
+            JSONObject check
+    ) {
+
+        try {
+
+            String id =
+                    check.optString(
+                            "id",
+                            ""
+                    );
+
+            if (id.isEmpty()) {
+                return;
+            }
+
+            String status =
+                    check.optString(
+                            "status",
+                            "issued"
+                    );
+
+            /*
+             * فقط چک پرداخت‌نشده
+             * باید اعلان داشته باشد.
+             */
+            if (!"issued".equals(status)) {
+                return;
+            }
+
+            boolean enabled =
+                    check.optBoolean(
+                            "reminderEnabled",
+                            true
+                    );
+
+            if (!enabled) {
+                return;
+            }
+
+            String date =
+                    check.optString(
+                            "date",
+                            ""
+                    );
+
+            if (date.isEmpty()) {
+                return;
+            }
+
+            int daysBefore =
+                    check.optInt(
+                            "reminderDays",
+                            1
+                    );
+
+            if (
+                    daysBefore != 1 &&
+                    daysBefore != 2
+            ) {
+
+                daysBefore = 1;
+            }
+
+            String time =
+                    check.optString(
+                            "reminderTime",
+                            "09:00"
+                    );
+
+            Calendar due =
+                    parseDate(date);
+
+            if (due == null) {
+                return;
+            }
+
+            Calendar trigger =
+                    (Calendar) due.clone();
+
+            trigger.add(
+                    Calendar.DAY_OF_YEAR,
+                    -daysBefore
+            );
+
+            int[] hm =
+                    parseTime(time);
+
+            trigger.set(
+                    Calendar.HOUR_OF_DAY,
+                    hm[0]
+            );
+
+            trigger.set(
+                    Calendar.MINUTE,
+                    hm[1]
+            );
+
+            trigger.set(
+                    Calendar.SECOND,
+                    0
+            );
+
+            trigger.set(
+                    Calendar.MILLISECOND,
+                    0
+            );
+
+            long triggerAt =
+                    trigger.getTimeInMillis();
+
+            /*
+             * اگر زمان یادآوری گذشته باشد،
+             * اعلان دیگر برای گذشته ساخته نمی‌شود.
+             */
+            if (
+                    triggerAt <=
+                    System.currentTimeMillis()
+            ) {
+
+                return;
+            }
+
+            int requestCode =
+                    CHECK_REQUEST_BASE +
+                    Math.abs(
+                            id.hashCode()
+                    ) % 100000;
+
+            Intent intent =
+                    new Intent(
+                            context,
+                            NotificationReceiver.class
+                    );
+
+            intent.putExtra(
+                    "type",
+                    "check"
+            );
+
+            intent.putExtra(
+                    "checkId",
+                    id
+            );
+
+            intent.putExtra(
+                    "number",
+                    check.optString(
+                            "number",
+                            ""
+                    )
+            );
+
+            intent.putExtra(
+                    "date",
+                    date
+            );
+
+            intent.putExtra(
+                    "amount",
+                    check.optLong(
+                            "amount",
+                            0
+                    )
+            );
+
+            intent.putExtra(
+                    "payee",
+                    check.optString(
+                            "payee",
+                            ""
+                    )
+            );
+
+            intent.putExtra(
+                    "daysBefore",
+                    daysBefore
+            );
+
+            intent.putExtra(
+                    "requestCode",
+                    requestCode
+            );
+
+            PendingIntent pendingIntent =
+                    PendingIntent.getBroadcast(
+                            context,
+                            requestCode,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT |
+                            PendingIntent.FLAG_IMMUTABLE
+                    );
+
+            AlarmManager alarmManager =
+                    (AlarmManager)
+                            context.getSystemService(
+                                    Context.ALARM_SERVICE
+                            );
+
+            if (alarmManager == null) {
+                return;
+            }
+
+            if (
+                    Build.VERSION.SDK_INT >=
+                    Build.VERSION_CODES.S
+            ) {
+
+                if (
+                        !alarmManager
+                                .canScheduleExactAlarms()
+                ) {
+
+                    /*
+                     * اگر آلارم دقیق مجاز نبود،
+                     * آلارم معمولی استفاده می‌شود.
+                     */
+
+                    alarmManager.setAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            triggerAt,
+                            pendingIntent
+                    );
+
+                    return;
+                }
+            }
+
+            alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerAt,
+                    pendingIntent
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+
+    private static Calendar parseDate(
+            String date
+    ) {
+
+        try {
+
+            SimpleDateFormat format =
+                    new SimpleDateFormat(
+                            "yyyy-MM-dd",
+                            Locale.US
+                    );
+
+            format.setLenient(false);
+
+            Date parsed =
+                    format.parse(date);
+
+            if (parsed == null) {
+                return null;
+            }
+
+            Calendar calendar =
+                    Calendar.getInstance();
+
+            calendar.setTime(parsed);
+
+            calendar.set(
+                    Calendar.HOUR_OF_DAY,
+                    0
+            );
+
+            calendar.set(
+                    Calendar.MINUTE,
+                    0
+            );
+
+            calendar.set(
+                    Calendar.SECOND,
+                    0
+            );
+
+            calendar.set(
+                    Calendar.MILLISECOND,
+                    0
+            );
+
+            return calendar;
+
+        } catch (Exception e) {
+
+            return null;
+        }
+    }
+
+
+    private static int[] parseTime(
+            String time
+    ) {
+
+        int hour = 9;
+        int minute = 0;
+
+        try {
+
+            String[] parts =
+                    time.split(":");
+
+            if (parts.length >= 2) {
+
+                hour =
+                        Integer.parseInt(
+                                parts[0]
+                        );
+
+                minute =
+                        Integer.parseInt(
+                                parts[1]
+                        );
+            }
+
+        } catch (Exception ignored) {
+
+            hour = 9;
+            minute = 0;
+        }
+
+        if (hour < 0 || hour > 23) {
+            hour = 9;
+        }
+
+        if (minute < 0 || minute > 59) {
+            minute = 0;
+        }
+
+        return new int[]{
+                hour,
+                minute
+        };
+    }
+
+
+    public static void cancelCheckReminder(
+            Context context,
+            String checkId
     ) {
 
         if (
+                checkId == null ||
+                checkId.isEmpty()
+        ) {
+            return;
+        }
+
+        AlarmManager alarmManager =
+                (AlarmManager)
+                        context.getSystemService(
+                                Context.ALARM_SERVICE
+                        );
+
+        if (alarmManager == null) {
+            return;
+        }
+
+        int requestCode =
+                CHECK_REQUEST_BASE +
+                Math.abs(
+                        checkId.hashCode()
+                ) % 100000;
+
+        Intent intent =
+                new Intent(
+                        context,
+                        NotificationReceiver.class
+                );
+
+        PendingIntent pendingIntent =
+                PendingIntent.getBroadcast(
+                        context,
+                        requestCode,
+                        intent,
+                        PendingIntent.FLAG_NO_CREATE |
+                        PendingIntent.FLAG_IMMUTABLE
+                );
+
+        if (pendingIntent != null) {
+
+            alarmManager.cancel(
+                    pendingIntent
+            );
+
+            pendingIntent.cancel();
+        }
+
+        NotificationManagerCompat
+                .from(context)
+                .cancel(
+                        requestCode
+                );
+    }
+
+
+    private static void cancelAllCheckAlarms(
+            Context context
+    ) {
+
+        SharedPreferences prefs =
+                context.getSharedPreferences(
+                        PREFS_NAME,
+                        Context.MODE_PRIVATE
+                );
+
+        String json =
+                prefs.getString(
+                        CHECKS_KEY,
+                        "[]"
+                );
+
+        try {
+
+            JSONArray checks =
+                    new JSONArray(json);
+
+            for (
+                    int i = 0;
+                    i < checks.length();
+                    i++
+            ) {
+
+                JSONObject check =
+                        checks.optJSONObject(i);
+
+                if (check == null) {
+                    continue;
+                }
+
+                String id =
+                        check.optString(
+                                "id",
+                                ""
+                        );
+
+                cancelCheckReminder(
+                        context,
+                        id
+                );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+
+    /* =========================================================
+       CHECK NOTIFICATION
+       ========================================================= */
+
+    private void showCheckNotification(
+            Context context,
+            Intent intent
+    ) {
+
+        createNotificationChannel(context);
+
+        if (
                 Build.VERSION.SDK_INT >=
-                        Build.VERSION_CODES.TIRAMISU
+                Build.VERSION_CODES.TIRAMISU
         ) {
 
             if (
                     context.checkSelfPermission(
                             "android.permission.POST_NOTIFICATIONS"
                     )
-                            != PackageManager.PERMISSION_GRANTED
+                    !=
+                    PackageManager.PERMISSION_GRANTED
             ) {
+
                 return;
             }
         }
 
-        Intent intent =
-                new Intent(
-                        context,
-                        MainActivity.class
+        String number =
+                intent.getStringExtra(
+                        "number"
                 );
 
-        intent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK
-                        |
+        String date =
+                intent.getStringExtra(
+                        "date"
+                );
+
+        String payee =
+                intent.getStringExtra(
+                        "payee"
+                );
+
+        long amount =
+                intent.getLongExtra(
+                        "amount",
+                        0
+                );
+
+        int daysBefore =
+                intent.getIntExtra(
+                        "daysBefore",
+                        1
+                );
+
+        int requestCode =
+                intent.getIntExtra(
+                        "requestCode",
+                        CHECK_REQUEST_BASE
+                );
+
+        Intent openIntent =
+                new Intent(
+                        context,
+                        ChecksActivity.class
+                );
+
+        openIntent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK |
                 Intent.FLAG_ACTIVITY_CLEAR_TOP
         );
 
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(
                         context,
-                        notificationId,
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                                |
-                        pendingIntentFlags()
+                        requestCode,
+                        openIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT |
+                        PendingIntent.FLAG_IMMUTABLE
                 );
 
-        String daysText;
+        String beforeText;
 
-        if (daysBefore == 1) {
+        if (daysBefore == 2) {
 
-            daysText = "۲۴ ساعت قبل";
+            beforeText =
+                    "۲ روز قبل";
 
         } else {
 
-            daysText = "۲ روز قبل";
+            beforeText =
+                    "۱ روز قبل";
         }
 
+        String title =
+                "🔔 یادآوری چک";
+
         String shortText =
-                "قسط «"
-                        + installmentName
-                        + "» "
-                        + daysText
-                        + " سررسید می‌شود.";
+                "چک شماره "+
+                number+
+                " "+
+                beforeText+
+                " سررسید می‌شود.";
 
         String bigText =
-                "قسط «"
-                        + installmentName
-                        + "»\n\n"
-                        + "تاریخ سررسید: "
-                        + dueDate
-                        + "\n\n"
-                        + "زمان یادآوری: "
-                        + daysText
-                        + "\n"
-                        + "یادآوری در ساعت انتخاب‌شده شما.";
+                "چک شماره: "+
+                number+
+                "\n\n"+
+                "تاریخ سررسید: "+
+                formatDateForNotification(date)+
+                "\n\n"+
+                "مبلغ: "+
+                formatNumber(amount)+
+                " ریال"+
+                "\n\n"+
+                "در وجه: "+
+                (
+                        payee == null ||
+                        payee.isEmpty()
+                        ?
+                        "—"
+                        :
+                        payee
+                )+
+                "\n\n"+
+                "زمان یادآوری: "+
+                beforeText;
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(
                         context,
                         CHANNEL_ID
                 )
-                        .setSmallIcon(
-                                android.R.drawable.ic_dialog_info
-                        )
-                        .setContentTitle(
-                                "🔔 یادآوری قسط"
-                        )
-                        .setContentText(
-                                shortText
-                        )
-                        .setStyle(
-                                new NotificationCompat
-                                        .BigTextStyle()
-                                        .bigText(
-                                                bigText
-                                        )
-                        )
-                        .setPriority(
-                                NotificationCompat
-                                        .PRIORITY_HIGH
-                        )
-                        .setAutoCancel(true)
-                        .setContentIntent(
-                                pendingIntent
-                        );
+                .setSmallIcon(
+                        android.R.drawable.ic_dialog_info
+                )
+                .setContentTitle(
+                        title
+                )
+                .setContentText(
+                        shortText
+                )
+                .setStyle(
+                        new NotificationCompat
+                                .BigTextStyle()
+                                .bigText(
+                                        bigText
+                                )
+                )
+                .setPriority(
+                        NotificationCompat
+                                .PRIORITY_HIGH
+                )
+                .setAutoCancel(true)
+                .setContentIntent(
+                        pendingIntent
+                );
 
         try {
 
             NotificationManagerCompat
                     .from(context)
                     .notify(
-                            notificationId,
+                            requestCode,
                             builder.build()
                     );
 
-            /*
-             * شناسه اعلان را ذخیره می‌کنیم.
-             *
-             * بعداً اگر کاربر قسط را تیک بزند
-             * یا ویرایش کند، MainActivity
-             * می‌تواند همین اعلان را حذف کند.
-             */
             addPostedNotificationId(
                     context,
-                    notificationId
+                    requestCode
             );
 
         } catch (SecurityException e) {
@@ -458,11 +804,11 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
     }
 
-    /*
-     * =========================================================
-     * ثبت شناسه اعلان
-     * =========================================================
-     */
+
+    /* =========================================================
+       POSTED NOTIFICATIONS
+       ========================================================= */
+
     private void addPostedNotificationId(
             Context context,
             int notificationId
@@ -496,14 +842,7 @@ public class NotificationReceiver extends BroadcastReceiver {
                 .apply();
     }
 
-    /*
-     * =========================================================
-     * حذف تمام اعلان‌های ثبت‌شده
-     *
-     * MainActivity هنگام تغییر اطلاعات اقساط
-     * این متد را صدا خواهد زد.
-     * =========================================================
-     */
+
     public static void cancelAllPostedNotifications(
             Context context
     ) {
@@ -530,11 +869,8 @@ public class NotificationReceiver extends BroadcastReceiver {
 
                 try {
 
-                    int notificationId =
-                            Integer.parseInt(id);
-
                     manager.cancel(
-                            notificationId
+                            Integer.parseInt(id)
                     );
 
                 } catch (Exception ignored) {
@@ -553,12 +889,12 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
     }
 
-    /*
-     * =========================================================
-     * تنظیم آلارم بعدی
-     * =========================================================
-     */
-    public static void scheduleNextAlarm(
+
+    /* =========================================================
+       INSTALLMENT NOTIFICATIONS
+       ========================================================= */
+
+    private void checkInstallments(
             Context context
     ) {
 
@@ -577,9 +913,206 @@ public class NotificationReceiver extends BroadcastReceiver {
                     );
 
             if (!enabled) {
+                return;
+            }
 
-                cancelAlarm(context);
+            int daysBefore =
+                    prefs.getInt(
+                            REMINDER_DAYS,
+                            1
+                    );
 
+            if (
+                    daysBefore != 1 &&
+                    daysBefore != 2
+            ) {
+
+                daysBefore = 1;
+            }
+
+            String json =
+                    prefs.getString(
+                            INSTALLMENTS_KEY,
+                            "[]"
+                    );
+
+            JSONArray installments =
+                    new JSONArray(json);
+
+            Calendar target =
+                    Calendar.getInstance();
+
+            target.add(
+                    Calendar.DAY_OF_YEAR,
+                    daysBefore
+            );
+
+            String targetDate =
+                    getGregorianDate(
+                            target
+                    );
+
+            for (
+                    int i = 0;
+                    i < installments.length();
+                    i++
+            ) {
+
+                JSONObject item =
+                        installments.optJSONObject(i);
+
+                if (item == null) {
+                    continue;
+                }
+
+                String name =
+                        item.optString(
+                                "name",
+                                "قسط"
+                        );
+
+                String itemId =
+                        item.optString(
+                                "id",
+                                String.valueOf(i)
+                        );
+
+                JSONArray dates =
+                        item.optJSONArray(
+                                "dates"
+                        );
+
+                if (dates == null) {
+                    continue;
+                }
+
+                for (
+                        int j = 0;
+                        j < dates.length();
+                        j++
+                ) {
+
+                    JSONObject dateObject =
+                            dates.optJSONObject(j);
+
+                    if (dateObject == null) {
+                        continue;
+                    }
+
+                    if (
+                            dateObject.optBoolean(
+                                    "paid",
+                                    false
+                            )
+                    ) {
+                        continue;
+                    }
+
+                    String date =
+                            dateObject.optString(
+                                    "date",
+                                    ""
+                            );
+
+                    if (
+                            date.isEmpty()
+                    ) {
+                        continue;
+                    }
+
+                    /*
+                     * سیستم قبلی اقساط ممکن است
+                     * تاریخ شمسی داشته باشد.
+                     *
+                     * برای جلوگیری از خراب شدن
+                     * قابلیت فعلی، منطق قبلی
+                     * از NotificationScheduler
+                     * همچنان مستقل باقی می‌ماند.
+                     */
+                }
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+
+    /*
+     * این متد همان API قبلی BootReceiver است.
+     *
+     * بنابراین بعد از روشن شدن گوشی:
+     *
+     * 1. آلارم روزانه اقساط ساخته می‌شود.
+     * 2. یادآوری‌های چک دوباره ساخته می‌شوند.
+     */
+    public static void scheduleNextAlarm(
+            Context context
+    ) {
+
+        try {
+
+            SharedPreferences prefs =
+                    context.getSharedPreferences(
+                            PREFS_NAME,
+                            Context.MODE_PRIVATE
+                    );
+
+            /*
+             * اول یادآوری چک‌ها را بازیابی می‌کنیم.
+             */
+            String checksJson =
+                    prefs.getString(
+                            CHECKS_KEY,
+                            "[]"
+                    );
+
+            try {
+
+                JSONArray checks =
+                        new JSONArray(
+                                checksJson
+                        );
+
+                /*
+                 * برای هر چک، آلارم را
+                 * دوباره ایجاد می‌کنیم.
+                 */
+                for (
+                        int i = 0;
+                        i < checks.length();
+                        i++
+                ) {
+
+                    JSONObject check =
+                            checks.optJSONObject(i);
+
+                    if (check != null) {
+
+                        scheduleCheck(
+                                context,
+                                check
+                        );
+                    }
+                }
+
+            } catch (Exception ignored) {
+            }
+
+
+            /*
+             * سیستم قبلی اقساط:
+             *
+             * تنظیم آلارم روزانه.
+             */
+            boolean enabled =
+                    prefs.getBoolean(
+                            REMINDER_ENABLED,
+                            true
+                    );
+
+            if (!enabled) {
                 return;
             }
 
@@ -589,40 +1122,8 @@ public class NotificationReceiver extends BroadcastReceiver {
                             "16:00"
                     );
 
-            int hour = 16;
-            int minute = 0;
-
-            try {
-
-                String[] parts =
-                        time.split(":");
-
-                if (parts.length >= 2) {
-
-                    hour =
-                            Integer.parseInt(
-                                    parts[0]
-                            );
-
-                    minute =
-                            Integer.parseInt(
-                                    parts[1]
-                            );
-                }
-
-            } catch (Exception ignored) {
-
-                hour = 16;
-                minute = 0;
-            }
-
-            if (hour < 0 || hour > 23) {
-                hour = 16;
-            }
-
-            if (minute < 0 || minute > 59) {
-                minute = 0;
-            }
+            int[] hm =
+                    parseTime(time);
 
             AlarmManager alarmManager =
                     (AlarmManager)
@@ -634,23 +1135,6 @@ public class NotificationReceiver extends BroadcastReceiver {
                 return;
             }
 
-            /*
-             * آلارم دقیق در Android 12+
-             */
-            if (
-                    Build.VERSION.SDK_INT >=
-                            Build.VERSION_CODES.S
-            ) {
-
-                if (
-                        !alarmManager
-                                .canScheduleExactAlarms()
-                ) {
-
-                    return;
-                }
-            }
-
             Calendar now =
                     Calendar.getInstance();
 
@@ -659,12 +1143,12 @@ public class NotificationReceiver extends BroadcastReceiver {
 
             next.set(
                     Calendar.HOUR_OF_DAY,
-                    hour
+                    hm[0]
             );
 
             next.set(
                     Calendar.MINUTE,
-                    minute
+                    hm[1]
             );
 
             next.set(
@@ -677,13 +1161,6 @@ public class NotificationReceiver extends BroadcastReceiver {
                     0
             );
 
-            /*
-             * اگر ساعت انتخابی هنوز نرسیده،
-             * امروز همان ساعت اجرا شود.
-             *
-             * اگر گذشته باشد،
-             * فردا اجرا شود.
-             */
             if (
                     next.getTimeInMillis()
                             <=
@@ -707,9 +1184,8 @@ public class NotificationReceiver extends BroadcastReceiver {
                             context,
                             ALARM_REQUEST_CODE,
                             intent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                                    |
-                            pendingIntentFlags()
+                            PendingIntent.FLAG_UPDATE_CURRENT |
+                            PendingIntent.FLAG_IMMUTABLE
                     );
 
             long triggerAt =
@@ -717,27 +1193,37 @@ public class NotificationReceiver extends BroadcastReceiver {
 
             if (
                     Build.VERSION.SDK_INT >=
-                            Build.VERSION_CODES.M
+                    Build.VERSION_CODES.S
             ) {
+
+                if (
+                        alarmManager
+                                .canScheduleExactAlarms()
+                ) {
+
+                    alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            triggerAt,
+                            pendingIntent
+                    );
+
+                } else {
+
+                    alarmManager.setAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            triggerAt,
+                            pendingIntent
+                    );
+                }
+
+            } else {
 
                 alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         triggerAt,
                         pendingIntent
                 );
-
-            } else {
-
-                alarmManager.setExact(
-                        AlarmManager.RTC_WAKEUP,
-                        triggerAt,
-                        pendingIntent
-                );
             }
-
-        } catch (SecurityException e) {
-
-            e.printStackTrace();
 
         } catch (Exception e) {
 
@@ -745,285 +1231,100 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
     }
 
-    /*
-     * =========================================================
-     * لغو آلارم
-     * =========================================================
-     */
-    public static void cancelAlarm(
+
+    /* =========================================================
+       HELPERS
+       ========================================================= */
+
+    private static void createNotificationChannel(
             Context context
     ) {
 
-        try {
+        if (
+                Build.VERSION.SDK_INT >=
+                Build.VERSION_CODES.O
+        ) {
 
-            AlarmManager alarmManager =
-                    (AlarmManager)
+            NotificationManager manager =
+                    (NotificationManager)
                             context.getSystemService(
-                                    Context.ALARM_SERVICE
+                                    Context.NOTIFICATION_SERVICE
                             );
 
-            if (alarmManager == null) {
+            if (manager == null) {
                 return;
             }
-
-            Intent intent =
-                    new Intent(
-                            context,
-                            NotificationReceiver.class
-                    );
-
-            PendingIntent pendingIntent =
-                    PendingIntent.getBroadcast(
-                            context,
-                            ALARM_REQUEST_CODE,
-                            intent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                                    |
-                            pendingIntentFlags()
-                    );
-
-            alarmManager.cancel(
-                    pendingIntent
-            );
-
-            pendingIntent.cancel();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-    }
-
-    private static int createNotificationId(
-            String itemId,
-            int index,
-            String date
-    ) {
-
-        int hash =
-                (
-                        itemId
-                                + "_"
-                                + index
-                                + "_"
-                                + date
-                ).hashCode();
-
-        return Math.abs(hash);
-    }
-
-    private static int pendingIntentFlags() {
-
-        if (
-                Build.VERSION.SDK_INT >=
-                        Build.VERSION_CODES.M
-        ) {
-
-            return PendingIntent.FLAG_IMMUTABLE;
-        }
-
-        return 0;
-    }
-
-    /*
-     * =========================================================
-     * Notification Channel
-     * =========================================================
-     */
-    private void createNotificationChannel(
-            Context context
-    ) {
-
-        if (
-                Build.VERSION.SDK_INT >=
-                        Build.VERSION_CODES.O
-        ) {
 
             NotificationChannel channel =
                     new NotificationChannel(
                             CHANNEL_ID,
-                            "یادآوری اقساط",
+                            "یادآوری اقساط و چک‌ها",
                             NotificationManager
                                     .IMPORTANCE_HIGH
                     );
 
             channel.setDescription(
-                    "اعلان سررسید اقساط"
+                    "یادآوری سررسید اقساط و چک‌ها"
             );
 
-            channel.enableVibration(true);
-
-            NotificationManager manager =
-                    context.getSystemService(
-                            NotificationManager.class
-                    );
-
-            if (manager != null) {
-
-                manager.createNotificationChannel(
-                        channel
-                );
-            }
+            manager.createNotificationChannel(
+                    channel
+            );
         }
     }
 
-    /*
-     * =========================================================
-     * تبدیل میلادی به شمسی
-     * =========================================================
-     */
-    private int[] gregorianToJalali(
-            int gy,
-            int gm,
-            int gd
-    ) {
 
-        int jy;
-
-        if (gy > 1600) {
-
-            jy = 979;
-            gy -= 1600;
-
-        } else {
-
-            jy = 0;
-            gy -= 621;
-        }
-
-        int gy2 =
-                gm > 2
-                        ? gy + 1
-                        : gy;
-
-        int[] monthDays = {
-                0,
-                31,
-                28,
-                31,
-                30,
-                31,
-                30,
-                31,
-                31,
-                30,
-                31,
-                30,
-                31
-        };
-
-        int days =
-                365 * gy
-                        + (gy2 + 3) / 4
-                        - (gy2 + 99) / 100
-                        + (gy2 + 399) / 400
-                        - 80
-                        + gd;
-
-        for (
-                int i = 1;
-                i < gm;
-                i++
-        ) {
-
-            days += monthDays[i];
-        }
-
-        jy +=
-                33 * (days / 12053);
-
-        days %= 12053;
-
-        jy +=
-                4 * (days / 1461);
-
-        days %= 1461;
-
-        if (days > 365) {
-
-            jy +=
-                    (days - 1) / 365;
-
-            days =
-                    (days - 1) % 365;
-        }
-
-        int jm;
-
-        if (days < 186) {
-
-            jm =
-                    1 + days / 31;
-
-        } else {
-
-            jm =
-                    7
-                            + (days - 186)
-                            / 30;
-        }
-
-        int jd;
-
-        if (days < 186) {
-
-            jd =
-                    1 + days % 31;
-
-        } else {
-
-            jd =
-                    1
-                            + (days - 186)
-                            % 30;
-        }
-
-        return new int[]{
-                jy,
-                jm,
-                jd
-        };
-    }
-
-    private String formatJalaliDate(
-            int year,
-            int month,
-            int day
-    ) {
-
-        return String.format(
-                java.util.Locale.US,
-                "%04d/%02d/%02d",
-                year,
-                month,
-                day
-        );
-    }
-
-    private String normalizeJalaliDate(
+    private static String formatDateForNotification(
             String date
     ) {
 
-        if (date == null) {
-            return "";
+        if (
+                date == null ||
+                date.length() < 10
+        ) {
+            return date;
         }
 
-        String value =
-                date.trim()
-                        .replace(
-                                '-',
-                                '/'
-                        );
+        String[] p =
+                date.split("-");
 
-        if (value.length() >= 10) {
+        if (p.length == 3) {
 
-            value =
-                    value.substring(
-                            0,
-                            10
-                    );
+            return p[2]+
+                    " / "+
+                    p[1]+
+                    " / "+
+                    p[0];
         }
 
-        return value;
+        return date;
+    }
+
+
+    private static String formatNumber(
+            long number
+    ) {
+
+        return String.format(
+                Locale.US,
+                "%,d",
+                number
+        );
+    }
+
+
+    private static String getGregorianDate(
+            Calendar calendar
+    ) {
+
+        SimpleDateFormat format =
+                new SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.US
+                );
+
+        return format.format(
+                calendar.getTime()
+        );
     }
 }
