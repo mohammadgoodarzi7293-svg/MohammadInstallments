@@ -1,6 +1,7 @@
 package com.mohammadgoudarzi.installments;
 
 import android.os.Bundle;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -46,23 +47,47 @@ public class ChecksActivity extends FragmentActivity {
 
     private class ChecksBridge {
 
-        @android.webkit.JavascriptInterface
+        @JavascriptInterface
         public boolean isPremium() {
+
             return premiumManager.isPremium();
         }
 
-        @android.webkit.JavascriptInterface
+        @JavascriptInterface
         public boolean canAddCheck(int currentCount) {
-            return premiumManager.canAddCheck(currentCount);
+
+            return premiumManager.canAddCheck(
+                    currentCount
+            );
+        }
+
+        /*
+         * دریافت تمام چک‌های ذخیره‌شده
+         * از صفحه HTML و ساخت / حذف
+         * یادآوری‌های مربوط به آنها.
+         */
+        @JavascriptInterface
+        public void syncChecks(String checksJson) {
+
+            NotificationReceiver.syncCheckReminders(
+                    ChecksActivity.this,
+                    checksJson
+            );
         }
     }
 
     @Override
     public void onBackPressed() {
 
-        if (webView != null && webView.canGoBack()) {
+        if (
+                webView != null &&
+                webView.canGoBack()
+        ) {
+
             webView.goBack();
+
         } else {
+
             super.onBackPressed();
         }
     }
